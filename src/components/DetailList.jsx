@@ -1,7 +1,7 @@
-export default function DetailList({ rows }) {
+export default function DetailList({ rows, title = 'Detail List' }) {
   return (
     <>
-      <h2 className="panel-title">Detail List</h2>
+      <h2 className="panel-title">{title}</h2>
       <table className="table detail-table">
         <thead>
           <tr>
