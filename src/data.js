@@ -9,6 +9,11 @@ export const detailList = [
   { no: 8, rank: 'REC', name: 'Say Wen Kai', status: 'Ready', weapon: 'SAR21', lane: 'Lane 8' },
   { no: 9, rank: '3SG', name: 'Wu Zheng ...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 9' },
   { no: 10, rank: 'REC', name: 'Thamizhav...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 10' },
+  { no: 11, rank: '3SG', name: 'Chong Wei L...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 11' },
+  { no: 12, rank: 'REC', name: 'Farah Aziz...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 12' },
+  { no: 13, rank: '3SG', name: 'Koh Zhi H...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 13' },
+  { no: 14, rank: 'REC', name: 'Tan Jun W...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 14' },
+  { no: 15, rank: '3SG', name: 'Ng Wei Xu...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 15' },
 ]
 
 // Splits the roster into distinct groups (one per detail) instead of
@@ -30,7 +35,8 @@ function splitIntoGroups(rows, sizes) {
   return groups
 }
 
-export const detailGroups = splitIntoGroups(detailList, [4, 3, 3])
+// Full roster capacity is 15 trainees, split evenly across 3 details.
+export const detailGroups = splitIntoGroups(detailList, [5, 5, 5])
 
 export const podium = {
   first: { names: ['3SG Liu Shu Qi'], score: '20', total: '20', mpi: 'MPI: 2.00 mm' },

@@ -8,12 +8,13 @@ import DetailListCards from './components/DetailListCards.jsx'
 import TopThree from './components/TopThree.jsx'
 import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
+import CombinedDetailList from './components/CombinedDetailList.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 
 const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
-  { id: 'layout-2', label: 'Layout 2', description: '3 detail lists (20% / 20% / 20%)' },
-  { id: 'layout-3', label: 'Layout 3', description: '3 distinct detail lists + directory map' },
+  { id: 'layout-2', label: 'Layout 2', description: '3 detail lists + podium + directory' },
+  { id: 'layout-3', label: 'Layout 3', description: 'Combined detail list + directory + leaderboard' },
 ]
 
 const TABLE_MODELS = [
@@ -79,8 +80,8 @@ function LayoutTwo({ tableModel }) {
         <section className="panel podium-panel">
           <TopThree data={podium} />
         </section>
-        <section className="panel leaderboard-panel">
-          <Leaderboard rows={leaderboard} />
+        <section className="panel directory-panel">
+          <Directory />
         </section>
       </div>
     </main>
@@ -89,8 +90,8 @@ function LayoutTwo({ tableModel }) {
 
 function LayoutThree({ tableModel }) {
   return (
-    <main className="layout layout-triple">
-      <TripleDetailPanels tableModel={tableModel} rowsPerPanel={detailGroups} />
+    <main className="layout layout-combined">
+      <CombinedDetailList groups={detailGroups} statuses={DETAIL_STATUSES} tableModel={tableModel} />
       <div className="right-col">
         <section className="panel directory-panel">
           <Directory />
