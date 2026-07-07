@@ -6,7 +6,6 @@ import DetailList from './components/DetailList.jsx'
 import DetailListTable2 from './components/DetailListTable2.jsx'
 import DetailListCards from './components/DetailListCards.jsx'
 import TopThree from './components/TopThree.jsx'
-import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 
@@ -37,14 +36,9 @@ function LayoutOne({ tableModel }) {
         <DetailPanel tableModel={tableModel} rows={detailList} title="Detail List" status="Ready" />
       </section>
       <div className="right-col">
-        <div className="right-top">
-          <section className="panel podium-panel">
-            <TopThree data={podium} />
-          </section>
-          <section className="panel directory-panel">
-            <Directory />
-          </section>
-        </div>
+        <section className="panel podium-panel">
+          <TopThree data={podium} />
+        </section>
         <section className="panel leaderboard-panel">
           <Leaderboard rows={leaderboard} />
         </section>
@@ -70,9 +64,6 @@ function LayoutTwo({ tableModel }) {
       <div className="right-col">
         <section className="panel podium-panel">
           <TopThree data={podium} />
-        </section>
-        <section className="panel directory-panel">
-          <Directory />
         </section>
         <section className="panel leaderboard-panel">
           <Leaderboard rows={leaderboard} />

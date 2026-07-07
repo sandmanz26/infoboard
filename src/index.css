@@ -168,12 +168,6 @@ body {
   gap: 14px;
 }
 
-.right-top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
 .panel-title {
   font-size: 15px;
   font-weight: 700;
@@ -693,10 +687,6 @@ body {
 }
 
 @media (max-width: 760px) {
-  .right-top {
-    grid-template-columns: 1fr;
-  }
-
   .header-left {
     flex-wrap: wrap;
     gap: 8px;
