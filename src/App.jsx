@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
-import { detailList, podium, leaderboard } from './data.js'
+import { detailList, detailGroups, podium, leaderboard } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
 import DetailListTable2 from './components/DetailListTable2.jsx'
 import DetailListCards from './components/DetailListCards.jsx'
 import TopThree from './components/TopThree.jsx'
+import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 
 const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
   { id: 'layout-2', label: 'Layout 2', description: '3 detail lists (20% / 20% / 20%)' },
+  { id: 'layout-3', label: 'Layout 3', description: '3 distinct detail lists + directory map' },
 ]
 
 const TABLE_MODELS = [
@@ -23,10 +25,29 @@ const TABLE_MODELS = [
 const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 
+const DETAIL_STATUSES = ['Ready', 'Queue', 'Queue']
+
 function DetailPanel({ tableModel, rows, title, status }) {
   if (tableModel === 'card') return <DetailListCards rows={rows} title={title} status={status} />
   if (tableModel === 'table2') return <DetailListTable2 rows={rows} title={title} status={status} />
   return <DetailList rows={rows} title={title} />
+}
+
+function TripleDetailPanels({ tableModel, rowsPerPanel }) {
+  return (
+    <>
+      {rowsPerPanel.map((rows, i) => (
+        <section key={i} className="panel detail-panel detail-panel-compact">
+          <DetailPanel
+            tableModel={tableModel}
+            rows={rows}
+            title={`Detail ${i + 1}`}
+            status={DETAIL_STATUSES[i]}
+          />
+        </section>
+      ))}
+    </>
+  )
 }
 
 function LayoutOne({ tableModel }) {
@@ -47,20 +68,13 @@ function LayoutOne({ tableModel }) {
   )
 }
 
-const LAYOUT_TWO_PANELS = [
-  { title: 'Detail 1', status: 'Ready' },
-  { title: 'Detail 2', status: 'Queue' },
-  { title: 'Detail 3', status: 'Queue' },
-]
-
 function LayoutTwo({ tableModel }) {
   return (
-    <main className="layout layout-two">
-      {LAYOUT_TWO_PANELS.map(({ title, status }) => (
-        <section key={title} className="panel detail-panel detail-panel-compact">
-          <DetailPanel tableModel={tableModel} rows={detailList} title={title} status={status} />
-        </section>
-      ))}
+    <main className="layout layout-triple">
+      <TripleDetailPanels
+        tableModel={tableModel}
+        rowsPerPanel={[detailList, detailList, detailList]}
+      />
       <div className="right-col">
         <section className="panel podium-panel">
           <TopThree data={podium} />
@@ -71,6 +85,28 @@ function LayoutTwo({ tableModel }) {
       </div>
     </main>
   )
+}
+
+function LayoutThree({ tableModel }) {
+  return (
+    <main className="layout layout-triple">
+      <TripleDetailPanels tableModel={tableModel} rowsPerPanel={detailGroups} />
+      <div className="right-col">
+        <section className="panel directory-panel">
+          <Directory />
+        </section>
+        <section className="panel leaderboard-panel">
+          <Leaderboard rows={leaderboard} />
+        </section>
+      </div>
+    </main>
+  )
+}
+
+const LAYOUT_COMPONENTS = {
+  'layout-1': LayoutOne,
+  'layout-2': LayoutTwo,
+  'layout-3': LayoutThree,
 }
 
 export default function App() {
@@ -102,15 +138,13 @@ export default function App() {
     },
   ]
 
+  const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
+
   return (
     <div className="app">
       <Header />
       <InfoBanner />
-      {layout === 'layout-2' ? (
-        <LayoutTwo tableModel={tableModel} />
-      ) : (
-        <LayoutOne tableModel={tableModel} />
-      )}
+      <ActiveLayout tableModel={tableModel} />
       <LayoutSwitcher groups={switcherGroups} />
     </div>
   )

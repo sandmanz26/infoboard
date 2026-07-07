@@ -11,6 +11,27 @@ export const detailList = [
   { no: 10, rank: 'REC', name: 'Thamizhav...', status: 'Ready', weapon: 'SAR21', lane: 'Lane 10' },
 ]
 
+// Splits the roster into distinct groups (one per detail) instead of
+// repeating the full list in every panel, and renumbers lanes within
+// each group so no trainee/lane pair appears twice on screen.
+function splitIntoGroups(rows, sizes) {
+  const groups = []
+  let start = 0
+  for (const size of sizes) {
+    groups.push(
+      rows.slice(start, start + size).map((row, i) => ({
+        ...row,
+        no: i + 1,
+        lane: `Lane ${i + 1}`,
+      }))
+    )
+    start += size
+  }
+  return groups
+}
+
+export const detailGroups = splitIntoGroups(detailList, [4, 3, 3])
+
 export const podium = {
   first: { names: ['3SG Liu Shu Qi'], score: '20', total: '20', mpi: 'MPI: 2.00 mm' },
   second: { names: ['REC Guo Guo Qiang', '3SG Muhamad Hj ...'], score: '20', total: '20', mpi: 'MPI: 3.00 mm' },

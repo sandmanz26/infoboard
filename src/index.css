@@ -460,13 +460,13 @@ body {
   box-shadow: 0 0 0 2px #ecd9c4;
 }
 
-/* ---------- Layout 2: 3 detail lists (20% / 20% / 20%) ---------- */
+/* ---------- Layouts 2 & 3: 3 detail lists (20% / 20% / 20%) ---------- */
 
-.layout-two {
+.layout-triple {
   grid-template-columns: 1fr 1fr 1fr 2fr;
 }
 
-.layout-two .right-col {
+.layout-triple .right-col {
   min-width: 0;
 }
 
@@ -699,7 +699,7 @@ body {
 
 @media (max-width: 1100px) {
   .layout,
-  .layout-two {
+  .layout-triple {
     grid-template-columns: 1fr;
   }
 
