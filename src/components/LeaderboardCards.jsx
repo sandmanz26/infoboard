@@ -8,15 +8,15 @@ function Medal({ medal, label }) {
   )
 }
 
-export default function LeaderboardCards({ rows }) {
+export default function LeaderboardCards({ rows, pageIndex, pageCount }) {
   return (
     <>
-      <LeaderboardHead />
+      <LeaderboardHead pageIndex={pageIndex} pageCount={pageCount} />
       <div className="leaderboard-cards">
-        {rows.map((row, i) => (
+        {rows.map((row) => (
           <div
             className={`leaderboard-card${row.medal ? ` leaderboard-card-${row.medal}` : ''}`}
-            key={i}
+            key={row.name}
           >
             <span className="leaderboard-card-rank">
               {row.medal ? (

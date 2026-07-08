@@ -12,6 +12,10 @@ import LeaderboardCompact from './components/LeaderboardCompact.jsx'
 import LeaderboardCards from './components/LeaderboardCards.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
+import usePagedRows from './hooks/usePagedRows.js'
+
+const LEADERBOARD_PAGE_SIZE = 5
+const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 
 const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
@@ -160,9 +164,18 @@ function DetailPanel({ tableModel, rows, title, status }) {
 }
 
 function LeaderboardPanel({ leaderboardModel, rows }) {
-  if (leaderboardModel === 'compact') return <LeaderboardCompact rows={rows} />
-  if (leaderboardModel === 'cards') return <LeaderboardCards rows={rows} />
-  return <Leaderboard rows={rows} />
+  const { page, pageIndex, pageCount } = usePagedRows(
+    rows,
+    LEADERBOARD_PAGE_SIZE,
+    LEADERBOARD_PAGE_INTERVAL_MS
+  )
+  if (leaderboardModel === 'compact') {
+    return <LeaderboardCompact rows={page} pageIndex={pageIndex} pageCount={pageCount} />
+  }
+  if (leaderboardModel === 'cards') {
+    return <LeaderboardCards rows={page} pageIndex={pageIndex} pageCount={pageCount} />
+  }
+  return <Leaderboard rows={page} pageIndex={pageIndex} pageCount={pageCount} />
 }
 
 function TripleDetailPanels({ tableModel, rowsPerPanel }) {

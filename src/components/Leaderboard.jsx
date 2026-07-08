@@ -8,10 +8,10 @@ function Medal({ medal, label }) {
   )
 }
 
-export default function Leaderboard({ rows }) {
+export default function Leaderboard({ rows, pageIndex, pageCount }) {
   return (
     <>
-      <LeaderboardHead />
+      <LeaderboardHead pageIndex={pageIndex} pageCount={pageCount} />
       <table className="table leaderboard-table">
         <thead>
           <tr>
@@ -23,8 +23,8 @@ export default function Leaderboard({ rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>
+          {rows.map((row) => (
+            <tr key={row.name}>
               <td>
                 {row.medal ? (
                   <Medal medal={row.medal} label={row.ranking} />

@@ -8,13 +8,13 @@ function Medal({ medal, label }) {
   )
 }
 
-export default function LeaderboardCompact({ rows }) {
+export default function LeaderboardCompact({ rows, pageIndex, pageCount }) {
   return (
     <>
-      <LeaderboardHead />
+      <LeaderboardHead pageIndex={pageIndex} pageCount={pageCount} />
       <div className="leaderboard-compact">
-        {rows.map((row, i) => (
-          <div className="leaderboard-compact-row" key={i}>
+        {rows.map((row) => (
+          <div className="leaderboard-compact-row" key={row.name}>
             <span className="leaderboard-compact-rank">
               {row.medal ? (
                 <Medal medal={row.medal} label={row.ranking} />

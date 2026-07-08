@@ -508,7 +508,8 @@ body {
 }
 
 .directory-map {
-  margin-top: 12px;
+  margin: 12px auto 0;
+  max-width: 62%;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--panel-tint);
@@ -528,6 +529,31 @@ body {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.leaderboard-head-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-page-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.leaderboard-page-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.leaderboard-page-dot.active {
+  background: var(--accent);
+  transform: scale(1.25);
 }
 
 .leaderboard-head .courseware-line {
