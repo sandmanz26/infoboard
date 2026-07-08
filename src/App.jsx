@@ -48,11 +48,44 @@ const PANEL_RATIOS = [
   { id: '70-30', label: '70 : 30', description: 'Detail list 70% / Directory + Leaderboard 30%', left: 70, right: 30 },
 ]
 
+const SYSTEM_STACK = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
+
+// All three are self-hosted (bundled with the build, no font CDN) and
+// picked specifically for on-screen reading at a distance rather than
+// for decoration — this board is read, not admired.
+const FONTS = [
+  {
+    id: 'system',
+    label: 'System Default',
+    description: "Uses the display device's own UI font",
+    stack: SYSTEM_STACK,
+  },
+  {
+    id: 'inter',
+    label: 'Inter',
+    description: 'Tall x-height, open counters — built for dense on-screen data',
+    stack: `"Inter", ${SYSTEM_STACK}`,
+  },
+  {
+    id: 'atkinson',
+    label: 'Atkinson Hyperlegible',
+    description: 'Designed by the Braille Institute to maximize character clarity at a distance',
+    stack: `"Atkinson Hyperlegible", ${SYSTEM_STACK}`,
+  },
+  {
+    id: 'public-sans',
+    label: 'Public Sans',
+    description: 'US federal design-system typeface, tuned for civic signage',
+    stack: `"Public Sans", ${SYSTEM_STACK}`,
+  },
+]
+
 const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
 const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
+const FONT_STORAGE_KEY = 'infoboard-font'
 
 function LayoutIcon() {
   return (
@@ -100,6 +133,20 @@ function RatioIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <rect x="2" y="4" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <rect x="14" y="4" width="4" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function TypographyIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <path
+        d="M4 16 8.2 5h1.1L13.5 16M5.4 12.3h6.5M14 8h3M14 11h3M14 14h2.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -219,6 +266,10 @@ export default function App() {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
   })
+  const [font, setFont] = useState(() => {
+    const saved = localStorage.getItem(FONT_STORAGE_KEY)
+    return FONTS.some((f) => f.id === saved) ? saved : 'inter'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -240,6 +291,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
+
+  useEffect(() => {
+    localStorage.setItem(FONT_STORAGE_KEY, font)
+  }, [font])
 
   // Cycles the board through all 4 base stations — this app renders one
   // physical LCD's worth of content, but in reality 4 of these boards
@@ -294,13 +349,22 @@ export default function App() {
       active: panelRatio,
       onChange: setPanelRatio,
     },
+    {
+      id: 'font',
+      label: 'Typography',
+      icon: <TypographyIcon />,
+      options: FONTS,
+      active: font,
+      onChange: setFont,
+    },
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
   const activeStation = stations[stationIndex].id
+  const activeFont = FONTS.find((f) => f.id === font) ?? FONTS[0]
 
   return (
-    <div className="app">
+    <div className="app" style={{ fontFamily: activeFont.stack }}>
       <Header station={activeStation} />
       <InfoBanner />
       <ActiveLayout
