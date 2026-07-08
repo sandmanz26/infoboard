@@ -5,18 +5,48 @@
 }
 
 :root {
-  --page-bg: #eceef0;
+  /* base surfaces — warm-neutral grey to pair with the maroon accent
+     rather than a default cool grey */
+  --page-bg: #efece7;
   --panel-bg: #ffffff;
+  --panel-tint: #f7f5f2;
   --table-head-bg: #fdf1ec;
   --table-head-text: #c0392b;
   --text-main: #1f2329;
-  --text-sub: #8a8f98;
-  --border: #e6e8eb;
+  --text-sub: #667085; /* darkened from #8a8f98 to clear WCAG AA (4.5:1) on white */
+  --border: #e6e1da;
+  --banner-bg: #dce8f7;
+
+  /* brand accent, tokenized so it isn't re-hardcoded per component */
+  --accent: #8a1f1f;
+  --accent-hover: #a12626;
+  --accent-glow: rgba(138, 31, 31, 0.22);
+
+  /* semantic status — separate from the brand accent on purpose */
   --ready-blue: #3b82f6;
   --ready-blue-bg: #e9f2fe;
   --queue-amber: #b45309;
   --queue-amber-bg: #fdefd8;
-  --banner-bg: #dce8f7;
+
+  /* one rank-tier family shared by the podium, medals and MPI pills
+     (previously each used its own slightly different gold/silver/bronze) */
+  --gold: #d1a530;
+  --gold-deep: #a3791d;
+  --gold-soft: #f5e6b8;
+  --silver: #a3aab2;
+  --silver-deep: #767d85;
+  --silver-soft: #e8eaec;
+  --bronze: #bd8a5c;
+  --bronze-deep: #8f6640;
+  --bronze-soft: #ecd9c4;
+
+  --shadow-1: 0 1px 2px rgba(31, 24, 20, 0.05);
+  --shadow-2: 0 10px 30px rgba(31, 24, 20, 0.16);
+  --shadow-float: 0 6px 18px rgba(138, 31, 31, 0.3);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
 }
 
 html,
@@ -31,6 +61,21 @@ body {
   background: var(--page-bg);
   color: var(--text-main);
   font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
 }
 
 .app {
@@ -82,7 +127,7 @@ body {
 }
 
 .brand-line2 {
-  color: #6b7078;
+  color: var(--text-sub);
   font-weight: 600;
 }
 
@@ -116,28 +161,69 @@ body {
   gap: 14px;
 }
 
-.detail-station {
-  border-left: none;
-  text-align: right;
-  padding: 0;
+.station-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--table-head-bg);
 }
 
-.status-dot {
-  width: 9px;
-  height: 9px;
+.station-badge-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-sub);
+}
+
+.station-badge-code {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-sub);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #e02424;
-  box-shadow: 0 0 0 3px rgba(224, 36, 36, 0.15);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* ---------- Banner ---------- */
 
 .info-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: var(--banner-bg);
   text-align: center;
   padding: 9px 16px;
   font-size: 13.5px;
-  color: #1f2937;
+  color: var(--text-main);
+}
+
+.info-banner-icon {
+  flex-shrink: 0;
+  color: #3f66a3;
 }
 
 /* ---------- Layout ---------- */
@@ -153,9 +239,9 @@ body {
 
 .panel {
   background: var(--panel-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 16px 18px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--shadow-1);
 }
 
 .detail-panel {
@@ -188,7 +274,9 @@ body {
 .table th {
   color: var(--table-head-text);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   text-align: left;
   padding: 10px 12px;
   white-space: nowrap;
@@ -207,13 +295,27 @@ body {
 }
 
 .status-pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   color: var(--ready-blue);
   background: var(--ready-blue-bg);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 3px 10px;
   font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
+}
+
+/* status is encoded as shape (dot) as well as color/text, so it still
+   reads at a glance for colorblind viewers */
+.status-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 .status-pill-queue {
@@ -275,13 +377,13 @@ body {
 }
 
 .wreath-gold {
-  color: #e3a008;
+  color: var(--gold);
 }
 .wreath-silver {
-  color: #9ca3af;
+  color: var(--silver);
 }
 .wreath-bronze {
-  color: #b08968;
+  color: var(--bronze);
 }
 
 .podium-block {
@@ -313,31 +415,47 @@ body {
 
 .podium-score strong {
   font-size: 17px;
+  font-variant-numeric: tabular-nums;
 }
 
 .podium-gold .podium-top {
-  background: #a86f0a;
-  border-color: #f2b824;
+  background: var(--gold-deep);
+  border-color: var(--gold);
 }
 .podium-gold .podium-score {
-  background: linear-gradient(180deg, #f7c948 0%, #eeb111 60%, #f2c14e 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--gold) 45%, white) 0%,
+    var(--gold) 60%,
+    color-mix(in srgb, var(--gold) 80%, white) 100%
+  );
 }
 
 .podium-silver .podium-top {
-  background: #85878c;
-  border-color: #c9cbd1;
+  background: var(--silver-deep);
+  border-color: var(--silver);
 }
 .podium-silver .podium-score {
-  background: linear-gradient(180deg, #d5d7dc 0%, #bfc2c9 60%, #cdd0d6 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--silver) 45%, white) 0%,
+    var(--silver) 60%,
+    color-mix(in srgb, var(--silver) 80%, white) 100%
+  );
   color: #fff;
 }
 
 .podium-bronze .podium-top {
-  background: #8c6a4f;
-  border-color: #cfa886;
+  background: var(--bronze-deep);
+  border-color: var(--bronze);
 }
 .podium-bronze .podium-score {
-  background: linear-gradient(180deg, #d9b28d 0%, #c69a72 60%, #d3ac86 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bronze) 45%, white) 0%,
+    var(--bronze) 60%,
+    color-mix(in srgb, var(--bronze) 80%, white) 100%
+  );
   padding-top: 20px;
   padding-bottom: 6px;
 }
@@ -368,16 +486,17 @@ body {
   font-size: 12.5px;
   font-weight: 700;
   color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
 .mpi-gold {
-  background: #e3a008;
+  background: var(--gold-deep);
 }
 .mpi-silver {
-  background: #b3b6bd;
+  background: var(--silver-deep);
 }
 .mpi-bronze {
-  background: #c29b78;
+  background: var(--bronze-deep);
 }
 
 /* ---------- Directory ---------- */
@@ -385,14 +504,14 @@ body {
 .directory-desc {
   margin-top: 8px;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-sub);
 }
 
 .directory-map {
   margin-top: 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: #f3f3f5;
+  background: var(--panel-tint);
 }
 
 .directory-map svg {
@@ -428,6 +547,7 @@ body {
   width: 26px;
   text-align: center;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .medal {
@@ -446,18 +566,23 @@ body {
 }
 
 .medal-gold {
-  background: radial-gradient(circle at 35% 30%, #f9d976, #e3a008 70%);
-  box-shadow: 0 0 0 2px #f6e3b4;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--gold) 35%, white), var(--gold) 75%);
+  box-shadow: 0 0 0 2px var(--gold-soft);
 }
 
 .medal-silver {
-  background: radial-gradient(circle at 35% 30%, #e5e7eb, #9ca3af 70%);
-  box-shadow: 0 0 0 2px #e8eaee;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--silver) 30%, white), var(--silver) 75%);
+  box-shadow: 0 0 0 2px var(--silver-soft);
 }
 
 .medal-bronze {
-  background: radial-gradient(circle at 35% 30%, #e0b98f, #b08055 70%);
-  box-shadow: 0 0 0 2px #ecd9c4;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--bronze) 30%, white), var(--bronze) 75%);
+  box-shadow: 0 0 0 2px var(--bronze-soft);
+}
+
+.leaderboard-table td:nth-child(4),
+.leaderboard-table td:nth-child(5) {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Layouts 2 & 3: 3 detail lists (20% / 20% / 20%) ---------- */
@@ -481,13 +606,14 @@ body {
 }
 
 .detail-panel-compact .table th {
-  padding: 8px 6px;
-  font-size: 11.5px;
+  padding: 8px 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
 }
 
 .detail-panel-compact .table td,
 .detail-panel-compact.detail-panel .detail-table td {
-  padding: 14px 6px;
+  padding: 14px 4px;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -495,6 +621,13 @@ body {
 .detail-panel-compact .status-pill {
   padding: 2px 6px;
   font-size: 11.5px;
+}
+
+/* the dot marker is a nice-to-have when there's room; the compact
+   6-column table is tight enough that the text label alone (still
+   fully legible: "Ready" / "Queue") carries the status without it */
+.detail-panel-compact .status-pill::before {
+  display: none;
 }
 
 /* ---------- Layout 3: combined detail container ---------- */
@@ -536,10 +669,11 @@ body {
   font-weight: 700;
   font-size: 11px;
   color: #fff;
-  background: #8a1f1f;
-  border-radius: 4px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
   padding: 2px 6px;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* one shared Lane column instead of repeating it per detail group */
@@ -562,14 +696,17 @@ body {
   white-space: nowrap;
 }
 
-.unified-group-head-cell {
-  padding-bottom: 8px !important;
+.combined-table-unified th.unified-group-head-cell {
+  padding: 4px 10px 10px;
+  border-bottom: none;
 }
 
 .unified-sub-head {
   color: var(--table-head-text);
   font-size: 11px;
   font-weight: 700;
+  padding-top: 8px;
+  padding-bottom: 8px;
   border-top: 1px solid var(--border);
 }
 
@@ -636,7 +773,7 @@ body {
 
 .trainee-rank {
   font-weight: 700;
-  color: #6b7280;
+  color: var(--text-sub);
 }
 
 .table-two th,
@@ -683,9 +820,9 @@ body {
 
 .detail-card {
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 8px 10px;
-  background: #fafafa;
+  background: var(--panel-tint);
 }
 
 .detail-panel-compact .detail-card {
@@ -741,32 +878,61 @@ body {
 .switcher-button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   border: none;
   cursor: pointer;
-  background: #8a1f1f;
+  background: var(--accent);
   color: #fff;
-  font-weight: 700;
-  font-size: 13.5px;
   font-family: inherit;
-  padding: 10px 18px;
-  border-radius: 22px;
-  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.25);
+  padding: 8px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-float);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .switcher-button:hover {
-  background: #a12626;
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.switcher-button-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.switcher-button-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.switcher-button-value {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.switcher-chevron {
+  color: rgba(255, 255, 255, 0.8);
+  transition: transform 0.15s ease;
+}
+
+.switcher-chevron-open {
+  transform: rotate(180deg);
 }
 
 .switcher-dropdown {
   position: absolute;
   bottom: calc(100% + 8px);
   right: 0;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 28px rgba(16, 24, 40, 0.22);
+  background: var(--panel-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
   border: 1px solid var(--border);
-  min-width: 260px;
+  min-width: 270px;
   padding: 6px;
 }
 
@@ -790,22 +956,23 @@ body {
   text-align: left;
   font-family: inherit;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-main);
+  transition: background-color 0.12s ease;
 }
 
 .switcher-option:hover {
-  background: #f4f5f7;
+  background: var(--panel-tint);
 }
 
 .switcher-option.active {
-  background: #fdf1ec;
+  background: var(--table-head-bg);
 }
 
 .switcher-option-check {
   width: 14px;
   flex-shrink: 0;
-  color: #8a1f1f;
+  color: var(--accent);
   font-weight: 700;
   font-size: 13px;
   line-height: 1.3;

@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 
+function Chevron({ open }) {
+  return (
+    <svg
+      className={`switcher-chevron${open ? ' switcher-chevron-open' : ''}`}
+      viewBox="0 0 12 8"
+      width="10"
+      height="7"
+      aria-hidden="true"
+    >
+      <path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function SwitcherGroup({ group, isOpen, onToggle, onClose }) {
+  const activeOption = group.options.find((opt) => opt.id === group.active)
+
   return (
     <div className="switcher-group">
       {isOpen && (
@@ -35,7 +51,11 @@ function SwitcherGroup({ group, isOpen, onToggle, onClose }) {
         onClick={onToggle}
       >
         {group.icon}
-        {group.label}
+        <span className="switcher-button-text">
+          <span className="switcher-button-eyebrow">{group.label}</span>
+          <span className="switcher-button-value">{activeOption?.label}</span>
+        </span>
+        <Chevron open={isOpen} />
       </button>
     </div>
   )

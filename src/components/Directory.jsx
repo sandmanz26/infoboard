@@ -32,9 +32,10 @@ export default function Directory() {
             <polygon points="405,95 460,82 515,96 460,110" fill="#e2e2e5" />
           </g>
 
-          {/* four colored lane bays */}
+          {/* four colored lane bays — IMT-01 uses the brand red so it
+              reads as "this board's station" against the map legend */}
           <g stroke="#ffffff" strokeWidth="3">
-            <polygon points="70,150 170,122 265,148 165,178" fill="#e05252" />
+            <polygon points="70,150 170,122 265,148 165,178" fill="#c0392b" />
             <polygon points="185,127 285,100 380,126 280,155" fill="#7ec84f" />
             <polygon points="300,105 400,80 495,105 395,133" fill="#9b6fd6" />
             <polygon points="415,84 510,62 600,84 505,110" fill="#f2d13c" />
@@ -45,21 +46,21 @@ export default function Directory() {
           <text x="440" y="108" fill="#4a2f78" fontSize="10" transform="rotate(-14 440 108)">IMT-03</text>
           <text x="548" y="88" fill="#7a6410" fontSize="10" transform="rotate(-14 548 88)">IMT-04</text>
 
-          {/* route from briefing room to red bay */}
+          {/* route from briefing room to red bay, in the brand maroon */}
           <path
             d="M150 92 q18 14 8 26 q-10 12 -30 22 q22 4 20 14"
             fill="none"
-            stroke="#e02424"
+            stroke="#8a1f1f"
             strokeWidth="3"
             strokeDasharray="7 5"
           />
-          <text x="158" y="90" fill="#e02424" fontSize="11" fontWeight="700" transform="rotate(-14 158 90)">
+          <text x="158" y="90" fill="#8a1f1f" fontSize="11" fontWeight="700" transform="rotate(-14 158 90)">
             You are Here!
           </text>
 
           {/* destination marker inside red bay */}
           <g transform="translate(148,152)">
-            <rect x="-11" y="-8" width="22" height="16" rx="3" fill="#b91c1c" />
+            <rect x="-11" y="-8" width="22" height="16" rx="3" fill="#8a1f1f" />
             <text x="0" y="4" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700">
               IMT-01
             </text>

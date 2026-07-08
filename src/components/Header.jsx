@@ -27,11 +27,14 @@ export default function Header() {
         <div className="header-tab">Infoboard</div>
       </div>
       <div className="header-right">
-        <div className="header-item detail-station">
-          <div className="header-item-title">Detail 2</div>
-          <div className="header-item-sub">IMT-01</div>
+        <div className="station-badge">
+          <span className="station-badge-label">Detail 2</span>
+          <span className="station-badge-code">IMT-01</span>
         </div>
-        <span className="status-dot" aria-hidden="true" />
+        <span className="live-indicator">
+          <span className="live-dot" aria-hidden="true" />
+          Live
+        </span>
       </div>
     </header>
   )

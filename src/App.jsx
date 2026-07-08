@@ -26,6 +26,25 @@ const TABLE_MODELS = [
 const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 
+function LayoutIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="currentColor">
+      <rect x="2" y="2" width="7" height="16" rx="1.5" />
+      <rect x="11" y="2" width="7" height="7" rx="1.5" />
+      <rect x="11" y="11" width="7" height="7" rx="1.5" />
+    </svg>
+  )
+}
+
+function TableModelIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M2 8h16M8 8v9" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
 const DETAIL_STATUSES = ['Ready', 'Queue', 'Queue']
 
 function DetailPanel({ tableModel, rows, title, status }) {
@@ -129,10 +148,18 @@ export default function App() {
   }, [tableModel])
 
   const switcherGroups = [
-    { id: 'layout', label: 'Layout', options: LAYOUTS, active: layout, onChange: setLayout },
+    {
+      id: 'layout',
+      label: 'Layout',
+      icon: <LayoutIcon />,
+      options: LAYOUTS,
+      active: layout,
+      onChange: setLayout,
+    },
     {
       id: 'table-model',
       label: 'Table Model',
+      icon: <TableModelIcon />,
       options: TABLE_MODELS,
       active: tableModel,
       onChange: setTableModel,
