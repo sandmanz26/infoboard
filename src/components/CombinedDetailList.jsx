@@ -63,14 +63,18 @@ function UnifiedTable({ groups, statuses, merged }) {
                       {row && (
                         <span className="trainee-cell">
                           <span className="trainee-rank">{row.rank}</span>
-                          <span className="trainee-name">{row.name}</span>
+                          <span className="trainee-name" title={row.name}>
+                            {row.name}
+                          </span>
                         </span>
                       )}
                     </td>
                   ) : (
                     <>
                       <td className={gi > 0 ? 'group-divider' : ''}>{row?.rank}</td>
-                      <td>{row?.name}</td>
+                      <td className="name-cell" title={row?.name}>
+                        {row?.name}
+                      </td>
                     </>
                   )}
                   <td>{row?.weapon}</td>
@@ -109,7 +113,7 @@ function UnifiedCards({ groups, statuses }) {
               <div className={`unified-card-cell${gi > 0 ? ' group-divider' : ''}`} key={gi}>
                 {row && (
                   <div className="detail-card">
-                    <div className="detail-card-name">
+                    <div className="detail-card-name" title={row.name}>
                       <span className="trainee-rank">{row.rank}</span> {row.name}
                     </div>
                     <div className="detail-card-weapon">{row.weapon}</div>

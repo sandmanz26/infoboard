@@ -18,7 +18,9 @@ export default function DetailList({ rows, title = 'Detail List' }) {
             <tr key={row.no}>
               <td>{row.no}</td>
               <td>{row.rank}</td>
-              <td>{row.name}</td>
+              <td className="name-cell" title={row.name}>
+                {row.name}
+              </td>
               <td>
                 <span className="status-pill">{row.status}</span>
               </td>

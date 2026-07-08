@@ -585,6 +585,126 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Leaderboard: Compact List ---------- */
+
+.leaderboard-compact {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.leaderboard-compact-row {
+  display: grid;
+  grid-template-columns: 30px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-compact-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-compact-rank {
+  display: flex;
+}
+
+.leaderboard-compact-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.leaderboard-compact-score {
+  font-weight: 700;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-compact-mpi {
+  color: var(--text-sub);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+}
+
+/* ---------- Leaderboard: Stat Cards ---------- */
+
+.leaderboard-cards {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-card {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--panel-tint);
+}
+
+.leaderboard-card-gold {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold-soft) 55%, white);
+}
+
+.leaderboard-card-silver {
+  border-color: var(--silver);
+  background: color-mix(in srgb, var(--silver-soft) 55%, white);
+}
+
+.leaderboard-card-bronze {
+  border-color: var(--bronze);
+  background: color-mix(in srgb, var(--bronze-soft) 55%, white);
+}
+
+.leaderboard-card-rank {
+  display: flex;
+}
+
+.leaderboard-card-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.leaderboard-card-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.leaderboard-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.leaderboard-stat strong {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-stat small {
+  font-size: 10px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* ---------- Layouts 2 & 3: 3 detail lists (20% / 20% / 20%) ---------- */
 
 .layout-triple {
@@ -616,6 +736,14 @@ body {
   padding: 14px 4px;
   font-size: 12px;
   white-space: nowrap;
+}
+
+.detail-panel-compact .name-cell {
+  max-width: 88px;
+}
+
+.detail-panel-compact .trainee-name {
+  max-width: 108px;
 }
 
 .detail-panel-compact .status-pill {
@@ -687,6 +815,7 @@ body {
 
 .combined-table-unified .lane-col {
   width: 1%;
+  background: var(--table-head-bg);
 }
 
 .combined-table-unified th,
@@ -696,8 +825,23 @@ body {
   white-space: nowrap;
 }
 
+.combined-table-unified .name-cell {
+  max-width: 108px;
+}
+
+.combined-table-unified .trainee-name {
+  max-width: 128px;
+}
+
+/* the group title ("Detail N" + status) sits on a plain row so it
+   reads as a section label, not a third color band stacked on top of
+   the actual column-header row below it */
+.combined-table-unified thead tr:first-child {
+  background: var(--panel-bg);
+}
+
 .combined-table-unified th.unified-group-head-cell {
-  padding: 4px 10px 10px;
+  padding: 6px 10px 8px;
   border-bottom: none;
 }
 
@@ -769,6 +913,13 @@ body {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
+  max-width: 100%;
+}
+
+.trainee-name,
+.name-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .trainee-rank {

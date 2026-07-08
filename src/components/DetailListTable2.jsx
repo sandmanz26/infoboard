@@ -23,7 +23,9 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
               <td>
                 <span className="trainee-cell">
                   <span className="trainee-rank">{row.rank}</span>
-                  <span className="trainee-name">{row.name}</span>
+                  <span className="trainee-name" title={row.name}>
+                    {row.name}
+                  </span>
                 </span>
               </td>
               <td>{row.weapon}</td>

@@ -1,12 +1,21 @@
-export default function Directory() {
+import { stations } from '../data.js'
+
+const ROUTE_START = [150, 95]
+
+export default function Directory({ activeStation = 'IMT-01' }) {
+  const active = stations.find((s) => s.id === activeStation) ?? stations[0]
+  const [ax, ay] = active.bayCenter
+  const midX = (ROUTE_START[0] + ax) / 2
+  const midY = Math.min(ROUTE_START[1], ay) - 18
+
   return (
     <>
       <h2 className="panel-title">Directory</h2>
       <p className="directory-desc">
-        Shooting detail can now follow the directory map to your base station (IMT-01).
+        Shooting detail can now follow the directory map to your base station ({activeStation}).
       </p>
       <div className="directory-map">
-        <svg viewBox="0 0 620 260" role="img" aria-label="Directory map to base station IMT-01">
+        <svg viewBox="0 0 620 260" role="img" aria-label={`Directory map to base station ${activeStation}`}>
           {/* floor slab */}
           <polygon points="10,120 310,40 610,120 310,205" fill="#d9d9dc" />
           <polygon points="10,120 310,205 310,225 10,140" fill="#bdbdc2" />
@@ -32,23 +41,44 @@ export default function Directory() {
             <polygon points="405,95 460,82 515,96 460,110" fill="#e2e2e5" />
           </g>
 
-          {/* four colored lane bays — IMT-01 uses the brand red so it
-              reads as "this board's station" against the map legend */}
+          {/* four lane bays — the active station is shown at full color,
+              the other three dim so the current bay reads at a glance */}
           <g stroke="#ffffff" strokeWidth="3">
-            <polygon points="70,150 170,122 265,148 165,178" fill="#c0392b" />
-            <polygon points="185,127 285,100 380,126 280,155" fill="#7ec84f" />
-            <polygon points="300,105 400,80 495,105 395,133" fill="#9b6fd6" />
-            <polygon points="415,84 510,62 600,84 505,110" fill="#f2d13c" />
+            {stations.map((s) => (
+              <polygon
+                key={s.id}
+                points={{
+                  'IMT-01': '70,150 170,122 265,148 165,178',
+                  'IMT-02': '185,127 285,100 380,126 280,155',
+                  'IMT-03': '300,105 400,80 495,105 395,133',
+                  'IMT-04': '415,84 510,62 600,84 505,110',
+                }[s.id]}
+                fill={s.bayFill}
+                opacity={s.id === activeStation ? 1 : 0.4}
+              />
+            ))}
           </g>
 
-          {/* bay labels */}
-          <text x="325" y="130" fill="#3d6b1e" fontSize="10" transform="rotate(-14 325 130)">IMT-02</text>
-          <text x="440" y="108" fill="#4a2f78" fontSize="10" transform="rotate(-14 440 108)">IMT-03</text>
-          <text x="548" y="88" fill="#7a6410" fontSize="10" transform="rotate(-14 548 88)">IMT-04</text>
+          {/* labels for the bays that are not currently active */}
+          {stations
+            .filter((s) => s.id !== activeStation)
+            .map((s) => (
+              <text
+                key={s.id}
+                x={s.bayCenter[0]}
+                y={s.bayCenter[1]}
+                fill="#5b5b63"
+                fontSize="10"
+                textAnchor="middle"
+                transform={`rotate(-14 ${s.bayCenter[0]} ${s.bayCenter[1]})`}
+              >
+                {s.id}
+              </text>
+            ))}
 
-          {/* route from briefing room to red bay, in the brand maroon */}
+          {/* route from briefing room to the active bay */}
           <path
-            d="M150 92 q18 14 8 26 q-10 12 -30 22 q22 4 20 14"
+            d={`M${ROUTE_START[0]} ${ROUTE_START[1]} Q ${midX} ${midY} ${ax} ${ay}`}
             fill="none"
             stroke="#8a1f1f"
             strokeWidth="3"
@@ -58,11 +88,11 @@ export default function Directory() {
             You are Here!
           </text>
 
-          {/* destination marker inside red bay */}
-          <g transform="translate(148,152)">
-            <rect x="-11" y="-8" width="22" height="16" rx="3" fill="#8a1f1f" />
-            <text x="0" y="4" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700">
-              IMT-01
+          {/* destination marker on the active bay */}
+          <g transform={`translate(${ax},${ay})`}>
+            <rect x="-22" y="-9" width="44" height="18" rx="4" fill="#8a1f1f" />
+            <text x="0" y="4" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="700">
+              {activeStation}
             </text>
           </g>
         </svg>

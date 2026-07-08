@@ -14,7 +14,7 @@ export default function DetailListCards({ rows, title = 'Detail List', status = 
               <span className="detail-card-no">#{row.no}</span>
               <span className="detail-card-lane">{row.lane}</span>
             </div>
-            <div className="detail-card-name">
+            <div className="detail-card-name" title={row.name}>
               <span className="trainee-rank">{row.rank}</span> {row.name}
             </div>
             <div className="detail-card-weapon">{row.weapon}</div>

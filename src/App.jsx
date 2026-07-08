@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { detailList, detailGroups, podium, leaderboard } from './data.js'
+import { detailList, detailGroups, podium, leaderboard, stations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -8,6 +8,8 @@ import DetailListCards from './components/DetailListCards.jsx'
 import TopThree from './components/TopThree.jsx'
 import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
+import LeaderboardCompact from './components/LeaderboardCompact.jsx'
+import LeaderboardCards from './components/LeaderboardCards.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 
@@ -23,8 +25,24 @@ const TABLE_MODELS = [
   { id: 'table2', label: 'Table 2.0', description: 'Merged rank + name, no status column' },
 ]
 
+const LEADERBOARD_MODELS = [
+  { id: 'table', label: 'Table', description: 'Full ranking table with columns' },
+  { id: 'compact', label: 'Compact List', description: 'Dense single-line ranked list' },
+  { id: 'cards', label: 'Stat Cards', description: 'One card per trainee with score + MPI' },
+]
+
+const SLIDESHOW_INTERVALS = [
+  { id: '0', label: 'Off', description: 'Stay on the current base station' },
+  { id: '5', label: '5s', description: 'Advance to the next station every 5 seconds' },
+  { id: '10', label: '10s', description: 'Advance to the next station every 10 seconds' },
+  { id: '15', label: '15s', description: 'Advance to the next station every 15 seconds' },
+  { id: '30', label: '30s', description: 'Advance to the next station every 30 seconds' },
+]
+
 const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
+const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
+const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 
 function LayoutIcon() {
   return (
@@ -45,12 +63,40 @@ function TableModelIcon() {
   )
 }
 
+function LeaderboardIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <path
+        d="M4 17V9M10 17V3M16 17v-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function SlideshowIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 const DETAIL_STATUSES = ['Ready', 'Queue', 'Queue']
 
 function DetailPanel({ tableModel, rows, title, status }) {
   if (tableModel === 'card') return <DetailListCards rows={rows} title={title} status={status} />
   if (tableModel === 'table2') return <DetailListTable2 rows={rows} title={title} status={status} />
   return <DetailList rows={rows} title={title} />
+}
+
+function LeaderboardPanel({ leaderboardModel, rows }) {
+  if (leaderboardModel === 'compact') return <LeaderboardCompact rows={rows} />
+  if (leaderboardModel === 'cards') return <LeaderboardCards rows={rows} />
+  return <Leaderboard rows={rows} />
 }
 
 function TripleDetailPanels({ tableModel, rowsPerPanel }) {
@@ -70,7 +116,7 @@ function TripleDetailPanels({ tableModel, rowsPerPanel }) {
   )
 }
 
-function LayoutOne({ tableModel }) {
+function LayoutOne({ tableModel, leaderboardModel }) {
   return (
     <main className="layout">
       <section className="panel detail-panel">
@@ -81,14 +127,14 @@ function LayoutOne({ tableModel }) {
           <TopThree data={podium} />
         </section>
         <section className="panel leaderboard-panel">
-          <Leaderboard rows={leaderboard} />
+          <LeaderboardPanel leaderboardModel={leaderboardModel} rows={leaderboard} />
         </section>
       </div>
     </main>
   )
 }
 
-function LayoutTwo({ tableModel }) {
+function LayoutTwo({ tableModel, activeStation }) {
   return (
     <main className="layout layout-triple">
       <TripleDetailPanels
@@ -100,23 +146,23 @@ function LayoutTwo({ tableModel }) {
           <TopThree data={podium} />
         </section>
         <section className="panel directory-panel">
-          <Directory />
+          <Directory activeStation={activeStation} />
         </section>
       </div>
     </main>
   )
 }
 
-function LayoutThree({ tableModel }) {
+function LayoutThree({ tableModel, leaderboardModel, activeStation }) {
   return (
     <main className="layout layout-combined">
       <CombinedDetailList groups={detailGroups} statuses={DETAIL_STATUSES} tableModel={tableModel} />
       <div className="right-col">
         <section className="panel directory-panel">
-          <Directory />
+          <Directory activeStation={activeStation} />
         </section>
         <section className="panel leaderboard-panel">
-          <Leaderboard rows={leaderboard} />
+          <LeaderboardPanel leaderboardModel={leaderboardModel} rows={leaderboard} />
         </section>
       </div>
     </main>
@@ -138,6 +184,15 @@ export default function App() {
     const saved = localStorage.getItem(TABLE_MODEL_STORAGE_KEY)
     return TABLE_MODELS.some((t) => t.id === saved) ? saved : 'default'
   })
+  const [leaderboardModel, setLeaderboardModel] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_MODEL_STORAGE_KEY)
+    return LEADERBOARD_MODELS.some((l) => l.id === saved) ? saved : 'table'
+  })
+  const [slideInterval, setSlideInterval] = useState(() => {
+    const saved = localStorage.getItem(SLIDESHOW_STORAGE_KEY)
+    return SLIDESHOW_INTERVALS.some((s) => s.id === saved) ? saved : '0'
+  })
+  const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
     localStorage.setItem(LAYOUT_STORAGE_KEY, layout)
@@ -146,6 +201,26 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(TABLE_MODEL_STORAGE_KEY, tableModel)
   }, [tableModel])
+
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_MODEL_STORAGE_KEY, leaderboardModel)
+  }, [leaderboardModel])
+
+  useEffect(() => {
+    localStorage.setItem(SLIDESHOW_STORAGE_KEY, slideInterval)
+  }, [slideInterval])
+
+  // Cycles the board through all 4 base stations — this app renders one
+  // physical LCD's worth of content, but in reality 4 of these boards
+  // exist (IMT-01..04). The interval simulates that rotation for demos.
+  useEffect(() => {
+    const seconds = Number(slideInterval)
+    if (!seconds) return
+    const id = setInterval(() => {
+      setStationIndex((i) => (i + 1) % stations.length)
+    }, seconds * 1000)
+    return () => clearInterval(id)
+  }, [slideInterval])
 
   const switcherGroups = [
     {
@@ -164,15 +239,36 @@ export default function App() {
       active: tableModel,
       onChange: setTableModel,
     },
+    {
+      id: 'leaderboard-model',
+      label: 'Leaderboard',
+      icon: <LeaderboardIcon />,
+      options: LEADERBOARD_MODELS,
+      active: leaderboardModel,
+      onChange: setLeaderboardModel,
+    },
+    {
+      id: 'slideshow',
+      label: 'Slideshow',
+      icon: <SlideshowIcon />,
+      options: SLIDESHOW_INTERVALS,
+      active: slideInterval,
+      onChange: setSlideInterval,
+    },
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
+  const activeStation = stations[stationIndex].id
 
   return (
     <div className="app">
-      <Header />
+      <Header station={activeStation} />
       <InfoBanner />
-      <ActiveLayout tableModel={tableModel} />
+      <ActiveLayout
+        tableModel={tableModel}
+        leaderboardModel={leaderboardModel}
+        activeStation={activeStation}
+      />
       <LayoutSwitcher groups={switcherGroups} />
     </div>
   )

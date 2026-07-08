@@ -1,4 +1,4 @@
-export default function Header() {
+export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' }) {
   return (
     <header className="header">
       <div className="header-left">
@@ -28,8 +28,8 @@ export default function Header() {
       </div>
       <div className="header-right">
         <div className="station-badge">
-          <span className="station-badge-label">Detail 2</span>
-          <span className="station-badge-code">IMT-01</span>
+          <span className="station-badge-label">{detailLabel}</span>
+          <span className="station-badge-code">{station}</span>
         </div>
         <span className="live-indicator">
           <span className="live-dot" aria-hidden="true" />

@@ -1,3 +1,5 @@
+import LeaderboardHead from './LeaderboardHead.jsx'
+
 function Medal({ medal, label }) {
   return (
     <span className={`medal medal-${medal}`}>
@@ -9,17 +11,7 @@ function Medal({ medal, label }) {
 export default function Leaderboard({ rows }) {
   return (
     <>
-      <div className="leaderboard-head">
-        <h2 className="panel-title">Leaderboard</h2>
-        <div className="courseware-line">
-          <span>
-            Courseware: <strong>Day Test For SAR21/M16 BTP</strong>
-          </span>
-          <span>
-            Weapon Type: <strong>SAR21</strong>
-          </span>
-        </div>
-      </div>
+      <LeaderboardHead />
       <table className="table leaderboard-table">
         <thead>
           <tr>
@@ -41,7 +33,9 @@ export default function Leaderboard({ rows }) {
                 )}
               </td>
               <td>{row.rank}</td>
-              <td>{row.name}</td>
+              <td className="name-cell" title={row.name}>
+                {row.name}
+              </td>
               <td>{row.score}</td>
               <td>{row.mpi}</td>
             </tr>
