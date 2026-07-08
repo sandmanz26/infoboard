@@ -10,7 +10,9 @@ import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
 import LeaderboardCompact from './components/LeaderboardCompact.jsx'
 import LeaderboardCards from './components/LeaderboardCards.jsx'
+import LeaderboardTicker from './components/LeaderboardTicker.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
+import StationsOverview from './components/StationsOverview.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
 
@@ -21,6 +23,7 @@ const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
   { id: 'layout-2', label: 'Layout 2', description: '3 detail lists + podium + directory' },
   { id: 'layout-3', label: 'Layout 3', description: 'Combined detail list + directory + leaderboard' },
+  { id: 'layout-4', label: 'Layout 4', description: 'Overview of all 4 base stations at once' },
 ]
 
 const TABLE_MODELS = [
@@ -33,6 +36,7 @@ const LEADERBOARD_MODELS = [
   { id: 'table', label: 'Table', description: 'Full ranking table with columns' },
   { id: 'compact', label: 'Compact List', description: 'Dense single-line ranked list' },
   { id: 'cards', label: 'Stat Cards', description: 'One card per trainee with score + MPI' },
+  { id: 'ticker', label: 'Ticker', description: 'Dark departures-board style strip' },
 ]
 
 const SLIDESHOW_INTERVALS = [
@@ -175,6 +179,9 @@ function LeaderboardPanel({ leaderboardModel, rows }) {
   if (leaderboardModel === 'cards') {
     return <LeaderboardCards rows={page} pageIndex={pageIndex} pageCount={pageCount} />
   }
+  if (leaderboardModel === 'ticker') {
+    return <LeaderboardTicker rows={page} pageIndex={pageIndex} pageCount={pageCount} />
+  }
   return <Leaderboard rows={page} pageIndex={pageIndex} pageCount={pageCount} />
 }
 
@@ -256,6 +263,7 @@ const LAYOUT_COMPONENTS = {
   'layout-1': LayoutOne,
   'layout-2': LayoutTwo,
   'layout-3': LayoutThree,
+  'layout-4': StationsOverview,
 }
 
 export default function App() {
