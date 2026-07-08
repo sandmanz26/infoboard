@@ -1,77 +1,57 @@
 import { useEffect, useRef, useState } from 'react'
 
-function Chevron({ open }) {
+const POSITION_STORAGE_KEY = 'infoboard-switcher-pos'
+const DRAG_THRESHOLD = 4
+
+function GripIcon() {
   return (
-    <svg
-      className={`switcher-chevron${open ? ' switcher-chevron-open' : ''}`}
-      viewBox="0 0 12 8"
-      width="10"
-      height="7"
-      aria-hidden="true"
-    >
-      <path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 12 20" width="9" height="15" aria-hidden="true" fill="currentColor">
+      <circle cx="3" cy="3" r="1.4" />
+      <circle cx="9" cy="3" r="1.4" />
+      <circle cx="3" cy="10" r="1.4" />
+      <circle cx="9" cy="10" r="1.4" />
+      <circle cx="3" cy="17" r="1.4" />
+      <circle cx="9" cy="17" r="1.4" />
     </svg>
   )
 }
 
-function SwitcherGroup({ group, isOpen, onToggle, onClose }) {
-  const activeOption = group.options.find((opt) => opt.id === group.active)
-
+function GearIcon() {
   return (
-    <div className="switcher-group">
-      {isOpen && (
-        <div className="switcher-dropdown" role="menu">
-          <div className="switcher-dropdown-title">{group.label}</div>
-          {group.options.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={group.active === opt.id}
-              className={`switcher-option${group.active === opt.id ? ' active' : ''}`}
-              onClick={() => {
-                group.onChange(opt.id)
-                onClose()
-              }}
-            >
-              <span className="switcher-option-check">{group.active === opt.id ? '✓' : ''}</span>
-              <span>
-                <span className="switcher-option-label">{opt.label}</span>
-                <span className="switcher-option-desc">{opt.description}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-      <button
-        type="button"
-        className="switcher-button"
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onClick={onToggle}
-      >
-        {group.icon}
-        <span className="switcher-button-text">
-          <span className="switcher-button-eyebrow">{group.label}</span>
-          <span className="switcher-button-value">{activeOption?.label}</span>
-        </span>
-        <Chevron open={isOpen} />
-      </button>
-    </div>
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none">
+      <circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.1 4.9l-1.55 1.55M6.45 13.55 4.9 15.1M15.1 15.1l-1.55-1.55M6.45 6.45 4.9 4.9"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
   )
 }
 
 export default function LayoutSwitcher({ groups }) {
-  const [openId, setOpenId] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(POSITION_STORAGE_KEY))
+      if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) return saved
+    } catch {
+      /* ignore malformed saved position */
+    }
+    return null
+  })
+
   const rootRef = useRef(null)
+  const dragState = useRef(null)
 
   useEffect(() => {
-    if (!openId) return
+    if (!open) return
     const onClickOutside = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpenId(null)
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false)
     }
     const onEscape = (e) => {
-      if (e.key === 'Escape') setOpenId(null)
+      if (e.key === 'Escape') setOpen(false)
     }
     document.addEventListener('mousedown', onClickOutside)
     document.addEventListener('keydown', onEscape)
@@ -79,19 +59,115 @@ export default function LayoutSwitcher({ groups }) {
       document.removeEventListener('mousedown', onClickOutside)
       document.removeEventListener('keydown', onEscape)
     }
-  }, [openId])
+  }, [open])
+
+  const clampToViewport = (x, y) => {
+    const el = rootRef.current
+    const w = el?.offsetWidth ?? 0
+    const h = el?.offsetHeight ?? 0
+    return {
+      x: Math.min(Math.max(8, x), Math.max(8, window.innerWidth - w - 8)),
+      y: Math.min(Math.max(8, y), Math.max(8, window.innerHeight - h - 8)),
+    }
+  }
+
+  const onPointerDown = (e) => {
+    const rect = rootRef.current.getBoundingClientRect()
+    dragState.current = {
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const onPointerMove = (e) => {
+    const drag = dragState.current
+    if (!drag) return
+    if (
+      !drag.moved &&
+      Math.abs(e.clientX - drag.startX) < DRAG_THRESHOLD &&
+      Math.abs(e.clientY - drag.startY) < DRAG_THRESHOLD
+    ) {
+      return
+    }
+    drag.moved = true
+    const next = clampToViewport(e.clientX - drag.offsetX, e.clientY - drag.offsetY)
+    drag.lastPos = next
+    setPos(next)
+  }
+
+  const onPointerUp = (e) => {
+    const drag = dragState.current
+    e.currentTarget.releasePointerCapture(e.pointerId)
+    dragState.current = null
+    if (drag?.moved) {
+      if (drag.lastPos) localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(drag.lastPos))
+    } else {
+      setOpen((v) => !v)
+    }
+  }
+
+  const nearTop = pos ? pos.y < window.innerHeight / 2 : false
+  const nearLeft = pos ? pos.x < window.innerWidth / 2 : false
+
+  const wrapperStyle = pos
+    ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' }
+    : undefined
 
   return (
-    <div className="layout-switcher" ref={rootRef}>
-      {groups.map((group) => (
-        <SwitcherGroup
-          key={group.id}
-          group={group}
-          isOpen={openId === group.id}
-          onToggle={() => setOpenId((v) => (v === group.id ? null : group.id))}
-          onClose={() => setOpenId(null)}
-        />
-      ))}
+    <div
+      className={`layout-switcher${pos ? ' layout-switcher-positioned' : ''}`}
+      style={wrapperStyle}
+      ref={rootRef}
+    >
+      {open && (
+        <div
+          className={`switcher-panel${nearTop ? ' switcher-panel-below' : ''}${
+            nearLeft ? ' switcher-panel-left' : ''
+          }`}
+          role="menu"
+        >
+          {groups.map((group) => (
+            <div className="switcher-panel-section" key={group.id}>
+              <div className="switcher-panel-section-title">
+                {group.icon}
+                {group.label}
+              </div>
+              <div className="switcher-chip-row">
+                {group.options.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={group.active === opt.id}
+                    title={opt.description}
+                    className={`switcher-chip${group.active === opt.id ? ' active' : ''}`}
+                    onClick={() => group.onChange(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <button
+        type="button"
+        className="switcher-fab"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <GripIcon />
+        <GearIcon />
+        <span className="switcher-fab-label">Controls</span>
+      </button>
     </div>
   )
 }

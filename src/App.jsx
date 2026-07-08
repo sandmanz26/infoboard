@@ -39,10 +39,20 @@ const SLIDESHOW_INTERVALS = [
   { id: '30', label: '30s', description: 'Advance to the next station every 30 seconds' },
 ]
 
+// Left container (combined detail list) vs. right container (directory
+// map + leaderboard) width split — only Layout 3 pairs those two panels.
+const PANEL_RATIOS = [
+  { id: '55-45', label: '55 : 45', description: 'Detail list 55% / Directory + Leaderboard 45%', left: 55, right: 45 },
+  { id: '60-40', label: '60 : 40', description: 'Detail list 60% / Directory + Leaderboard 40%', left: 60, right: 40 },
+  { id: '65-35', label: '65 : 35', description: 'Detail list 65% / Directory + Leaderboard 35%', left: 65, right: 35 },
+  { id: '70-30', label: '70 : 30', description: 'Detail list 70% / Directory + Leaderboard 30%', left: 70, right: 30 },
+]
+
 const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
 const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
+const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 
 function LayoutIcon() {
   return (
@@ -81,6 +91,15 @@ function SlideshowIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function RatioIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="2" y="4" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="4" width="4" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
     </svg>
   )
 }
@@ -153,9 +172,13 @@ function LayoutTwo({ tableModel, activeStation }) {
   )
 }
 
-function LayoutThree({ tableModel, leaderboardModel, activeStation }) {
+function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio }) {
+  const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
   return (
-    <main className="layout layout-combined">
+    <main
+      className="layout layout-combined"
+      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
+    >
       <CombinedDetailList groups={detailGroups} statuses={DETAIL_STATUSES} tableModel={tableModel} />
       <div className="right-col">
         <section className="panel directory-panel">
@@ -192,6 +215,10 @@ export default function App() {
     const saved = localStorage.getItem(SLIDESHOW_STORAGE_KEY)
     return SLIDESHOW_INTERVALS.some((s) => s.id === saved) ? saved : '0'
   })
+  const [panelRatio, setPanelRatio] = useState(() => {
+    const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
+    return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -209,6 +236,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(SLIDESHOW_STORAGE_KEY, slideInterval)
   }, [slideInterval])
+
+  useEffect(() => {
+    localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
+  }, [panelRatio])
 
   // Cycles the board through all 4 base stations — this app renders one
   // physical LCD's worth of content, but in reality 4 of these boards
@@ -255,6 +286,14 @@ export default function App() {
       active: slideInterval,
       onChange: setSlideInterval,
     },
+    {
+      id: 'panel-ratio',
+      label: 'Container Ratio',
+      icon: <RatioIcon />,
+      options: PANEL_RATIOS,
+      active: panelRatio,
+      onChange: setPanelRatio,
+    },
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -268,6 +307,7 @@ export default function App() {
         tableModel={tableModel}
         leaderboardModel={leaderboardModel}
         activeStation={activeStation}
+        panelRatio={panelRatio}
       />
       <LayoutSwitcher groups={switcherGroups} />
     </div>
