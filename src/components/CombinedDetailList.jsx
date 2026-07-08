@@ -1,4 +1,9 @@
 import { Fragment } from 'react'
+import usePagedRows from '../hooks/usePagedRows.js'
+import PageDots from './PageDots.jsx'
+
+const GROUPS_PER_PAGE = 3
+const GROUP_PAGE_INTERVAL_MS = 6000
 
 function GroupHeadCell({ title, status }) {
   return (
@@ -14,27 +19,27 @@ function GroupHeadCell({ title, status }) {
 // One shared "Lane" column on the left instead of repeating Lane 1..N
 // inside every detail group — every group already runs the same lane
 // sequence, so a per-group column just duplicated the same numbers.
-function UnifiedTable({ groups, statuses, merged }) {
-  const rowCount = Math.max(...groups.map((g) => g.length))
+function UnifiedTable({ groups, merged }) {
+  const rowCount = Math.max(...groups.map((g) => g.rows.length))
 
   return (
     <table className={`table combined-table combined-table-unified${merged ? ' table-two' : ''}`}>
       <thead>
         <tr>
           <th className="lane-col" rowSpan={2} />
-          {groups.map((_, gi) => (
+          {groups.map((group, gi) => (
             <th
-              key={gi}
+              key={group.title}
               colSpan={merged ? 2 : 3}
               className={`unified-group-head-cell${gi > 0 ? ' group-divider' : ''}`}
             >
-              <GroupHeadCell title={`Detail ${gi + 1}`} status={statuses[gi]} />
+              <GroupHeadCell title={group.title} status={group.status} />
             </th>
           ))}
         </tr>
         <tr>
-          {groups.map((_, gi) => (
-            <Fragment key={gi}>
+          {groups.map((group, gi) => (
+            <Fragment key={group.title}>
               {merged ? (
                 <th className={`unified-sub-head${gi > 0 ? ' group-divider' : ''}`}>Trainee</th>
               ) : (
@@ -54,10 +59,10 @@ function UnifiedTable({ groups, statuses, merged }) {
             <td className="lane-col">
               <span className="lane-tag">Lane {ri + 1}</span>
             </td>
-            {groups.map((rows, gi) => {
-              const row = rows[ri]
+            {groups.map((group, gi) => {
+              const row = group.rows[ri]
               return (
-                <Fragment key={gi}>
+                <Fragment key={group.title}>
                   {merged ? (
                     <td className={gi > 0 ? 'group-divider' : ''}>
                       {row && (
@@ -88,18 +93,18 @@ function UnifiedTable({ groups, statuses, merged }) {
   )
 }
 
-function UnifiedCards({ groups, statuses }) {
-  const rowCount = Math.max(...groups.map((g) => g.length))
+function UnifiedCards({ groups }) {
+  const rowCount = Math.max(...groups.map((g) => g.rows.length))
 
   return (
     <div className="unified-card-grid" style={{ '--group-count': groups.length }}>
       <div className="unified-card-cell unified-card-corner" />
-      {groups.map((_, gi) => (
+      {groups.map((group, gi) => (
         <div
           className={`unified-card-cell unified-card-head${gi > 0 ? ' group-divider' : ''}`}
-          key={gi}
+          key={group.title}
         >
-          <GroupHeadCell title={`Detail ${gi + 1}`} status={statuses[gi]} />
+          <GroupHeadCell title={group.title} status={group.status} />
         </div>
       ))}
       {Array.from({ length: rowCount }).map((_, ri) => (
@@ -107,10 +112,10 @@ function UnifiedCards({ groups, statuses }) {
           <div className="unified-card-cell unified-card-lane">
             <span className="lane-tag">Lane {ri + 1}</span>
           </div>
-          {groups.map((rows, gi) => {
-            const row = rows[ri]
+          {groups.map((group, gi) => {
+            const row = group.rows[ri]
             return (
-              <div className={`unified-card-cell${gi > 0 ? ' group-divider' : ''}`} key={gi}>
+              <div className={`unified-card-cell${gi > 0 ? ' group-divider' : ''}`} key={group.title}>
                 {row && (
                   <div className="detail-card">
                     <div className="detail-card-name" title={row.name}>
@@ -128,14 +133,23 @@ function UnifiedCards({ groups, statuses }) {
   )
 }
 
-export default function CombinedDetailList({ groups, statuses, tableModel, title = 'Detail List' }) {
+// groups: [{ title, status, rows }] — one entry per detail. When there
+// are more than 3, they page 3-at-a-time on the same rotating-page
+// pattern as the Leaderboard, instead of squeezing every column into
+// the available width.
+export default function CombinedDetailList({ groups, tableModel, title = 'Detail List' }) {
+  const { page, pageIndex, pageCount } = usePagedRows(groups, GROUPS_PER_PAGE, GROUP_PAGE_INTERVAL_MS)
+
   return (
     <section className="panel combined-detail-panel">
-      <h2 className="panel-title">{title}</h2>
+      <div className="detail-panel-head">
+        <h2 className="panel-title">{title}</h2>
+        <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+      </div>
       {tableModel === 'card' ? (
-        <UnifiedCards groups={groups} statuses={statuses} />
+        <UnifiedCards groups={page} />
       ) : (
-        <UnifiedTable groups={groups} statuses={statuses} merged={tableModel === 'table2'} />
+        <UnifiedTable groups={page} merged={tableModel === 'table2'} />
       )}
     </section>
   )

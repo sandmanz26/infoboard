@@ -16,10 +16,6 @@ export const detailList = [
   { no: 15, rank: '3SG', name: 'Ng Wei Xuan', status: 'Ready', weapon: 'SAR21', lane: 'Lane 15' },
 ]
 
-// Layout 3's three detail groups each run the full 15-trainee roster
-// (their own relay of the same range), matching Layout 2's approach.
-export const detailGroups = [detailList, detailList, detailList]
-
 export const podium = {
   first: { names: ['3SG Liu Shu Qi'], score: '20', total: '20', mpi: 'MPI: 2.00 mm' },
   second: { names: ['REC Guo Guo Qiang', '3SG Muhamad Hj Zul bin Sharin'], score: '20', total: '20', mpi: 'MPI: 3.00 mm' },

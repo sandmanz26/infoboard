@@ -537,13 +537,15 @@ body {
   gap: 10px;
 }
 
-.leaderboard-page-dots {
+/* shared by the Leaderboard and the Layout 3 combined detail list —
+   any panel that pages through content on a timer */
+.page-dots {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-.leaderboard-page-dot {
+.page-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -551,7 +553,7 @@ body {
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.leaderboard-page-dot.active {
+.page-dot.active {
   background: var(--accent);
   transform: scale(1.25);
 }

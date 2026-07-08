@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { detailList, detailGroups, podium, leaderboard, stations } from './data.js'
+import { detailList, podium, leaderboard, stations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -56,6 +56,18 @@ const PANEL_RATIOS = [
   { id: '70-30', label: '70 : 30', description: 'Detail list 70% / Directory + Leaderboard 30%', left: 70, right: 30 },
 ]
 
+// How many "Detail N" columns the Layout 3 combined table carries.
+// 1-3 all fit side by side; 4-6 page 3-at-a-time on the same rotating
+// pattern as the Leaderboard, instead of squeezing extra columns in.
+const DETAIL_COUNTS = [
+  { id: '1', label: '1', description: 'Single detail column' },
+  { id: '2', label: '2', description: 'Two detail columns side by side' },
+  { id: '3', label: '3', description: 'Three detail columns side by side' },
+  { id: '4', label: '4', description: 'Pages 3 at a time, like the leaderboard' },
+  { id: '5', label: '5', description: 'Pages 3 at a time, like the leaderboard' },
+  { id: '6', label: '6', description: 'Pages 3 at a time, like the leaderboard' },
+]
+
 const SYSTEM_STACK = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
 
 // All three are self-hosted (bundled with the build, no font CDN) and
@@ -94,6 +106,7 @@ const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
 const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
+const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
 
 function LayoutIcon() {
   return (
@@ -141,6 +154,16 @@ function RatioIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <rect x="2" y="4" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <rect x="14" y="4" width="4" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function DetailCountIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="2" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="8" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="14" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
     </svg>
   )
 }
@@ -239,14 +262,20 @@ function LayoutTwo({ tableModel, activeStation }) {
   )
 }
 
-function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio }) {
+function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, detailCount }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
+  const count = Number(detailCount) || 3
+  const groups = Array.from({ length: count }, (_, i) => ({
+    title: `Detail ${i + 1}`,
+    status: i === 0 ? 'Ready' : 'Queue',
+    rows: detailList,
+  }))
   return (
     <main
       className="layout layout-combined"
       style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
     >
-      <CombinedDetailList groups={detailGroups} statuses={DETAIL_STATUSES} tableModel={tableModel} />
+      <CombinedDetailList groups={groups} tableModel={tableModel} />
       <div className="right-col">
         <section className="panel directory-panel">
           <Directory activeStation={activeStation} />
@@ -291,6 +320,10 @@ export default function App() {
     const saved = localStorage.getItem(FONT_STORAGE_KEY)
     return FONTS.some((f) => f.id === saved) ? saved : 'inter'
   })
+  const [detailCount, setDetailCount] = useState(() => {
+    const saved = localStorage.getItem(DETAIL_COUNT_STORAGE_KEY)
+    return DETAIL_COUNTS.some((d) => d.id === saved) ? saved : '3'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -316,6 +349,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(FONT_STORAGE_KEY, font)
   }, [font])
+
+  useEffect(() => {
+    localStorage.setItem(DETAIL_COUNT_STORAGE_KEY, detailCount)
+  }, [detailCount])
 
   // Cycles the board through all 4 base stations — this app renders one
   // physical LCD's worth of content, but in reality 4 of these boards
@@ -378,6 +415,14 @@ export default function App() {
       active: font,
       onChange: setFont,
     },
+    {
+      id: 'detail-count',
+      label: 'Detail Count',
+      icon: <DetailCountIcon />,
+      options: DETAIL_COUNTS,
+      active: detailCount,
+      onChange: setDetailCount,
+    },
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -393,6 +438,7 @@ export default function App() {
         leaderboardModel={leaderboardModel}
         activeStation={activeStation}
         panelRatio={panelRatio}
+        detailCount={detailCount}
       />
       <LayoutSwitcher groups={switcherGroups} />
     </div>
