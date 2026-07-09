@@ -9,6 +9,16 @@ export default function BookingList({ rows }) {
     <>
       <h2 className="panel-title">Booking List</h2>
       <table className="table booking-table">
+        <colgroup>
+          <col style={{ width: '21%' }} />
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '6%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '11%' }} />
+          <col style={{ width: '11%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th>Booking ID</th>
