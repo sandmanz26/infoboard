@@ -22,7 +22,7 @@ const LEVELS = [
   { id: 'level-4', label: 'Level 4', description: 'Training range infoboard' },
 ]
 
-const LEADERBOARD_PAGE_SIZE = 10
+const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 
 const LAYOUTS = [
