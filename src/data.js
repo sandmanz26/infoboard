@@ -47,86 +47,59 @@ export const stations = [
 ]
 
 // Level 1 lobby — today's booking list for the training floors.
-export const bookings = [
-  {
-    unit: 'SWT Training for Unit 20',
-    code: '#111024-KC0001',
-    mode: 'Marksmanship',
-    programme: 'ATP (SAR21)',
-    level: 'L2',
-    startDate: '19 August 2025',
-    startTime: '08:00 AM',
-    endDate: '19 August 2025',
-    endTime: '09:00 AM',
-    instructor: 'Bryan',
-    status: 'Ongoing',
-  },
-  {
-    unit: 'SWT Training for Unit 18',
-    code: '#111024-KC0002',
-    mode: 'Marksmanship',
-    programme: 'CSM (SAR21)',
-    level: 'L2',
-    startDate: '19 August 2025',
-    startTime: '09:00 AM',
-    endDate: '19 August 2025',
-    endTime: '10:00 AM',
-    instructor: 'Chun Xiong',
-    status: 'Ongoing',
-  },
-  {
-    unit: 'SWT Training for Unit 19',
-    code: '#111024-KC0003',
-    mode: 'Marksmanship',
-    programme: 'APS (SAR21)',
-    level: 'L3',
-    startDate: '19 August 2025',
-    startTime: '10:00 AM',
-    endDate: '19 August 2025',
-    endTime: '12:00 PM',
-    instructor: 'Daniek',
-    status: 'Upcoming',
-  },
-  {
-    unit: 'SWT Training for Unit 17',
-    code: '#111024-KC0004',
-    mode: 'Collective',
-    programme: 'Type Training A',
-    level: 'L4',
-    startDate: '19 August 2025',
-    startTime: '05:00 PM',
-    endDate: '20 August 2025',
-    endTime: '02:00 AM',
-    instructor: 'Ken Chow',
-    status: 'Completed',
-  },
-  {
-    unit: 'SWT Training for Unit 16',
-    code: '#111024-KC0005',
-    mode: 'Judgemental',
-    programme: 'Scenarios 3',
-    level: 'L2',
-    startDate: '19 August 2025',
-    startTime: '06:00 PM',
-    endDate: '19 August 2025',
-    endTime: '07:00 PM',
-    instructor: 'Bryan',
-    status: 'Ongoing',
-  },
-  {
-    unit: 'SWT Training for Unit 15',
-    code: '#111024-KC0006',
-    mode: 'Marksmanship',
-    programme: 'BTP (SAR21)',
-    level: 'L3',
-    startDate: '19 August 2025',
-    startTime: '07:00 PM',
-    endDate: '19 August 2025',
-    endTime: '08:00 PM',
-    instructor: 'Daniek',
-    status: 'Completed',
-  },
+// Only the time is shown (no date) since the board only ever lists
+// today's schedule. 10 hourly slots x 3 concurrent rooms = 30 bookings,
+// with status derived from where each slot sits relative to "now".
+const BOOKING_PROGRAMMES = {
+  Marksmanship: ['ATP (SAR21)', 'CSM (SAR21)', 'APS (SAR21)', 'BTP (SAR21)'],
+  Collective: ['Type Training A', 'Type Training B', 'Section Battle Course'],
+  Judgemental: ['Scenarios 1', 'Scenarios 2', 'Scenarios 3'],
+}
+const BOOKING_MODES = ['Marksmanship', 'Collective', 'Judgemental']
+const BOOKING_LEVELS = ['L2', 'L3', 'L4']
+const BOOKING_INSTRUCTORS = ['Bryan', 'Chun Xiong', 'Daniek', 'Ken Chow']
+const BOOKING_TIME_SLOTS = [
+  '07:00 AM',
+  '08:00 AM',
+  '09:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '12:00 PM',
+  '01:00 PM',
+  '02:00 PM',
+  '03:00 PM',
+  '04:00 PM',
 ]
+const NOW_SLOT_INDEX = 4 // 11:00 AM — everything before is done, after is upcoming
+
+function nextHour(time) {
+  const [, hh, mm, period] = time.match(/(\d+):(\d+) (\w+)/)
+  let hour = (Number(hh) % 12) + 1
+  const nextPeriod = hour === 12 ? (period === 'AM' ? 'PM' : 'AM') : period
+  return `${String(hour).padStart(2, '0')}:${mm} ${nextPeriod}`
+}
+
+export const bookings = BOOKING_TIME_SLOTS.flatMap((startTime, slotIndex) =>
+  [0, 1, 2].map((room) => {
+    const n = slotIndex * 3 + room
+    const unit = 30 - n
+    const mode = BOOKING_MODES[n % BOOKING_MODES.length]
+    const programmes = BOOKING_PROGRAMMES[mode]
+    const status =
+      slotIndex < NOW_SLOT_INDEX ? 'Completed' : slotIndex === NOW_SLOT_INDEX ? 'Ongoing' : 'Upcoming'
+    return {
+      unit: `SWT Training for Unit ${unit}`,
+      code: `#111024-KC${String(n + 1).padStart(4, '0')}`,
+      mode,
+      programme: programmes[n % programmes.length],
+      level: BOOKING_LEVELS[n % BOOKING_LEVELS.length],
+      startTime,
+      endTime: nextHour(startTime),
+      instructor: BOOKING_INSTRUCTORS[n % BOOKING_INSTRUCTORS.length],
+      status,
+    }
+  })
+)
 
 // Level 1 lobby — rotating announcement cards.
 export const announcements = [

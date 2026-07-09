@@ -1331,7 +1331,7 @@ body {
 /* ---------- Level 1: lobby (booking list + announcements) ---------- */
 
 .layout-lobby {
-  grid-template-columns: 65fr 35fr;
+  grid-template-columns: 70fr 30fr;
   align-items: start;
 }
 
@@ -1376,10 +1376,10 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.booking-time {
-  color: var(--text-sub);
-  font-size: 12px;
-  margin-top: 1px;
+.booking-table td.booking-time {
+  color: var(--text-main);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .announcement-list {
