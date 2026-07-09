@@ -13,10 +13,16 @@ import LeaderboardCards from './components/LeaderboardCards.jsx'
 import LeaderboardTicker from './components/LeaderboardTicker.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
 import StationsOverview from './components/StationsOverview.jsx'
+import LobbyBoard from './components/LobbyBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
 
-const LEADERBOARD_PAGE_SIZE = 5
+const LEVELS = [
+  { id: 'level-1', label: 'Level 1', description: 'Lobby — booking list + announcements' },
+  { id: 'level-4', label: 'Level 4', description: 'Training range infoboard' },
+]
+
+const LEADERBOARD_PAGE_SIZE = 10
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 
 const LAYOUTS = [
@@ -107,6 +113,7 @@ const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
+const LEVEL_STORAGE_KEY = 'infoboard-level'
 
 function LayoutIcon() {
   return (
@@ -164,6 +171,16 @@ function DetailCountIcon() {
       <rect x="2" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
       <rect x="8" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
       <rect x="14" y="4" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function LevelIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="3" y="2" width="14" height="4" rx="1" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="3" y="8" width="14" height="4" rx="1" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="3" y="14" width="14" height="4" rx="1" fill="currentColor" />
     </svg>
   )
 }
@@ -324,6 +341,10 @@ export default function App() {
     const saved = localStorage.getItem(DETAIL_COUNT_STORAGE_KEY)
     return DETAIL_COUNTS.some((d) => d.id === saved) ? saved : '3'
   })
+  const [level, setLevel] = useState(() => {
+    const saved = localStorage.getItem(LEVEL_STORAGE_KEY)
+    return LEVELS.some((l) => l.id === saved) ? saved : 'level-4'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -354,6 +375,10 @@ export default function App() {
     localStorage.setItem(DETAIL_COUNT_STORAGE_KEY, detailCount)
   }, [detailCount])
 
+  useEffect(() => {
+    localStorage.setItem(LEVEL_STORAGE_KEY, level)
+  }, [level])
+
   // Cycles the board through all 4 base stations — this app renders one
   // physical LCD's worth of content, but in reality 4 of these boards
   // exist (IMT-01..04). The interval simulates that rotation for demos.
@@ -366,46 +391,16 @@ export default function App() {
     return () => clearInterval(id)
   }, [slideInterval])
 
+  const isLevel4 = level === 'level-4'
+
   const switcherGroups = [
     {
-      id: 'layout',
-      label: 'Layout',
-      icon: <LayoutIcon />,
-      options: LAYOUTS,
-      active: layout,
-      onChange: setLayout,
-    },
-    {
-      id: 'table-model',
-      label: 'Table Model',
-      icon: <TableModelIcon />,
-      options: TABLE_MODELS,
-      active: tableModel,
-      onChange: setTableModel,
-    },
-    {
-      id: 'leaderboard-model',
-      label: 'Leaderboard',
-      icon: <LeaderboardIcon />,
-      options: LEADERBOARD_MODELS,
-      active: leaderboardModel,
-      onChange: setLeaderboardModel,
-    },
-    {
-      id: 'slideshow',
-      label: 'Slideshow',
-      icon: <SlideshowIcon />,
-      options: SLIDESHOW_INTERVALS,
-      active: slideInterval,
-      onChange: setSlideInterval,
-    },
-    {
-      id: 'panel-ratio',
-      label: 'Container Ratio',
-      icon: <RatioIcon />,
-      options: PANEL_RATIOS,
-      active: panelRatio,
-      onChange: setPanelRatio,
+      id: 'level',
+      label: 'Level',
+      icon: <LevelIcon />,
+      options: LEVELS,
+      active: level,
+      onChange: setLevel,
     },
     {
       id: 'font',
@@ -415,14 +410,58 @@ export default function App() {
       active: font,
       onChange: setFont,
     },
-    {
-      id: 'detail-count',
-      label: 'Detail Count',
-      icon: <DetailCountIcon />,
-      options: DETAIL_COUNTS,
-      active: detailCount,
-      onChange: setDetailCount,
-    },
+    ...(isLevel4
+      ? [
+          {
+            id: 'layout',
+            label: 'Layout',
+            icon: <LayoutIcon />,
+            options: LAYOUTS,
+            active: layout,
+            onChange: setLayout,
+          },
+          {
+            id: 'table-model',
+            label: 'Table Model',
+            icon: <TableModelIcon />,
+            options: TABLE_MODELS,
+            active: tableModel,
+            onChange: setTableModel,
+          },
+          {
+            id: 'leaderboard-model',
+            label: 'Leaderboard',
+            icon: <LeaderboardIcon />,
+            options: LEADERBOARD_MODELS,
+            active: leaderboardModel,
+            onChange: setLeaderboardModel,
+          },
+          {
+            id: 'slideshow',
+            label: 'Slideshow',
+            icon: <SlideshowIcon />,
+            options: SLIDESHOW_INTERVALS,
+            active: slideInterval,
+            onChange: setSlideInterval,
+          },
+          {
+            id: 'panel-ratio',
+            label: 'Container Ratio',
+            icon: <RatioIcon />,
+            options: PANEL_RATIOS,
+            active: panelRatio,
+            onChange: setPanelRatio,
+          },
+          {
+            id: 'detail-count',
+            label: 'Detail Count',
+            icon: <DetailCountIcon />,
+            options: DETAIL_COUNTS,
+            active: detailCount,
+            onChange: setDetailCount,
+          },
+        ]
+      : []),
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -431,15 +470,27 @@ export default function App() {
 
   return (
     <div className="app" style={{ fontFamily: activeFont.stack }}>
-      <Header station={activeStation} />
-      <InfoBanner />
-      <ActiveLayout
-        tableModel={tableModel}
-        leaderboardModel={leaderboardModel}
-        activeStation={activeStation}
-        panelRatio={panelRatio}
-        detailCount={detailCount}
-      />
+      <Header station={isLevel4 ? activeStation : 'Level 1'} detailLabel={isLevel4 ? 'Detail 2' : 'Lobby'} />
+      {isLevel4 ? (
+        <>
+          <InfoBanner />
+          <ActiveLayout
+            tableModel={tableModel}
+            leaderboardModel={leaderboardModel}
+            activeStation={activeStation}
+            panelRatio={panelRatio}
+            detailCount={detailCount}
+          />
+        </>
+      ) : (
+        <>
+          <InfoBanner
+            lead="Level 1 Lobby"
+            message="Please check in at the reception counter. Today's bookings and facility announcements are shown below."
+          />
+          <LobbyBoard />
+        </>
+      )}
       <LayoutSwitcher groups={switcherGroups} />
     </div>
   )
