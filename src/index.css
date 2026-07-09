@@ -1331,7 +1331,7 @@ body {
 /* ---------- Level 1: lobby (booking list + announcements) ---------- */
 
 .layout-lobby {
-  grid-template-columns: 70fr 30fr;
+  grid-template-columns: 72.5fr 27.5fr;
   align-items: start;
 }
 
