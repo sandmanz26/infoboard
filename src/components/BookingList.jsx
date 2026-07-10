@@ -13,6 +13,13 @@ const STAT_CARDS = [
   { key: 'starting', label: 'Starting', tone: 'starting' },
 ]
 
+// Column widths differ depending on whether the Training Mode column is
+// showing, so the remaining columns can reclaim its share of the width.
+const COLUMN_WIDTHS = {
+  withMode: { id: '27%', mode: '13%', programme: '17%', start: '11%', end: '11%', instructor: '12%', status: '9%' },
+  withoutMode: { id: '30%', programme: '23%', start: '12%', end: '12%', instructor: '13%', status: '10%' },
+}
+
 function StatIcon() {
   return (
     <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" fill="none">
@@ -22,7 +29,8 @@ function StatIcon() {
   )
 }
 
-export default function BookingList({ rows, pageIndex, stats }) {
+export default function BookingList({ rows, pageIndex, stats, showTrainingMode }) {
+  const widths = showTrainingMode ? COLUMN_WIDTHS.withMode : COLUMN_WIDTHS.withoutMode
   return (
     <>
       <div className="booking-stats">
@@ -43,18 +51,18 @@ export default function BookingList({ rows, pageIndex, stats }) {
       </div>
       <table className="table booking-table">
         <colgroup>
-          <col style={{ width: '27%' }} />
-          <col style={{ width: '13%' }} />
-          <col style={{ width: '17%' }} />
-          <col style={{ width: '11%' }} />
-          <col style={{ width: '11%' }} />
-          <col style={{ width: '12%' }} />
-          <col style={{ width: '9%' }} />
+          <col style={{ width: widths.id }} />
+          {showTrainingMode && <col style={{ width: widths.mode }} />}
+          <col style={{ width: widths.programme }} />
+          <col style={{ width: widths.start }} />
+          <col style={{ width: widths.end }} />
+          <col style={{ width: widths.instructor }} />
+          <col style={{ width: widths.status }} />
         </colgroup>
         <thead>
           <tr>
             <th>Booking ID</th>
-            <th>Training Mode</th>
+            {showTrainingMode && <th>Training Mode</th>}
             <th>Programme</th>
             <th>Start Time</th>
             <th>End Time</th>
@@ -69,7 +77,7 @@ export default function BookingList({ rows, pageIndex, stats }) {
                 <div className="booking-unit">{row.unit}</div>
                 <div className="booking-code">{row.code}</div>
               </td>
-              <td>{row.mode}</td>
+              {showTrainingMode && <td>{row.mode}</td>}
               <td>{row.programme}</td>
               <td className="booking-time">{row.startTime}</td>
               <td className="booking-time">{row.endTime}</td>
