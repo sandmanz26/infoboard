@@ -1,0 +1,27 @@
+import InfoBanner from '../components/InfoBanner.jsx'
+
+// Shared render path for the level 2-4 training range board. CMT/CTT/SWT
+// currently look identical (same layout system, same data) — each of
+// CmtBoard/CttBoard/SwtBoard wraps this so their own rules can diverge
+// here later without touching each other.
+export default function TrainingRangeBoard({
+  ActiveLayout,
+  tableModel,
+  leaderboardModel,
+  activeStation,
+  panelRatio,
+  detailCount,
+}) {
+  return (
+    <>
+      <InfoBanner />
+      <ActiveLayout
+        tableModel={tableModel}
+        leaderboardModel={leaderboardModel}
+        activeStation={activeStation}
+        panelRatio={panelRatio}
+        detailCount={detailCount}
+      />
+    </>
+  )
+}

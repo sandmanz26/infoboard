@@ -16,14 +16,6 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' })
             <span className="brand-line2">Management System</span>
           </div>
         </div>
-        <div className="header-item">
-          <div className="header-item-title">IMT For Training Team 1SIR</div>
-          <div className="header-item-sub">260706-PLC001</div>
-        </div>
-        <div className="header-item">
-          <div className="header-item-title">Unit Name</div>
-          <div className="header-item-sub">1SIR</div>
-        </div>
         <div className="header-tab">Infoboard</div>
       </div>
       <div className="header-right">

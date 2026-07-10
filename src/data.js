@@ -50,6 +50,14 @@ export const stations = [
 // Only the time is shown (no date) since the board only ever lists
 // today's schedule. 10 hourly slots x 3 concurrent rooms = 30 bookings,
 // with status derived from where each slot sits relative to "now".
+import { LEVELS } from './levels/levelConfig.js'
+
+// L2/L3/L4 -> CMT/CTT/SWT, read straight off the level config so the
+// booking list's unit names never drift out of sync with the switcher.
+const TRAINING_TYPE_BY_SHORT_LEVEL = Object.fromEntries(
+  LEVELS.filter((level) => level.shortCode).map((level) => [level.shortCode, level.context])
+)
+
 const BOOKING_PROGRAMMES = {
   Marksmanship: ['ATP (SAR21)', 'CSM (SAR21)', 'APS (SAR21)', 'BTP (SAR21)'],
   Collective: ['Type Training A', 'Type Training B', 'Section Battle Course'],
@@ -70,7 +78,10 @@ const BOOKING_TIME_SLOTS = [
   '03:00 PM',
   '04:00 PM',
 ]
-const NOW_SLOT_INDEX = 4 // 11:00 AM — everything before is done, after is upcoming
+// 11:00 AM — everything before is done, this slot is starting now, and
+// everything after is upcoming. Exported so the lobby's summary cards
+// (Starting / Ready / Upcoming) can bucket off the same reference point.
+export const NOW_SLOT_INDEX = 4
 
 function nextHour(time) {
   const [, hh, mm, period] = time.match(/(\d+):(\d+) (\w+)/)
@@ -85,14 +96,16 @@ export const bookings = BOOKING_TIME_SLOTS.flatMap((startTime, slotIndex) =>
     const unit = 30 - n
     const mode = BOOKING_MODES[n % BOOKING_MODES.length]
     const programmes = BOOKING_PROGRAMMES[mode]
+    const level = BOOKING_LEVELS[n % BOOKING_LEVELS.length]
     const status =
       slotIndex < NOW_SLOT_INDEX ? 'Completed' : slotIndex === NOW_SLOT_INDEX ? 'Ongoing' : 'Upcoming'
     return {
-      unit: `SWT Training for Unit ${unit}`,
+      unit: `${TRAINING_TYPE_BY_SHORT_LEVEL[level]} Training for Unit ${unit}`,
       code: `#111024-KC${String(n + 1).padStart(4, '0')}`,
       mode,
       programme: programmes[n % programmes.length],
-      level: BOOKING_LEVELS[n % BOOKING_LEVELS.length],
+      level,
+      slotIndex,
       startTime,
       endTime: nextHour(startTime),
       instructor: BOOKING_INSTRUCTORS[n % BOOKING_INSTRUCTORS.length],
