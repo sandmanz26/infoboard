@@ -163,6 +163,37 @@ body {
   gap: 14px;
 }
 
+.level-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--table-head-bg);
+}
+
+.level-tab {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: calc(var(--radius-md) - 3px);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.level-tab:hover {
+  color: var(--text-main);
+}
+
+.level-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 .station-badge {
   display: flex;
   flex-direction: column;

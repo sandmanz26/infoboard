@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { detailList, podium, leaderboard, stations, bookings } from './data.js'
+import { detailList, podium, leaderboard, stations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -16,11 +16,10 @@ import StationsOverview from './components/StationsOverview.jsx'
 import LobbyBoard from './components/LobbyBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
-import { LEVELS, LEVEL_ORDER } from './levels/levelConfig.js'
+import { LEVELS } from './levels/levelConfig.js'
 import CmtBoard from './levels/CmtBoard.jsx'
 import CttBoard from './levels/CttBoard.jsx'
 import SwtBoard from './levels/SwtBoard.jsx'
-import { BOOKING_PAGE_SIZE, BOOKING_PAGE_INTERVAL_MS } from './rotationConfig.js'
 
 const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
@@ -33,15 +32,12 @@ const TRAINING_BOARD_COMPONENTS = {
   'level-4': SwtBoard,
 }
 
-// The board auto-advances to the next level once the current one's own
-// content finishes one full rotation: the booking list's pages for the
-// lobby, the leaderboard's pages for a training level.
-function levelRotationDurationMs(levelId) {
-  if (levelId === 'level-1') {
-    return Math.ceil(bookings.length / BOOKING_PAGE_SIZE) * BOOKING_PAGE_INTERVAL_MS
-  }
-  return Math.ceil(leaderboard.length / LEADERBOARD_PAGE_SIZE) * LEADERBOARD_PAGE_INTERVAL_MS
-}
+// Each level is a separate physical LCD (one per floor). This app renders
+// whichever one is selected — Level 1 is the lobby, Levels 2-4 (CMT/CTT/SWT)
+// all show the same training range board. Nothing here auto-advances; the
+// Level switcher and the tabs in the header are just two ways to pick which
+// floor's screen you're looking at.
+const TRAINING_LEVEL_IDS = ['level-2', 'level-3', 'level-4']
 
 const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
@@ -409,18 +405,6 @@ export default function App() {
     return () => clearInterval(id)
   }, [slideInterval])
 
-  // Levels rotate in order (Lobby -> CMT -> CTT -> SWT -> Lobby...), each
-  // advancing once its own content finishes one full lap. Picking a level
-  // directly from the switcher restarts the timer from that level.
-  useEffect(() => {
-    const id = setTimeout(() => {
-      const currentIndex = LEVEL_ORDER.indexOf(level)
-      const nextLevel = LEVEL_ORDER[(currentIndex + 1) % LEVEL_ORDER.length]
-      setLevel(nextLevel)
-    }, levelRotationDurationMs(level))
-    return () => clearTimeout(id)
-  }, [level])
-
   const isTrainingLevel = level !== 'level-1'
 
   const switcherGroups = [
@@ -499,9 +483,21 @@ export default function App() {
   const activeFont = FONTS.find((f) => f.id === font) ?? FONTS[0]
   const TrainingBoard = TRAINING_BOARD_COMPONENTS[level] ?? SwtBoard
 
+  const levelTabs = isTrainingLevel
+    ? {
+        levels: LEVELS.filter((l) => TRAINING_LEVEL_IDS.includes(l.id)),
+        active: level,
+        onChange: setLevel,
+      }
+    : null
+
   return (
     <div className="app" style={{ fontFamily: activeFont.stack }}>
-      <Header station={isTrainingLevel ? activeStation : 'Level 1'} detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'} />
+      <Header
+        station={isTrainingLevel ? activeStation : 'Level 1'}
+        detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
+        levelTabs={levelTabs}
+      />
       {isTrainingLevel ? (
         <TrainingBoard
           ActiveLayout={ActiveLayout}
