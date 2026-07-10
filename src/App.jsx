@@ -35,9 +35,7 @@ const TRAINING_BOARD_COMPONENTS = {
 // Each level is a separate physical LCD (one per floor). This app renders
 // whichever one is selected — Level 1 is the lobby, Levels 2-4 (CMT/CTT/SWT)
 // all show the same training range board. Nothing here auto-advances; the
-// Level switcher and the tabs in the header are just two ways to pick which
-// floor's screen you're looking at.
-const TRAINING_LEVEL_IDS = ['level-2', 'level-3', 'level-4']
+// Level switcher is how a demo viewer picks which floor's screen to look at.
 
 const LAYOUTS = [
   { id: 'layout-1', label: 'Layout 1', description: 'Default — single detail list' },
@@ -520,21 +518,11 @@ export default function App() {
   const activeFont = FONTS.find((f) => f.id === font) ?? FONTS[0]
   const TrainingBoard = TRAINING_BOARD_COMPONENTS[level] ?? SwtBoard
 
-  // Shown on every screen, including the Level 1 lobby, so the floor can
-  // always be switched at a glance — Level 1 itself is never one of the
-  // tabs, it just won't show any of the three as active while you're on it.
-  const levelTabs = {
-    levels: LEVELS.filter((l) => TRAINING_LEVEL_IDS.includes(l.id)),
-    active: level,
-    onChange: setLevel,
-  }
-
   return (
     <div className="app" style={{ fontFamily: activeFont.stack }}>
       <Header
         station={isTrainingLevel ? activeStation : 'Level 1'}
         detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
-        levelTabs={levelTabs}
       />
       {isTrainingLevel ? (
         <TrainingBoard

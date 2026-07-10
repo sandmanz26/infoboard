@@ -1,4 +1,5 @@
 import PageLoadingBar from './PageLoadingBar.jsx'
+import LevelIndicator from './LevelIndicator.jsx'
 import { BOOKING_PAGE_INTERVAL_MS } from '../rotationConfig.js'
 
 const STATUS_CLASS = {
@@ -29,7 +30,7 @@ function StatIcon() {
   )
 }
 
-export default function BookingList({ rows, pageIndex, stats, showTrainingMode }) {
+export default function BookingList({ rows, levels, activeLevelId, pageIndex, stats, showTrainingMode }) {
   const widths = showTrainingMode ? COLUMN_WIDTHS.withMode : COLUMN_WIDTHS.withoutMode
   return (
     <>
@@ -47,6 +48,7 @@ export default function BookingList({ rows, pageIndex, stats, showTrainingMode }
         ))}
       </div>
       <div className="booking-panel-head">
+        <LevelIndicator levels={levels} active={activeLevelId} />
         <PageLoadingBar pageIndex={pageIndex} intervalMs={BOOKING_PAGE_INTERVAL_MS} />
       </div>
       <table className="table booking-table">
