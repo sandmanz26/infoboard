@@ -596,6 +596,32 @@ body {
   transform: scale(1.25);
 }
 
+.page-loading-bar {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.page-loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  animation-name: page-loading-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes page-loading-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 .leaderboard-head .courseware-line {
   margin-top: 0;
   justify-content: flex-end;
@@ -1376,6 +1402,12 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.booking-panel-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .booking-stat-card {

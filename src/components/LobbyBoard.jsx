@@ -5,7 +5,7 @@ import usePagedRows from '../hooks/usePagedRows.js'
 import { BOOKING_PAGE_SIZE, BOOKING_PAGE_INTERVAL_MS } from '../rotationConfig.js'
 
 export default function LobbyBoard() {
-  const { page, pageIndex, pageCount } = usePagedRows(
+  const { page, pageIndex } = usePagedRows(
     bookings,
     BOOKING_PAGE_SIZE,
     BOOKING_PAGE_INTERVAL_MS
@@ -23,7 +23,7 @@ export default function LobbyBoard() {
   return (
     <main className="layout layout-lobby">
       <section className="panel booking-panel">
-        <BookingList rows={page} pageIndex={pageIndex} pageCount={pageCount} stats={stats} />
+        <BookingList rows={page} pageIndex={pageIndex} stats={stats} />
       </section>
       <section className="panel announcement-panel">
         <AnnouncementPanel items={announcements} />

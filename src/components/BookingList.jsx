@@ -1,4 +1,5 @@
-import PageDots from './PageDots.jsx'
+import PageLoadingBar from './PageLoadingBar.jsx'
+import { BOOKING_PAGE_INTERVAL_MS } from '../rotationConfig.js'
 
 const STATUS_CLASS = {
   Ongoing: 'status-pill-queue',
@@ -21,7 +22,7 @@ function StatIcon() {
   )
 }
 
-export default function BookingList({ rows, pageIndex, pageCount, stats }) {
+export default function BookingList({ rows, pageIndex, stats }) {
   return (
     <>
       <div className="booking-stats">
@@ -37,9 +38,8 @@ export default function BookingList({ rows, pageIndex, pageCount, stats }) {
           </div>
         ))}
       </div>
-      <div className="detail-panel-head">
-        <h2 className="panel-title">Today's Booking</h2>
-        <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+      <div className="booking-panel-head">
+        <PageLoadingBar pageIndex={pageIndex} intervalMs={BOOKING_PAGE_INTERVAL_MS} />
       </div>
       <table className="table booking-table">
         <colgroup>
