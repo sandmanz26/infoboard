@@ -1384,7 +1384,12 @@ body {
 
 .layout-lobby {
   grid-template-columns: 72.5fr 27.5fr;
-  align-items: start;
+  align-items: stretch;
+}
+
+.announcement-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 .booking-panel,
