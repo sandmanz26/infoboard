@@ -14,11 +14,72 @@ const STAT_CARDS = [
   { key: 'starting', label: 'Starting', tone: 'starting' },
 ]
 
-// Column widths differ depending on whether the Training Mode column is
-// showing, so the remaining columns can reclaim its share of the width.
-const COLUMN_WIDTHS = {
-  withMode: { id: '27%', mode: '13%', programme: '17%', start: '11%', end: '11%', instructor: '12%', status: '9%' },
-  withoutMode: { id: '30%', programme: '23%', start: '12%', end: '12%', instructor: '13%', status: '10%' },
+// Each column knows its own header label and how to render a cell.
+// CMT/CTT collapse mode+programme into a single Platform Type column; SWT
+// keeps them separate as Mode + Courseware.
+const COLUMN_RENDERERS = {
+  id: {
+    label: 'Booking ID',
+    cell: (row) => (
+      <>
+        <div className="booking-unit">{row.unit}</div>
+        <div className="booking-code">{row.code}</div>
+      </>
+    ),
+  },
+  platformType: {
+    label: 'Platform Type',
+    cell: (row) => row.programme,
+  },
+  mode: {
+    label: 'Mode',
+    cell: (row) => row.mode,
+  },
+  courseware: {
+    label: 'Courseware',
+    cell: (row) => row.programme,
+  },
+  startTime: {
+    label: 'Start Time',
+    cellClassName: 'booking-time',
+    cell: (row) => row.startTime,
+  },
+  endTime: {
+    label: 'End Time',
+    cellClassName: 'booking-time',
+    cell: (row) => row.endTime,
+  },
+  instructor: {
+    label: 'Instructor',
+    cell: (row) => row.instructor,
+  },
+  status: {
+    label: 'Status',
+    cell: (row) => <span className={`status-pill ${STATUS_CLASS[row.status]}`}>{row.status}</span>,
+  },
+}
+
+const CMT_CTT_COLUMNS = [
+  { key: 'id', width: '29%' },
+  { key: 'platformType', width: '22%' },
+  { key: 'startTime', width: '12%' },
+  { key: 'endTime', width: '12%' },
+  { key: 'instructor', width: '15%' },
+  { key: 'status', width: '10%' },
+]
+
+const LEVEL_TABLE_COLUMNS = {
+  'level-2': CMT_CTT_COLUMNS,
+  'level-3': CMT_CTT_COLUMNS,
+  'level-4': [
+    { key: 'id', width: '25%' },
+    { key: 'mode', width: '12%' },
+    { key: 'courseware', width: '17%' },
+    { key: 'startTime', width: '11%' },
+    { key: 'endTime', width: '11%' },
+    { key: 'instructor', width: '14%' },
+    { key: 'status', width: '10%' },
+  ],
 }
 
 function StatIcon() {
@@ -30,8 +91,8 @@ function StatIcon() {
   )
 }
 
-export default function BookingList({ rows, levels, activeLevelId, pageIndex, stats, showTrainingMode }) {
-  const widths = showTrainingMode ? COLUMN_WIDTHS.withMode : COLUMN_WIDTHS.withoutMode
+export default function BookingList({ rows, levels, activeLevelId, pageIndex, stats }) {
+  const columns = LEVEL_TABLE_COLUMNS[activeLevelId] ?? CMT_CTT_COLUMNS
   return (
     <>
       <div className="booking-stats">
@@ -53,40 +114,28 @@ export default function BookingList({ rows, levels, activeLevelId, pageIndex, st
       </div>
       <table className="table booking-table">
         <colgroup>
-          <col style={{ width: widths.id }} />
-          {showTrainingMode && <col style={{ width: widths.mode }} />}
-          <col style={{ width: widths.programme }} />
-          <col style={{ width: widths.start }} />
-          <col style={{ width: widths.end }} />
-          <col style={{ width: widths.instructor }} />
-          <col style={{ width: widths.status }} />
+          {columns.map((col) => (
+            <col key={col.key} style={{ width: col.width }} />
+          ))}
         </colgroup>
         <thead>
           <tr>
-            <th>Booking ID</th>
-            {showTrainingMode && <th>Training Mode</th>}
-            <th>Programme</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Instructor</th>
-            <th>Status</th>
+            {columns.map((col) => (
+              <th key={col.key}>{COLUMN_RENDERERS[col.key].label}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.code}>
-              <td>
-                <div className="booking-unit">{row.unit}</div>
-                <div className="booking-code">{row.code}</div>
-              </td>
-              {showTrainingMode && <td>{row.mode}</td>}
-              <td>{row.programme}</td>
-              <td className="booking-time">{row.startTime}</td>
-              <td className="booking-time">{row.endTime}</td>
-              <td>{row.instructor}</td>
-              <td>
-                <span className={`status-pill ${STATUS_CLASS[row.status]}`}>{row.status}</span>
-              </td>
+              {columns.map((col) => {
+                const def = COLUMN_RENDERERS[col.key]
+                return (
+                  <td key={col.key} className={def.cellClassName}>
+                    {def.cell(row)}
+                  </td>
+                )
+              })}
             </tr>
           ))}
         </tbody>

@@ -86,13 +86,6 @@ const DETAIL_COUNTS = [
   { id: '6', label: '6', description: 'Pages 3 at a time, like the leaderboard' },
 ]
 
-// Level 1 (Lobby) only — show/hide the Training Mode column on the
-// booking table. Hidden by default.
-const TRAINING_MODE_COLUMN_OPTIONS = [
-  { id: 'hidden', label: 'Hidden', description: 'Training Mode column is hidden from the booking table' },
-  { id: 'visible', label: 'Visible', description: 'Training Mode column is shown in the booking table' },
-]
-
 const SYSTEM_STACK = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
 
 // All three are self-hosted (bundled with the build, no font CDN) and
@@ -133,7 +126,6 @@ const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
 const LEVEL_STORAGE_KEY = 'infoboard-level'
-const TRAINING_MODE_COLUMN_STORAGE_KEY = 'infoboard-training-mode-column'
 
 function LayoutIcon() {
   return (
@@ -201,15 +193,6 @@ function LevelIcon() {
       <rect x="3" y="2" width="14" height="4" rx="1" stroke="currentColor" strokeWidth="1.6" />
       <rect x="3" y="8" width="14" height="4" rx="1" stroke="currentColor" strokeWidth="1.6" />
       <rect x="3" y="14" width="14" height="4" rx="1" fill="currentColor" />
-    </svg>
-  )
-}
-
-function ColumnToggleIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
-      <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8 3v14M13 3v14" stroke="currentColor" strokeWidth="1.6" strokeDasharray="2.2 2.2" />
     </svg>
   )
 }
@@ -374,10 +357,6 @@ export default function App() {
     const saved = localStorage.getItem(LEVEL_STORAGE_KEY)
     return LEVELS.some((l) => l.id === saved) ? saved : 'level-4'
   })
-  const [trainingModeColumn, setTrainingModeColumn] = useState(() => {
-    const saved = localStorage.getItem(TRAINING_MODE_COLUMN_STORAGE_KEY)
-    return TRAINING_MODE_COLUMN_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
-  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -412,10 +391,6 @@ export default function App() {
     localStorage.setItem(LEVEL_STORAGE_KEY, level)
   }, [level])
 
-  useEffect(() => {
-    localStorage.setItem(TRAINING_MODE_COLUMN_STORAGE_KEY, trainingModeColumn)
-  }, [trainingModeColumn])
-
   // Cycles the board through all 4 base stations — this app renders one
   // physical LCD's worth of content, but in reality 4 of these boards
   // exist (IMT-01..04). The interval simulates that rotation for demos.
@@ -447,18 +422,6 @@ export default function App() {
       active: font,
       onChange: setFont,
     },
-    ...(level === 'level-1'
-      ? [
-          {
-            id: 'training-mode-column',
-            label: 'Training Mode Column',
-            icon: <ColumnToggleIcon />,
-            options: TRAINING_MODE_COLUMN_OPTIONS,
-            active: trainingModeColumn,
-            onChange: setTrainingModeColumn,
-          },
-        ]
-      : []),
     ...(isTrainingLevel
       ? [
           {
@@ -539,7 +502,7 @@ export default function App() {
             lead="Level 1 Lobby"
             message="Please check in at the reception counter. Today's bookings and facility announcements are shown below."
           />
-          <LobbyBoard showTrainingMode={trainingModeColumn === 'visible'} />
+          <LobbyBoard />
         </>
       )}
       <LayoutSwitcher groups={switcherGroups} />
