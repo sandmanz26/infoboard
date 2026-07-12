@@ -456,6 +456,13 @@ export default function App() {
             active: slideInterval,
             onChange: setSlideInterval,
           },
+        ]
+      : []),
+    // Container Ratio and Detail Count only affect Layout 3's combined
+    // detail list — hide them otherwise so the switcher never shows a
+    // "selected" option that has no visible effect on screen.
+    ...(isTrainingLevel && layout === 'layout-3'
+      ? [
           {
             id: 'panel-ratio',
             label: 'Container Ratio',
