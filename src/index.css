@@ -256,10 +256,14 @@ body {
 
 /* ---------- Layout ---------- */
 
+/* --detail-fr / --sidebar-fr (e.g. "60fr") are set inline per the
+   "Container Ratio" switcher. Keeping grid-template-columns itself in
+   the stylesheet — rather than setting it inline directly — means the
+   responsive media query below can still override it on narrow screens. */
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 36% 1fr;
+  grid-template-columns: var(--detail-fr, 36fr) var(--sidebar-fr, 64fr);
   gap: 14px;
   padding: 14px;
   align-items: start;
@@ -792,10 +796,13 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* ---------- Layouts 2 & 3: 3 detail lists (20% / 20% / 20%) ---------- */
+/* ---------- Layout 2: 3 detail lists + sidebar ---------- */
 
+/* --detail-col-fr is one detail column's share (Container Ratio's left
+   share divided 3 ways in JS, since fr units can't be divided in calc());
+   --sidebar-fr is the right-col's share, same as Layout 1 and 3. */
 .layout-triple {
-  grid-template-columns: 1fr 1fr 1fr 2fr;
+  grid-template-columns: var(--detail-col-fr, 20fr) var(--detail-col-fr, 20fr) var(--detail-col-fr, 20fr) var(--sidebar-fr, 40fr);
 }
 
 .layout-triple .right-col {

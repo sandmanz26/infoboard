@@ -254,9 +254,13 @@ function TripleDetailPanels({ tableModel, rowsPerPanel }) {
   )
 }
 
-function LayoutOne({ tableModel, leaderboardModel }) {
+function LayoutOne({ tableModel, leaderboardModel, panelRatio }) {
+  const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
   return (
-    <main className="layout">
+    <main
+      className="layout"
+      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
+    >
       <section className="panel detail-panel">
         <DetailPanel tableModel={tableModel} rows={detailList} title="Detail List" status="Ready" />
       </section>
@@ -272,9 +276,14 @@ function LayoutOne({ tableModel, leaderboardModel }) {
   )
 }
 
-function LayoutTwo({ tableModel, activeStation }) {
+function LayoutTwo({ tableModel, activeStation, panelRatio }) {
+  const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
+  const detailColumnFr = ratio.left / 3
   return (
-    <main className="layout layout-triple">
+    <main
+      className="layout layout-triple"
+      style={{ '--detail-col-fr': `${detailColumnFr}fr`, '--sidebar-fr': `${ratio.right}fr` }}
+    >
       <TripleDetailPanels
         tableModel={tableModel}
         rowsPerPanel={[detailList, detailList, detailList]}
@@ -458,10 +467,10 @@ export default function App() {
           },
         ]
       : []),
-    // Container Ratio and Detail Count only affect Layout 3's combined
-    // detail list — hide them otherwise so the switcher never shows a
-    // "selected" option that has no visible effect on screen.
-    ...(isTrainingLevel && layout === 'layout-3'
+    // Container Ratio splits detail list(s) vs. the right sidebar column —
+    // every layout except Layout 4 (a plain 4-station grid, no such split)
+    // has that structure, so keep the control available on all of them.
+    ...(isTrainingLevel && layout !== 'layout-4'
       ? [
           {
             id: 'panel-ratio',
@@ -471,6 +480,12 @@ export default function App() {
             active: panelRatio,
             onChange: setPanelRatio,
           },
+        ]
+      : []),
+    // Detail Count only applies to Layout 3's combined detail list — the
+    // other layouts have a fixed number of detail columns.
+    ...(isTrainingLevel && layout === 'layout-3'
+      ? [
           {
             id: 'detail-count',
             label: 'Detail Count',
