@@ -1,7 +1,16 @@
-export default function DetailList({ rows, title = 'Detail List' }) {
+export default function DetailList({ rows, title = 'Detail List', status }) {
   return (
     <>
-      <h2 className="panel-title">{title}</h2>
+      {status ? (
+        <div className="detail-panel-head">
+          <h2 className="panel-title">{title}</h2>
+          <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+            {status}
+          </span>
+        </div>
+      ) : (
+        <h2 className="panel-title">{title}</h2>
+      )}
       <table className="table detail-table">
         <thead>
           <tr>

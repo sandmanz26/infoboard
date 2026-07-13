@@ -796,17 +796,37 @@ body {
   letter-spacing: 0.04em;
 }
 
-/* ---------- Layout 2: 3 detail lists + sidebar ---------- */
+/* ---------- Layout 2: detail group + sidebar ---------- */
 
-/* --detail-col-fr is one detail column's share (Container Ratio's left
-   share divided 3 ways in JS, since fr units can't be divided in calc());
-   --sidebar-fr is the right-col's share, same as Layout 1 and 3. */
+/* --detail-fr / --sidebar-fr, same "Container Ratio" variables Layout 1
+   and 3 use — the detail group is one grid track here, subdivided into
+   its own 3-column grid below, rather than 3 separate top-level tracks. */
 .layout-triple {
-  grid-template-columns: var(--detail-col-fr, 20fr) var(--detail-col-fr, 20fr) var(--detail-col-fr, 20fr) var(--sidebar-fr, 40fr);
+  grid-template-columns: var(--detail-fr, 60fr) var(--sidebar-fr, 40fr);
 }
 
 .layout-triple .right-col {
   min-width: 0;
+}
+
+.triple-detail-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.triple-detail-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.triple-detail-columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .detail-panel-compact {
@@ -1563,6 +1583,10 @@ body {
   .layout-triple,
   .layout-combined,
   .layout-lobby {
+    grid-template-columns: 1fr;
+  }
+
+  .triple-detail-columns {
     grid-template-columns: 1fr;
   }
 

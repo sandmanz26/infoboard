@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { detailList, podium, leaderboard, stations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
@@ -15,6 +15,7 @@ import CombinedDetailList from './components/CombinedDetailList.jsx'
 import StationsOverview from './components/StationsOverview.jsx'
 import LobbyBoard from './components/LobbyBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
+import PageDots from './components/PageDots.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
 import { LEVELS } from './levels/levelConfig.js'
 import CmtBoard from './levels/CmtBoard.jsx'
@@ -23,6 +24,8 @@ import SwtBoard from './levels/SwtBoard.jsx'
 
 const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
+const DETAIL_GROUPS_PER_PAGE = 3
+const DETAIL_GROUP_PAGE_INTERVAL_MS = 6000
 
 // Levels 2-4 (CMT/CTT/SWT) all render the same board today but live in
 // separate files under src/levels/ so each can grow its own rules.
@@ -211,12 +214,10 @@ function TypographyIcon() {
   )
 }
 
-const DETAIL_STATUSES = ['Ready', 'Queue', 'Queue']
-
 function DetailPanel({ tableModel, rows, title, status }) {
   if (tableModel === 'card') return <DetailListCards rows={rows} title={title} status={status} />
   if (tableModel === 'table2') return <DetailListTable2 rows={rows} title={title} status={status} />
-  return <DetailList rows={rows} title={title} />
+  return <DetailList rows={rows} title={title} status={status} />
 }
 
 function LeaderboardPanel({ leaderboardModel, rows }) {
@@ -237,17 +238,12 @@ function LeaderboardPanel({ leaderboardModel, rows }) {
   return <Leaderboard rows={page} pageIndex={pageIndex} pageCount={pageCount} />
 }
 
-function TripleDetailPanels({ tableModel, rowsPerPanel }) {
+function TripleDetailPanels({ tableModel, groups }) {
   return (
     <>
-      {rowsPerPanel.map((rows, i) => (
-        <section key={i} className="panel detail-panel detail-panel-compact">
-          <DetailPanel
-            tableModel={tableModel}
-            rows={rows}
-            title={`Detail ${i + 1}`}
-            status={DETAIL_STATUSES[i]}
-          />
+      {groups.map((group) => (
+        <section key={group.title} className="panel detail-panel detail-panel-compact">
+          <DetailPanel tableModel={tableModel} rows={group.rows} title={group.title} status={group.status} />
         </section>
       ))}
     </>
@@ -276,18 +272,43 @@ function LayoutOne({ tableModel, leaderboardModel, panelRatio }) {
   )
 }
 
-function LayoutTwo({ tableModel, activeStation, panelRatio }) {
+function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
-  const detailColumnFr = ratio.left / 3
+  const count = Number(detailCount) || 3
+  // Only the first detail is actively running (Ready); the rest are
+  // queued up behind it. Memoized so usePagedRows (which resets to page 0
+  // whenever its `rows` reference changes) doesn't see a "new" array —
+  // and reset itself — on every tick of its own rotation timer.
+  const allGroups = useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        title: `Detail ${i + 1}`,
+        status: i === 0 ? 'Ready' : 'Queue',
+        rows: detailList,
+      })),
+    [count]
+  )
+  const { page: groups, pageIndex, pageCount } = usePagedRows(
+    allGroups,
+    DETAIL_GROUPS_PER_PAGE,
+    DETAIL_GROUP_PAGE_INTERVAL_MS
+  )
+
   return (
     <main
       className="layout layout-triple"
-      style={{ '--detail-col-fr': `${detailColumnFr}fr`, '--sidebar-fr': `${ratio.right}fr` }}
+      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
     >
-      <TripleDetailPanels
-        tableModel={tableModel}
-        rowsPerPanel={[detailList, detailList, detailList]}
-      />
+      <div className="triple-detail-group">
+        {pageCount > 1 && (
+          <div className="triple-detail-head">
+            <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+          </div>
+        )}
+        <div className="triple-detail-columns">
+          <TripleDetailPanels tableModel={tableModel} groups={groups} />
+        </div>
+      </div>
       <div className="right-col">
         <section className="panel podium-panel">
           <TopThree data={podium} />
@@ -482,9 +503,10 @@ export default function App() {
           },
         ]
       : []),
-    // Detail Count only applies to Layout 3's combined detail list — the
-    // other layouts have a fixed number of detail columns.
-    ...(isTrainingLevel && layout === 'layout-3'
+    // Detail Count applies to Layout 2's side-by-side details and Layout
+    // 3's combined detail list — Layout 1 always has exactly one, Layout 4
+    // has none.
+    ...(isTrainingLevel && (layout === 'layout-2' || layout === 'layout-3')
       ? [
           {
             id: 'detail-count',
