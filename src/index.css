@@ -1461,11 +1461,14 @@ body {
   margin-bottom: 16px;
 }
 
+/* The progress bar tracks time until the next level swap, so it sits
+   directly under the Level indicator it belongs to rather than off to
+   the side where the connection isn't obvious. */
 .booking-panel-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
