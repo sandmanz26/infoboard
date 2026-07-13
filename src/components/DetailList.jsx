@@ -1,4 +1,5 @@
 import PageDots from './PageDots.jsx'
+import { statusTone } from '../statusTone.js'
 
 export default function DetailList({ rows, title = 'Detail List', status, pageIndex, pageCount }) {
   return (
@@ -11,7 +12,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
               {status}
             </span>
           )}
-          <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+          <PageDots pageIndex={pageIndex} pageCount={pageCount} tone={statusTone(status)} />
         </span>
       </div>
       <table className="table detail-table">

@@ -1,3 +1,5 @@
+import Clock from './Clock.jsx'
+
 export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' }) {
   return (
     <header className="header">
@@ -19,6 +21,7 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' })
         <div className="header-tab">Infoboard</div>
       </div>
       <div className="header-right">
+        <Clock />
         <div className="station-badge">
           <span className="station-badge-label">{detailLabel}</span>
           <span className="station-badge-code">{station}</span>

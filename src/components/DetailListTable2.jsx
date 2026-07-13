@@ -1,4 +1,5 @@
 import PageDots from './PageDots.jsx'
+import { statusTone } from '../statusTone.js'
 
 export default function DetailListTable2({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount }) {
   return (
@@ -9,7 +10,7 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
           <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
             {status}
           </span>
-          <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+          <PageDots pageIndex={pageIndex} pageCount={pageCount} tone={statusTone(status)} />
         </span>
       </div>
       <table className="table table-two">

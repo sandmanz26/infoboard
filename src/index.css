@@ -163,6 +163,14 @@ body {
   gap: 14px;
 }
 
+.header-clock {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .level-tabs {
   display: flex;
   align-items: center;
@@ -600,6 +608,21 @@ body {
 .page-dot.active {
   background: var(--accent);
   transform: scale(1.25);
+}
+
+/* Lets the active dot match the status pill it sits next to (Ready/
+   Upcoming -> blue, Queue/Ongoing -> amber, Completed/Done -> green)
+   instead of always using the app's default accent color. */
+.page-dots-ready .page-dot.active {
+  background: var(--ready-blue);
+}
+
+.page-dots-queue .page-dot.active {
+  background: var(--queue-amber);
+}
+
+.page-dots-done .page-dot.active {
+  background: var(--done-green);
 }
 
 .page-loading-bar {
