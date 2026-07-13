@@ -1,10 +1,15 @@
-export default function DetailListCards({ rows, title = 'Detail List', status = 'Ready' }) {
+import PageDots from './PageDots.jsx'
+
+export default function DetailListCards({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount }) {
   return (
     <>
       <div className="detail-panel-head">
         <h2 className="panel-title">{title}</h2>
-        <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
-          {status}
+        <span className="detail-panel-head-meta">
+          <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+            {status}
+          </span>
+          <PageDots pageIndex={pageIndex} pageCount={pageCount} />
         </span>
       </div>
       <div className="detail-cards">

@@ -367,6 +367,13 @@ body {
   gap: 10px;
 }
 
+.detail-panel-head-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .detail-panel-head .panel-title {
   flex-shrink: 1;
   min-width: 0;

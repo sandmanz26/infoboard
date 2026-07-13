@@ -26,6 +26,8 @@ const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 const DETAIL_GROUPS_PER_PAGE = 3
 const DETAIL_GROUP_PAGE_INTERVAL_MS = 6000
+const DETAIL_ROWS_PER_PAGE = 10
+const DETAIL_ROWS_PAGE_INTERVAL_MS = 2000
 
 // Levels 2-4 (CMT/CTT/SWT) all render the same board today but live in
 // separate files under src/levels/ so each can grow its own rules.
@@ -214,10 +216,18 @@ function TypographyIcon() {
   )
 }
 
+// A single detail table only ever shows 10 rows at once — with 15
+// trainees in the roster, the last 5 page in on their own rotating page
+// a couple seconds later rather than being squeezed into the same table.
 function DetailPanel({ tableModel, rows, title, status }) {
-  if (tableModel === 'card') return <DetailListCards rows={rows} title={title} status={status} />
-  if (tableModel === 'table2') return <DetailListTable2 rows={rows} title={title} status={status} />
-  return <DetailList rows={rows} title={title} status={status} />
+  const { page, pageIndex, pageCount } = usePagedRows(rows, DETAIL_ROWS_PER_PAGE, DETAIL_ROWS_PAGE_INTERVAL_MS)
+  if (tableModel === 'card') {
+    return <DetailListCards rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+  }
+  if (tableModel === 'table2') {
+    return <DetailListTable2 rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+  }
+  return <DetailList rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
 }
 
 function LeaderboardPanel({ leaderboardModel, rows }) {

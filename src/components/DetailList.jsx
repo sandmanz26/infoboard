@@ -1,16 +1,19 @@
-export default function DetailList({ rows, title = 'Detail List', status }) {
+import PageDots from './PageDots.jsx'
+
+export default function DetailList({ rows, title = 'Detail List', status, pageIndex, pageCount }) {
   return (
     <>
-      {status ? (
-        <div className="detail-panel-head">
-          <h2 className="panel-title">{title}</h2>
-          <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
-            {status}
-          </span>
-        </div>
-      ) : (
+      <div className="detail-panel-head">
         <h2 className="panel-title">{title}</h2>
-      )}
+        <span className="detail-panel-head-meta">
+          {status && (
+            <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+              {status}
+            </span>
+          )}
+          <PageDots pageIndex={pageIndex} pageCount={pageCount} />
+        </span>
+      </div>
       <table className="table detail-table">
         <thead>
           <tr>
