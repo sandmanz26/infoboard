@@ -9,8 +9,8 @@ const STATUS_CLASS = {
 }
 
 const STAT_CARDS = [
-  { key: 'upcoming', label: 'Upcoming', tone: 'upcoming' },
-  { key: 'ready', label: 'Ready', tone: 'ready' },
+  { key: 'upcoming', label: 'Ongoing', tone: 'upcoming' },
+  { key: 'ready', label: 'Completed', tone: 'ready' },
   { key: 'starting', label: 'Starting', tone: 'starting' },
 ]
 
