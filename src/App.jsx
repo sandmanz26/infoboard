@@ -27,7 +27,7 @@ const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 const DETAIL_GROUPS_PER_PAGE = 3
 const DETAIL_GROUP_PAGE_INTERVAL_MS = 6000
 const DETAIL_ROWS_PER_PAGE = 10
-const DETAIL_ROWS_PAGE_INTERVAL_MS = 2000
+const DETAIL_ROWS_PAGE_INTERVAL_MS = 5000
 
 // Levels 2-4 (CMT/CTT/SWT) all render the same board today but live in
 // separate files under src/levels/ so each can grow its own rules.
