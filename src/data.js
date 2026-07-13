@@ -65,6 +65,31 @@ const BOOKING_PROGRAMMES = {
 }
 const BOOKING_MODES = ['Marksmanship', 'Collective', 'Judgemental']
 const BOOKING_LEVELS = ['L2', 'L3', 'L4']
+
+// CMT (Level 2) bookings show a vehicle/variant instead of a courseware
+// programme in their "Platform Type" column.
+const CMT_PLATFORM_TYPES = [
+  'Terrex 40 AGL',
+  'Terrex 50 HMG',
+  'ICV Commander',
+  'ICV Trooper',
+  'ICV Scout',
+  'ICV Pioneer',
+  'ICV Medical',
+  'ICV Storm',
+  'L2SG',
+  'L2-AEV',
+  'M3G',
+  'ATTC-LAMBE',
+  'PCSV Mortar',
+  'PCSV Rebro',
+  'PCSV Fuel',
+  'PCSV Bn Casualty Station (BCS)',
+  'PCSV Combat Train (Logistics)',
+  'PCSV FMP (Maintenance)',
+  'Tonner',
+  'LUV',
+]
 const BOOKING_INSTRUCTORS = ['Bryan', 'Chun Xiong', 'Daniek', 'Ken Chow']
 const BOOKING_TIME_SLOTS = [
   '07:00 AM',
@@ -104,6 +129,8 @@ export const bookings = BOOKING_TIME_SLOTS.flatMap((startTime, slotIndex) =>
       code: `#111024-KC${String(n + 1).padStart(4, '0')}`,
       mode,
       programme: programmes[n % programmes.length],
+      platformType:
+        level === 'L2' ? CMT_PLATFORM_TYPES[n % CMT_PLATFORM_TYPES.length] : programmes[n % programmes.length],
       level,
       slotIndex,
       startTime,

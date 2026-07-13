@@ -29,7 +29,7 @@ const COLUMN_RENDERERS = {
   },
   platformType: {
     label: 'Platform Type',
-    cell: (row) => row.programme,
+    cell: (row) => row.platformType,
   },
   mode: {
     label: 'Mode',
