@@ -5,6 +5,7 @@ import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
 import DetailListTable2 from './components/DetailListTable2.jsx'
 import DetailListCards from './components/DetailListCards.jsx'
+import DetailListCompact from './components/DetailListCompact.jsx'
 import TopThree from './components/TopThree.jsx'
 import Directory from './components/Directory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
@@ -53,6 +54,7 @@ const TABLE_MODELS = [
   { id: 'default', label: 'Default Table', description: 'Original detail list table' },
   { id: 'card', label: 'Card Model', description: 'Compact card grid per trainee' },
   { id: 'table2', label: 'Table 2.0', description: 'Merged rank + name, no status column' },
+  { id: 'compact', label: 'Compact (No Scroll)', description: 'All 15 rows in one dense table, no rotation or scrolling' },
 ]
 
 const LEADERBOARD_MODELS = [
@@ -219,6 +221,8 @@ function TypographyIcon() {
 // A single detail table only ever shows 10 rows at once — with 15
 // trainees in the roster, the last 5 page in on their own rotating page
 // a couple seconds later rather than being squeezed into the same table.
+// "Compact" is the exception: all 15 rows at once, dense enough to need
+// neither rotation nor scrolling — built for TV displays.
 function DetailPanel({ tableModel, rows, title, status }) {
   const { page, pageIndex, pageCount } = usePagedRows(rows, DETAIL_ROWS_PER_PAGE, DETAIL_ROWS_PAGE_INTERVAL_MS)
   if (tableModel === 'card') {
@@ -226,6 +230,9 @@ function DetailPanel({ tableModel, rows, title, status }) {
   }
   if (tableModel === 'table2') {
     return <DetailListTable2 rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+  }
+  if (tableModel === 'compact') {
+    return <DetailListCompact rows={rows} title={title} status={status} />
   }
   return <DetailList rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
 }
@@ -315,7 +322,7 @@ function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount }) {
             <PageDots pageIndex={pageIndex} pageCount={pageCount} />
           </div>
         )}
-        <div className="triple-detail-columns">
+        <div className="triple-detail-columns" style={{ '--triple-detail-count': groups.length }}>
           <TripleDetailPanels tableModel={tableModel} groups={groups} />
         </div>
       </div>
@@ -534,11 +541,12 @@ export default function App() {
   const activeStation = stations[stationIndex].id
   const activeFont = FONTS.find((f) => f.id === font) ?? FONTS[0]
   const TrainingBoard = TRAINING_BOARD_COMPONENTS[level] ?? SwtBoard
+  const currentLevelLabel = LEVELS.find((l) => l.id === level)?.label ?? 'Level 1'
 
   return (
     <div className="app" style={{ fontFamily: activeFont.stack }}>
       <Header
-        station={isTrainingLevel ? activeStation : 'Level 1'}
+        station={currentLevelLabel}
         detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
       />
       {isTrainingLevel ? (
