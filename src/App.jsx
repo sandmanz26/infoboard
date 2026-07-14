@@ -93,6 +93,15 @@ const DETAIL_COUNTS = [
   { id: '6', label: '6', description: 'Pages 3 at a time, like the leaderboard' },
 ]
 
+// Which panels show in the right-hand column — Layouts 1-3 all share the
+// same sidebar, just with different components hardcoded on previously.
+// Now it's one shared choice instead of baked into each layout.
+const RIGHT_PANEL_COMPONENTS = [
+  { id: 'top3', label: 'Top 3 Leaderboard', description: 'Podium-style top 3 finishers' },
+  { id: 'leaderboard', label: 'Table Leaderboard', description: 'Full ranked leaderboard (Table/Compact/Cards/Ticker)' },
+  { id: 'directory', label: 'Directory', description: 'Base station map' },
+]
+
 const SYSTEM_STACK = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
 
 // All three are self-hosted (bundled with the build, no font CDN) and
@@ -133,6 +142,7 @@ const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
 const LEVEL_STORAGE_KEY = 'infoboard-level'
+const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 
 function LayoutIcon() {
   return (
@@ -204,6 +214,16 @@ function LevelIcon() {
   )
 }
 
+function RightPanelIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="2" y="3" width="9" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="13" y="3" width="5" height="6" rx="1" fill="currentColor" />
+      <rect x="13" y="11" width="5" height="6" rx="1" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
 function TypographyIcon() {
   return (
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
@@ -255,6 +275,31 @@ function LeaderboardPanel({ leaderboardModel, rows }) {
   return <Leaderboard rows={page} pageIndex={pageIndex} pageCount={pageCount} />
 }
 
+// Shared right-hand sidebar for Layouts 1-3 — which of the 3 panels show
+// (and in this fixed order) is controlled by the Right Panel switcher
+// instead of being hardcoded differently per layout.
+function RightColumn({ components, leaderboardModel, activeStation }) {
+  return (
+    <div className="right-col">
+      {components.includes('top3') && (
+        <section className="panel podium-panel">
+          <TopThree data={podium} />
+        </section>
+      )}
+      {components.includes('leaderboard') && (
+        <section className="panel leaderboard-panel">
+          <LeaderboardPanel leaderboardModel={leaderboardModel} rows={leaderboard} />
+        </section>
+      )}
+      {components.includes('directory') && (
+        <section className="panel directory-panel">
+          <Directory activeStation={activeStation} />
+        </section>
+      )}
+    </div>
+  )
+}
+
 function TripleDetailPanels({ tableModel, groups }) {
   return (
     <>
@@ -267,7 +312,7 @@ function TripleDetailPanels({ tableModel, groups }) {
   )
 }
 
-function LayoutOne({ tableModel, leaderboardModel, panelRatio }) {
+function LayoutOne({ tableModel, leaderboardModel, panelRatio, rightPanelComponents, activeStation }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
   return (
     <main
@@ -277,19 +322,12 @@ function LayoutOne({ tableModel, leaderboardModel, panelRatio }) {
       <section className="panel detail-panel">
         <DetailPanel tableModel={tableModel} rows={detailList} title="Detail List" status="Ready" />
       </section>
-      <div className="right-col">
-        <section className="panel podium-panel">
-          <TopThree data={podium} />
-        </section>
-        <section className="panel leaderboard-panel">
-          <LeaderboardPanel leaderboardModel={leaderboardModel} rows={leaderboard} />
-        </section>
-      </div>
+      <RightColumn components={rightPanelComponents} leaderboardModel={leaderboardModel} activeStation={activeStation} />
     </main>
   )
 }
 
-function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount }) {
+function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount, rightPanelComponents, leaderboardModel }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
   const count = Number(detailCount) || 3
   // Only the first detail is actively running (Ready); the rest are
@@ -326,19 +364,12 @@ function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount }) {
           <TripleDetailPanels tableModel={tableModel} groups={groups} />
         </div>
       </div>
-      <div className="right-col">
-        <section className="panel podium-panel">
-          <TopThree data={podium} />
-        </section>
-        <section className="panel directory-panel">
-          <Directory activeStation={activeStation} />
-        </section>
-      </div>
+      <RightColumn components={rightPanelComponents} leaderboardModel={leaderboardModel} activeStation={activeStation} />
     </main>
   )
 }
 
-function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, detailCount }) {
+function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, detailCount, rightPanelComponents }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
   const count = Number(detailCount) || 3
   const groups = Array.from({ length: count }, (_, i) => ({
@@ -352,14 +383,7 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
       style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
     >
       <CombinedDetailList groups={groups} tableModel={tableModel} />
-      <div className="right-col">
-        <section className="panel directory-panel">
-          <Directory activeStation={activeStation} />
-        </section>
-        <section className="panel leaderboard-panel">
-          <LeaderboardPanel leaderboardModel={leaderboardModel} rows={leaderboard} />
-        </section>
-      </div>
+      <RightColumn components={rightPanelComponents} leaderboardModel={leaderboardModel} activeStation={activeStation} />
     </main>
   )
 }
@@ -404,7 +428,22 @@ export default function App() {
     const saved = localStorage.getItem(LEVEL_STORAGE_KEY)
     return LEVELS.some((l) => l.id === saved) ? saved : 'level-4'
   })
+  const [rightPanelComponents, setRightPanelComponents] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(RIGHT_PANEL_STORAGE_KEY))
+      if (Array.isArray(saved) && saved.length && saved.every((id) => RIGHT_PANEL_COMPONENTS.some((c) => c.id === id))) {
+        return saved
+      }
+    } catch {
+      /* ignore malformed saved value */
+    }
+    return ['top3', 'leaderboard']
+  })
   const [stationIndex, setStationIndex] = useState(0)
+
+  useEffect(() => {
+    localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
+  }, [rightPanelComponents])
 
   useEffect(() => {
     localStorage.setItem(LAYOUT_STORAGE_KEY, layout)
@@ -451,6 +490,18 @@ export default function App() {
   }, [slideInterval])
 
   const isTrainingLevel = level !== 'level-1'
+
+  // Toggles one component in/out of the right column; refuses to remove
+  // the last one so the sidebar never goes completely empty.
+  const toggleRightPanelComponent = (id) => {
+    setRightPanelComponents((current) => {
+      if (current.includes(id)) {
+        if (current.length === 1) return current
+        return current.filter((c) => c !== id)
+      }
+      return [...current, id]
+    })
+  }
 
   const switcherGroups = [
     {
@@ -535,6 +586,21 @@ export default function App() {
           },
         ]
       : []),
+    // Right column exists on Layouts 1-3 only — Layout 4 is a plain
+    // 4-station grid with no sidebar to configure.
+    ...(isTrainingLevel && layout !== 'layout-4'
+      ? [
+          {
+            id: 'right-panel',
+            label: 'Right Panel',
+            icon: <RightPanelIcon />,
+            options: RIGHT_PANEL_COMPONENTS,
+            active: rightPanelComponents,
+            multiSelect: true,
+            onToggle: toggleRightPanelComponent,
+          },
+        ]
+      : []),
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -557,6 +623,7 @@ export default function App() {
           activeStation={activeStation}
           panelRatio={panelRatio}
           detailCount={detailCount}
+          rightPanelComponents={rightPanelComponents}
         />
       ) : (
         <>

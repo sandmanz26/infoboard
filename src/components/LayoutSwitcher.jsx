@@ -137,19 +137,24 @@ export default function LayoutSwitcher({ groups }) {
                 {group.label}
               </div>
               <div className="switcher-chip-row">
-                {group.options.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={group.active === opt.id}
-                    title={opt.description}
-                    className={`switcher-chip${group.active === opt.id ? ' active' : ''}`}
-                    onClick={() => group.onChange(opt.id)}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+                {group.options.map((opt) => {
+                  const isActive = group.multiSelect
+                    ? group.active.includes(opt.id)
+                    : group.active === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      role={group.multiSelect ? 'menuitemcheckbox' : 'menuitemradio'}
+                      aria-checked={isActive}
+                      title={opt.description}
+                      className={`switcher-chip${isActive ? ' active' : ''}`}
+                      onClick={() => (group.multiSelect ? group.onToggle(opt.id) : group.onChange(opt.id))}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           ))}

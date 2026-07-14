@@ -11,6 +11,7 @@ export default function TrainingRangeBoard({
   activeStation,
   panelRatio,
   detailCount,
+  rightPanelComponents,
 }) {
   return (
     <>
@@ -21,6 +22,7 @@ export default function TrainingRangeBoard({
         activeStation={activeStation}
         panelRatio={panelRatio}
         detailCount={detailCount}
+        rightPanelComponents={rightPanelComponents}
       />
     </>
   )
