@@ -900,6 +900,17 @@ body {
   border-bottom: 2px solid var(--accent);
 }
 
+/* Spans the full row under the 5 station columns instead of sitting in
+   a narrow sidebar — wider than the default sidebar cap, but still
+   capped so the map doesn't grow as tall as it is wide. */
+.layout-five-directory {
+  grid-column: 1 / -1;
+}
+
+.layout-five-directory .directory-map {
+  max-width: 1100px;
+}
+
 .detail-panel-compact .table {
   margin-top: 8px;
 }

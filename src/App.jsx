@@ -422,7 +422,7 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
-function LayoutFive({ tableModel }) {
+function LayoutFive({ tableModel, activeStation }) {
   // Every station flips on the same clock, so the whole row turns over
   // together — an airport board doesn't flip one panel at a time.
   const { pageIndex } = usePagedRows(LAYOUT_FIVE_DETAILS, 1, DETAIL_GROUP_PAGE_INTERVAL_MS)
@@ -440,6 +440,9 @@ function LayoutFive({ tableModel }) {
           />
         </section>
       ))}
+      <section className="panel directory-panel layout-five-directory">
+        <Directory activeStation={activeStation} />
+      </section>
     </main>
   )
 }
