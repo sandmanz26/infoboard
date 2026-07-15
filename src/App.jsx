@@ -72,6 +72,12 @@ const SLIDESHOW_INTERVALS = [
   { id: '30', label: '30s', description: 'Advance to the next station every 30 seconds' },
 ]
 
+// The blue info strip under the header (Levels 2-4 only).
+const INFO_BANNER_OPTIONS = [
+  { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
+  { id: 'hidden', label: 'Hidden', description: 'Hide the info banner below the header' },
+]
+
 // Left container (combined detail list) vs. right container (directory
 // map + leaderboard) width split — only Layout 3 pairs those two panels.
 const PANEL_RATIOS = [
@@ -143,6 +149,7 @@ const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
 const LEVEL_STORAGE_KEY = 'infoboard-level'
 const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
+const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 
 function LayoutIcon() {
   return (
@@ -181,6 +188,16 @@ function SlideshowIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function InfoBannerIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="10" cy="6.4" r="1.05" fill="currentColor" />
     </svg>
   )
 }
@@ -277,8 +294,11 @@ function LeaderboardPanel({ leaderboardModel, rows }) {
 
 // Shared right-hand sidebar for Layouts 1-3 — which of the 3 panels show
 // (and in this fixed order) is controlled by the Right Panel switcher
-// instead of being hardcoded differently per layout.
+// instead of being hardcoded differently per layout. Renders nothing at
+// all once every panel is hidden, so the caller can give the table the
+// full row width instead of leaving an empty column.
 function RightColumn({ components, leaderboardModel, activeStation }) {
+  if (components.length === 0) return null
   return (
     <div className="right-col">
       {components.includes('top3') && (
@@ -312,13 +332,19 @@ function TripleDetailPanels({ tableModel, groups }) {
   )
 }
 
+// With no right-panel components enabled, the table takes the full row
+// width instead of leaving the ratio's sidebar share empty.
+function mainGridStyle(ratio, hasSidebar) {
+  return hasSidebar
+    ? { '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }
+    : { gridTemplateColumns: '1fr' }
+}
+
 function LayoutOne({ tableModel, leaderboardModel, panelRatio, rightPanelComponents, activeStation }) {
   const ratio = PANEL_RATIOS.find((r) => r.id === panelRatio) ?? PANEL_RATIOS[1]
+  const hasSidebar = rightPanelComponents.length > 0
   return (
-    <main
-      className="layout"
-      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
-    >
+    <main className="layout" style={mainGridStyle(ratio, hasSidebar)}>
       <section className="panel detail-panel">
         <DetailPanel tableModel={tableModel} rows={detailList} title="Detail List" status="Ready" />
       </section>
@@ -348,12 +374,10 @@ function LayoutTwo({ tableModel, activeStation, panelRatio, detailCount, rightPa
     DETAIL_GROUPS_PER_PAGE,
     DETAIL_GROUP_PAGE_INTERVAL_MS
   )
+  const hasSidebar = rightPanelComponents.length > 0
 
   return (
-    <main
-      className="layout layout-triple"
-      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
-    >
+    <main className="layout layout-triple" style={mainGridStyle(ratio, hasSidebar)}>
       <div className="triple-detail-group">
         {pageCount > 1 && (
           <div className="triple-detail-head">
@@ -377,11 +401,9 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
     status: i === 0 ? 'Ready' : 'Queue',
     rows: detailList,
   }))
+  const hasSidebar = rightPanelComponents.length > 0
   return (
-    <main
-      className="layout layout-combined"
-      style={{ '--detail-fr': `${ratio.left}fr`, '--sidebar-fr': `${ratio.right}fr` }}
-    >
+    <main className="layout layout-combined" style={mainGridStyle(ratio, hasSidebar)}>
       <CombinedDetailList groups={groups} tableModel={tableModel} />
       <RightColumn components={rightPanelComponents} leaderboardModel={leaderboardModel} activeStation={activeStation} />
     </main>
@@ -431,7 +453,8 @@ export default function App() {
   const [rightPanelComponents, setRightPanelComponents] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(RIGHT_PANEL_STORAGE_KEY))
-      if (Array.isArray(saved) && saved.length && saved.every((id) => RIGHT_PANEL_COMPONENTS.some((c) => c.id === id))) {
+      // Empty array is valid — it means every panel was deliberately hidden.
+      if (Array.isArray(saved) && saved.every((id) => RIGHT_PANEL_COMPONENTS.some((c) => c.id === id))) {
         return saved
       }
     } catch {
@@ -439,11 +462,19 @@ export default function App() {
     }
     return ['top3', 'leaderboard']
   })
+  const [infoBanner, setInfoBanner] = useState(() => {
+    const saved = localStorage.getItem(INFO_BANNER_STORAGE_KEY)
+    return INFO_BANNER_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
     localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
   }, [rightPanelComponents])
+
+  useEffect(() => {
+    localStorage.setItem(INFO_BANNER_STORAGE_KEY, infoBanner)
+  }, [infoBanner])
 
   useEffect(() => {
     localStorage.setItem(LAYOUT_STORAGE_KEY, layout)
@@ -491,14 +522,12 @@ export default function App() {
 
   const isTrainingLevel = level !== 'level-1'
 
-  // Toggles one component in/out of the right column; refuses to remove
-  // the last one so the sidebar never goes completely empty.
+  // Toggles one component in/out of the right column. Unchecking all
+  // three is allowed on purpose — the table then takes the full row
+  // width instead of the sidebar sitting there empty.
   const toggleRightPanelComponent = (id) => {
     setRightPanelComponents((current) => {
-      if (current.includes(id)) {
-        if (current.length === 1) return current
-        return current.filter((c) => c !== id)
-      }
+      if (current.includes(id)) return current.filter((c) => c !== id)
       return [...current, id]
     })
   }
@@ -601,6 +630,18 @@ export default function App() {
           },
         ]
       : []),
+    ...(isTrainingLevel
+      ? [
+          {
+            id: 'info-banner',
+            label: 'Info Banner',
+            icon: <InfoBannerIcon />,
+            options: INFO_BANNER_OPTIONS,
+            active: infoBanner,
+            onChange: setInfoBanner,
+          },
+        ]
+      : []),
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -624,6 +665,7 @@ export default function App() {
           panelRatio={panelRatio}
           detailCount={detailCount}
           rightPanelComponents={rightPanelComponents}
+          showInfoBanner={infoBanner === 'visible'}
         />
       ) : (
         <>

@@ -12,10 +12,11 @@ export default function TrainingRangeBoard({
   panelRatio,
   detailCount,
   rightPanelComponents,
+  showInfoBanner,
 }) {
   return (
     <>
-      <InfoBanner />
+      {showInfoBanner && <InfoBanner />}
       <ActiveLayout
         tableModel={tableModel}
         leaderboardModel={leaderboardModel}
