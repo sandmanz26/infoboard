@@ -885,6 +885,21 @@ body {
   overflow-x: auto;
 }
 
+/* ---------- Layout 5: 5 base station columns, no sidebar ---------- */
+
+.layout-five {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.station-column-head {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+}
+
 .detail-panel-compact .table {
   margin-top: 8px;
 }
@@ -1643,7 +1658,8 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .layout-overview {
+  .layout-overview,
+  .layout-five {
     grid-template-columns: repeat(2, 1fr);
   }
 

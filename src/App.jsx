@@ -48,6 +48,18 @@ const LAYOUTS = [
   { id: 'layout-2', label: 'Layout 2', description: '3 detail lists + podium + directory' },
   { id: 'layout-3', label: 'Layout 3', description: 'Combined detail list + directory + leaderboard' },
   { id: 'layout-4', label: 'Layout 4', description: 'Overview of all 4 base stations at once' },
+  { id: 'layout-5', label: 'Layout 5', description: '5 base station columns, no directory/leaderboard sidebar' },
+]
+
+// Layout 5: one column per base station (no Directory/Leaderboard sidebar
+// here — each station is its own self-contained detail board). A booking
+// spans multiple stations, and each station runs multiple details, so
+// every column flips between its details on the same rotating-page
+// pattern used everywhere else in the app.
+const LAYOUT_FIVE_STATIONS = ['IMT-01', 'IMT-02', 'IMT-03', 'IMT-04', 'IMT-05']
+const LAYOUT_FIVE_DETAILS = [
+  { title: 'Detail 1', status: 'Ready' },
+  { title: 'Detail 2', status: 'Queue' },
 ]
 
 const TABLE_MODELS = [
@@ -410,11 +422,34 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
+function LayoutFive({ tableModel }) {
+  // Every station flips on the same clock, so the whole row turns over
+  // together — an airport board doesn't flip one panel at a time.
+  const { pageIndex } = usePagedRows(LAYOUT_FIVE_DETAILS, 1, DETAIL_GROUP_PAGE_INTERVAL_MS)
+  const activeDetail = LAYOUT_FIVE_DETAILS[pageIndex]
+  return (
+    <main className="layout layout-five">
+      {LAYOUT_FIVE_STATIONS.map((name) => (
+        <section key={name} className="panel detail-panel-compact station-column">
+          <div className="station-column-head">{name}</div>
+          <DetailPanel
+            tableModel={tableModel}
+            rows={detailList}
+            title={activeDetail.title}
+            status={activeDetail.status}
+          />
+        </section>
+      ))}
+    </main>
+  )
+}
+
 const LAYOUT_COMPONENTS = {
   'layout-1': LayoutOne,
   'layout-2': LayoutTwo,
   'layout-3': LayoutThree,
   'layout-4': StationsOverview,
+  'layout-5': LayoutFive,
 }
 
 export default function App() {
@@ -586,9 +621,9 @@ export default function App() {
         ]
       : []),
     // Container Ratio splits detail list(s) vs. the right sidebar column —
-    // every layout except Layout 4 (a plain 4-station grid, no such split)
-    // has that structure, so keep the control available on all of them.
-    ...(isTrainingLevel && layout !== 'layout-4'
+    // Layout 4 (4-station grid) and Layout 5 (5 station columns) have no
+    // such split, so the control only applies to Layouts 1-3.
+    ...(isTrainingLevel && layout !== 'layout-4' && layout !== 'layout-5'
       ? [
           {
             id: 'panel-ratio',
@@ -615,9 +650,9 @@ export default function App() {
           },
         ]
       : []),
-    // Right column exists on Layouts 1-3 only — Layout 4 is a plain
-    // 4-station grid with no sidebar to configure.
-    ...(isTrainingLevel && layout !== 'layout-4'
+    // Right column exists on Layouts 1-3 only — Layout 4 (4-station grid)
+    // and Layout 5 (5 station columns) have no sidebar to configure.
+    ...(isTrainingLevel && layout !== 'layout-4' && layout !== 'layout-5'
       ? [
           {
             id: 'right-panel',
