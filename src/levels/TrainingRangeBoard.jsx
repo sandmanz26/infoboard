@@ -13,6 +13,8 @@ export default function TrainingRangeBoard({
   detailCount,
   rightPanelComponents,
   showInfoBanner,
+  level,
+  hideNoColumn,
 }) {
   return (
     <>
@@ -24,6 +26,8 @@ export default function TrainingRangeBoard({
         panelRatio={panelRatio}
         detailCount={detailCount}
         rightPanelComponents={rightPanelComponents}
+        level={level}
+        hideNoColumn={hideNoColumn}
       />
     </>
   )

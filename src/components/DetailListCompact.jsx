@@ -1,6 +1,6 @@
 // All rows in one dense table — no pagination, no rotation. Built for TV
 // display where scrolling isn't an option: every row must fit on screen.
-export default function DetailListCompact({ rows, title = 'Detail List', status }) {
+export default function DetailListCompact({ rows, title = 'Detail List', status, hideNo }) {
   return (
     <>
       <div className="detail-panel-head">
@@ -14,7 +14,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status 
       <table className="table detail-table-compact">
         <thead>
           <tr>
-            <th>No</th>
+            {!hideNo && <th>No</th>}
             <th>Rank</th>
             <th>Name</th>
             <th>Status</th>
@@ -25,7 +25,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status 
         <tbody>
           {rows.map((row) => (
             <tr key={row.no}>
-              <td>{row.no}</td>
+              {!hideNo && <td>{row.no}</td>}
               <td>{row.rank}</td>
               <td className="name-cell" title={row.name}>
                 {row.name}

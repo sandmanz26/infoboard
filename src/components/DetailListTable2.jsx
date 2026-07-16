@@ -1,7 +1,7 @@
 import PageDots from './PageDots.jsx'
 import { statusTone } from '../statusTone.js'
 
-export default function DetailListTable2({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount }) {
+export default function DetailListTable2({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount, hideNo }) {
   return (
     <>
       <div className="detail-panel-head">
@@ -16,7 +16,7 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
       <table className="table table-two">
         <thead>
           <tr>
-            <th>No</th>
+            {!hideNo && <th>No</th>}
             <th>Trainee</th>
             <th>Weapon</th>
             <th>Lane</th>
@@ -25,7 +25,7 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
         <tbody>
           {rows.map((row) => (
             <tr key={row.no}>
-              <td>{row.no}</td>
+              {!hideNo && <td>{row.no}</td>}
               <td>
                 <span className="trainee-cell">
                   <span className="trainee-rank">{row.rank}</span>

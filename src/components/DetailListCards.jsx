@@ -1,7 +1,7 @@
 import PageDots from './PageDots.jsx'
 import { statusTone } from '../statusTone.js'
 
-export default function DetailListCards({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount }) {
+export default function DetailListCards({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount, hideNo }) {
   return (
     <>
       <div className="detail-panel-head">
@@ -17,7 +17,7 @@ export default function DetailListCards({ rows, title = 'Detail List', status = 
         {rows.map((row) => (
           <div className="detail-card" key={row.no}>
             <div className="detail-card-top">
-              <span className="detail-card-no">#{row.no}</span>
+              {!hideNo && <span className="detail-card-no">#{row.no}</span>}
               <span className="detail-card-lane">{row.lane}</span>
             </div>
             <div className="detail-card-name" title={row.name}>

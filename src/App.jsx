@@ -90,6 +90,13 @@ const INFO_BANNER_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the info banner below the header' },
 ]
 
+// Level 4 + Layout 5 only — hide the row-number column in each station's
+// detail table.
+const NO_COLUMN_OPTIONS = [
+  { id: 'visible', label: 'Visible', description: 'Show the No. column' },
+  { id: 'hidden', label: 'Hidden', description: 'Hide the No. column' },
+]
+
 // Left container (combined detail list) vs. right container (directory
 // map + leaderboard) width split — only Layout 3 pairs those two panels.
 const PANEL_RATIOS = [
@@ -162,6 +169,7 @@ const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
 const LEVEL_STORAGE_KEY = 'infoboard-level'
 const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
+const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 
 function LayoutIcon() {
   return (
@@ -210,6 +218,16 @@ function InfoBannerIcon() {
       <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.6" />
       <path d="M10 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       <circle cx="10" cy="6.4" r="1.05" fill="currentColor" />
+    </svg>
+  )
+}
+
+function NoColumnIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M2 8h5M2 13h5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M4 4.5 5.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
 }
@@ -271,19 +289,52 @@ function TypographyIcon() {
 // trainees in the roster, the last 5 page in on their own rotating page
 // a couple seconds later rather than being squeezed into the same table.
 // "Compact" is the exception: all 15 rows at once, dense enough to need
-// neither rotation nor scrolling — built for TV displays.
-function DetailPanel({ tableModel, rows, title, status }) {
+// neither rotation nor scrolling — built for TV displays. `fullRows`
+// forces that same all-15-at-once behavior for any table model (used by
+// Layout 5 / Level 4, where the only flip should be Detail 1 -> Detail 2,
+// not a second row-level rotation nested inside it).
+function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows }) {
   const { page, pageIndex, pageCount } = usePagedRows(rows, DETAIL_ROWS_PER_PAGE, DETAIL_ROWS_PAGE_INTERVAL_MS)
+  const displayRows = fullRows ? rows : page
+  const displayPageIndex = fullRows ? undefined : pageIndex
+  const displayPageCount = fullRows ? undefined : pageCount
   if (tableModel === 'card') {
-    return <DetailListCards rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+    return (
+      <DetailListCards
+        rows={displayRows}
+        title={title}
+        status={status}
+        pageIndex={displayPageIndex}
+        pageCount={displayPageCount}
+        hideNo={hideNo}
+      />
+    )
   }
   if (tableModel === 'table2') {
-    return <DetailListTable2 rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+    return (
+      <DetailListTable2
+        rows={displayRows}
+        title={title}
+        status={status}
+        pageIndex={displayPageIndex}
+        pageCount={displayPageCount}
+        hideNo={hideNo}
+      />
+    )
   }
   if (tableModel === 'compact') {
-    return <DetailListCompact rows={rows} title={title} status={status} />
+    return <DetailListCompact rows={rows} title={title} status={status} hideNo={hideNo} />
   }
-  return <DetailList rows={page} title={title} status={status} pageIndex={pageIndex} pageCount={pageCount} />
+  return (
+    <DetailList
+      rows={displayRows}
+      title={title}
+      status={status}
+      pageIndex={displayPageIndex}
+      pageCount={displayPageCount}
+      hideNo={hideNo}
+    />
+  )
 }
 
 function LeaderboardPanel({ leaderboardModel, rows }) {
@@ -422,11 +473,15 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
-function LayoutFive({ tableModel, activeStation }) {
+function LayoutFive({ tableModel, activeStation, level, hideNoColumn }) {
   // Every station flips on the same clock, so the whole row turns over
   // together — an airport board doesn't flip one panel at a time.
   const { pageIndex } = usePagedRows(LAYOUT_FIVE_DETAILS, 1, DETAIL_GROUP_PAGE_INTERVAL_MS)
   const activeDetail = LAYOUT_FIVE_DETAILS[pageIndex]
+  // Level 4 (SWT) only: show all 15 rows per detail instead of the usual
+  // 10-then-5 rotation, so the only flip happening is Detail 1 -> Detail
+  // 2, and let the No. column be hidden via its own switcher.
+  const isLevelFour = level === 'level-4'
   return (
     <main className="layout layout-five">
       {LAYOUT_FIVE_STATIONS.map((name) => (
@@ -437,6 +492,8 @@ function LayoutFive({ tableModel, activeStation }) {
             rows={detailList}
             title={activeDetail.title}
             status={activeDetail.status}
+            fullRows={isLevelFour}
+            hideNo={isLevelFour && hideNoColumn}
           />
         </section>
       ))}
@@ -504,11 +561,19 @@ export default function App() {
     const saved = localStorage.getItem(INFO_BANNER_STORAGE_KEY)
     return INFO_BANNER_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
   })
+  const [noColumn, setNoColumn] = useState(() => {
+    const saved = localStorage.getItem(NO_COLUMN_STORAGE_KEY)
+    return NO_COLUMN_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
     localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
   }, [rightPanelComponents])
+
+  useEffect(() => {
+    localStorage.setItem(NO_COLUMN_STORAGE_KEY, noColumn)
+  }, [noColumn])
 
   useEffect(() => {
     localStorage.setItem(INFO_BANNER_STORAGE_KEY, infoBanner)
@@ -680,6 +745,21 @@ export default function App() {
           },
         ]
       : []),
+    // Level 4 + Layout 5 only — the other layouts' tables always show
+    // row numbers, and this only makes sense on the "flip only, no inner
+    // row rotation" behavior that's also scoped to Level 4 there.
+    ...(level === 'level-4' && layout === 'layout-5'
+      ? [
+          {
+            id: 'no-column',
+            label: 'No Column',
+            icon: <NoColumnIcon />,
+            options: NO_COLUMN_OPTIONS,
+            active: noColumn,
+            onChange: setNoColumn,
+          },
+        ]
+      : []),
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -704,6 +784,8 @@ export default function App() {
           detailCount={detailCount}
           rightPanelComponents={rightPanelComponents}
           showInfoBanner={infoBanner === 'visible'}
+          level={level}
+          hideNoColumn={noColumn === 'hidden'}
         />
       ) : (
         <>
