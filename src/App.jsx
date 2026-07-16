@@ -97,6 +97,14 @@ const NO_COLUMN_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the No. column' },
 ]
 
+// Level 4 + Layout 5 only — 10 rows pages in the remaining 5 a few
+// seconds later (a flip, same as every other layout); 15 shows the
+// whole roster at once with no row-level flip at all.
+const DATA_COUNT_OPTIONS = [
+  { id: '10', label: '10', description: '10 rows, then the remaining 5 flip in a few seconds later' },
+  { id: '15', label: '15', description: 'All 15 rows at once, no row-level flip' },
+]
+
 // Left container (combined detail list) vs. right container (directory
 // map + leaderboard) width split — only Layout 3 pairs those two panels.
 const PANEL_RATIOS = [
@@ -170,6 +178,7 @@ const LEVEL_STORAGE_KEY = 'infoboard-level'
 const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
+const DATA_COUNT_STORAGE_KEY = 'infoboard-layout5-data-count'
 
 function LayoutIcon() {
   return (
@@ -228,6 +237,15 @@ function NoColumnIcon() {
       <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M2 8h5M2 13h5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M4 4.5 5.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DataCountIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M8.4 7h1.1v6M7.7 13h3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -473,14 +491,15 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
-function LayoutFive({ tableModel, activeStation, level, hideNoColumn }) {
+function LayoutFive({ tableModel, activeStation, level, hideNoColumn, dataCount }) {
   // Every station flips on the same clock, so the whole row turns over
   // together — an airport board doesn't flip one panel at a time.
   const { pageIndex } = usePagedRows(LAYOUT_FIVE_DETAILS, 1, DETAIL_GROUP_PAGE_INTERVAL_MS)
   const activeDetail = LAYOUT_FIVE_DETAILS[pageIndex]
-  // Level 4 (SWT) only: show all 15 rows per detail instead of the usual
-  // 10-then-5 rotation, so the only flip happening is Detail 1 -> Detail
-  // 2, and let the No. column be hidden via its own switcher.
+  // Level 4 (SWT) only: Data Count picks whether each detail shows all 15
+  // rows at once (no row-level flip, only Detail 1 -> Detail 2) or the
+  // usual 10-then-5 rotation everywhere else uses. Hiding the No. column
+  // is available the same way.
   const isLevelFour = level === 'level-4'
   return (
     <main className="layout layout-five">
@@ -492,7 +511,7 @@ function LayoutFive({ tableModel, activeStation, level, hideNoColumn }) {
             rows={detailList}
             title={activeDetail.title}
             status={activeDetail.status}
-            fullRows={isLevelFour}
+            fullRows={isLevelFour && dataCount === '15'}
             hideNo={isLevelFour && hideNoColumn}
           />
         </section>
@@ -565,6 +584,10 @@ export default function App() {
     const saved = localStorage.getItem(NO_COLUMN_STORAGE_KEY)
     return NO_COLUMN_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
   })
+  const [dataCount, setDataCount] = useState(() => {
+    const saved = localStorage.getItem(DATA_COUNT_STORAGE_KEY)
+    return DATA_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '15'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -574,6 +597,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(NO_COLUMN_STORAGE_KEY, noColumn)
   }, [noColumn])
+
+  useEffect(() => {
+    localStorage.setItem(DATA_COUNT_STORAGE_KEY, dataCount)
+  }, [dataCount])
 
   useEffect(() => {
     localStorage.setItem(INFO_BANNER_STORAGE_KEY, infoBanner)
@@ -758,6 +785,14 @@ export default function App() {
             active: noColumn,
             onChange: setNoColumn,
           },
+          {
+            id: 'data-count',
+            label: 'Data Count',
+            icon: <DataCountIcon />,
+            options: DATA_COUNT_OPTIONS,
+            active: dataCount,
+            onChange: setDataCount,
+          },
         ]
       : []),
   ]
@@ -786,6 +821,7 @@ export default function App() {
           showInfoBanner={infoBanner === 'visible'}
           level={level}
           hideNoColumn={noColumn === 'hidden'}
+          dataCount={dataCount}
         />
       ) : (
         <>
