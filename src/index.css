@@ -891,6 +891,13 @@ body {
   grid-template-columns: repeat(5, 1fr);
 }
 
+/* Fixed to the height 15 rows needs (Data Count's tallest state) so
+   switching between 10 and 15 — or the 10-then-5 flip itself — never
+   resizes the column; shorter states just leave blank space below. */
+.layout-five .station-column {
+  min-height: 830px;
+}
+
 .station-column-head {
   font-size: 14px;
   font-weight: 800;
