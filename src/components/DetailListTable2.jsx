@@ -27,7 +27,7 @@ export default function DetailListTable2({
             {!hideNo && <th className="no-cell">No</th>}
             {splitRank ? (
               <>
-                <th>Rank</th>
+                <th className="rank-cell">Rank</th>
                 <th>Name</th>
               </>
             ) : (
@@ -43,7 +43,7 @@ export default function DetailListTable2({
               {!hideNo && <td className="no-cell">{row.no}</td>}
               {splitRank ? (
                 <>
-                  <td>{row.rank}</td>
+                  <td className="rank-cell">{row.rank}</td>
                   <td className="name-cell" title={row.name}>
                     {row.name}
                   </td>

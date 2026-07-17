@@ -562,7 +562,7 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
         <thead>
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
-            <th>Rank</th>
+            <th className="rank-cell">Rank</th>
             <th>Name</th>
             <th>Weapon</th>
             <th>Score</th>
@@ -572,7 +572,7 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
           {rows.map((row) => (
             <tr key={row.no}>
               {!hideNo && <td className="no-cell">{row.no}</td>}
-              <td>{row.rank}</td>
+              <td className="rank-cell">{row.rank}</td>
               <td className="name-cell" title={row.name}>
                 {row.name}
               </td>

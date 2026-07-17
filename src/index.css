@@ -896,6 +896,8 @@ body {
 
 .layout-five {
   grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 12px;
 }
 
 /* Only the paginated (10-then-5) state needs a fixed height — sized to
@@ -987,13 +989,36 @@ body {
   table-layout: fixed;
 }
 
+/* table-layout: fixed truncates instead of reflowing when a column is
+   narrower than its content — without this, an oversized header label
+   (e.g. "RANK") visually bleeds into the next column instead of
+   clipping, since text-overflow only kicks in where it's set below. */
+.station-column .table th,
+.station-column .table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Narrow columns get a fixed width sized to comfortably fit their
+   header label and longest data value (e.g. "Lane 15") at the largest
+   Table Font Size setting (15px) — anything smaller just leaves a
+   little unused space rather than risking silent mid-word clipping. */
 .station-column .table .no-cell {
-  width: 24px;
+  width: 40px;
+}
+
+/* Rank codes (2SG, CPT, MAJ, REC…) never need more than a few
+   characters — without this it was taking an equal share alongside
+   Name/Weapon under the fixed layout above, far more than it needs.
+   Sized for the "RANK" header, not just the data, since the label is
+   what actually needs the room. */
+.station-column .table .rank-cell {
+  width: 58px;
 }
 
 .station-column .table th:last-child,
 .station-column .table td:last-child {
-  width: 15%;
+  width: 72px;
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in
