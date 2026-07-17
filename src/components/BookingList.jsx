@@ -19,6 +19,10 @@ const STAT_CARDS = [
 // CMT/CTT collapse mode+programme into a single Platform Type column; SWT
 // keeps them separate as Mode + Courseware.
 const COLUMN_RENDERERS = {
+  no: {
+    label: 'No',
+    cell: (row, index) => index + 1,
+  },
   id: {
     label: 'Booking ID',
     cell: (row) => (
@@ -61,25 +65,27 @@ const COLUMN_RENDERERS = {
 }
 
 const CMT_CTT_COLUMNS = [
-  { key: 'id', width: '29%' },
-  { key: 'platformType', width: '22%' },
-  { key: 'startTime', width: '12%' },
-  { key: 'endTime', width: '12%' },
+  { key: 'no', width: '4%' },
+  { key: 'id', width: '20%' },
+  { key: 'platformType', width: '24%' },
+  { key: 'startTime', width: '11%' },
+  { key: 'endTime', width: '11%' },
   { key: 'instructor', width: '15%' },
-  { key: 'status', width: '10%' },
+  { key: 'status', width: '15%' },
 ]
 
 const LEVEL_TABLE_COLUMNS = {
   'level-2': CMT_CTT_COLUMNS,
   'level-3': CMT_CTT_COLUMNS,
   'level-4': [
-    { key: 'id', width: '25%' },
-    { key: 'mode', width: '12%' },
-    { key: 'courseware', width: '17%' },
-    { key: 'startTime', width: '11%' },
-    { key: 'endTime', width: '11%' },
+    { key: 'no', width: '4%' },
+    { key: 'id', width: '18%' },
+    { key: 'mode', width: '11%' },
+    { key: 'courseware', width: '16%' },
+    { key: 'startTime', width: '10%' },
+    { key: 'endTime', width: '10%' },
     { key: 'instructor', width: '14%' },
-    { key: 'status', width: '10%' },
+    { key: 'status', width: '17%' },
   ],
 }
 
@@ -127,13 +133,13 @@ export default function BookingList({ rows, levels, activeLevelId, pageIndex, st
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, index) => (
             <tr key={row.code}>
               {columns.map((col) => {
                 const def = COLUMN_RENDERERS[col.key]
                 return (
                   <td key={col.key} className={def.cellClassName}>
-                    {def.cell(row)}
+                    {def.cell(row, index)}
                   </td>
                 )
               })}
