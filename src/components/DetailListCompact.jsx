@@ -33,7 +33,9 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
               <td>
                 <span className="status-pill">{row.status}</span>
               </td>
-              <td>{row.weapon}</td>
+              <td className="weapon-cell" title={row.weapon}>
+                {row.weapon}
+              </td>
               <td>{row.lane}</td>
             </tr>
           ))}

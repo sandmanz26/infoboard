@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { detailList, podium, leaderboard, stations } from './data.js'
+import { detailList, podium, leaderboard, stations, swtStations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -52,12 +52,11 @@ const LAYOUTS = [
 ]
 
 // Layout 5: one column per base station (no Directory/Leaderboard sidebar
-// here — each station is its own self-contained detail board). A booking
-// spans multiple stations, and each station runs multiple details, so
-// every column steps through one fixed sequence:
-//   Data Count 10: Detail 1 (10 rows) -> Detail 1 (5 rows) ->
-//                  Detail 2 (10 rows) -> Detail 2 (5 rows) -> repeat
-//   Data Count 15: Detail 1 (15 rows) -> Detail 2 (15 rows) -> repeat
+// here — each station is its own self-contained detail board).
+// Level 2/3 still use a shared placeholder roster that flips
+// Detail 1 (10 rows) -> Detail 1 (5 rows) -> Detail 2 (10) -> Detail 2 (5).
+// Level 4 uses swtStations' real per-station data instead — see
+// LayoutFive below.
 // Unit + courseware are shown under each column's base station name so
 // the booking that station is currently running is clear at a glance.
 const LAYOUT_FIVE_STATIONS = [
@@ -73,10 +72,7 @@ const LAYOUT_FIVE_DETAILS = [
 ]
 const LAYOUT_FIVE_STEP_INTERVAL_MS = 5000
 
-function layoutFiveSteps(rows, dataCount) {
-  if (dataCount === '15') {
-    return LAYOUT_FIVE_DETAILS.map((detail) => ({ detail, rows }))
-  }
+function layoutFiveSteps(rows) {
   return LAYOUT_FIVE_DETAILS.flatMap((detail) => [
     { detail, rows: rows.slice(0, DETAIL_ROWS_PER_PAGE), paginated: true },
     { detail, rows: rows.slice(DETAIL_ROWS_PER_PAGE), paginated: true },
@@ -118,12 +114,12 @@ const NO_COLUMN_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the No. column' },
 ]
 
-// Level 4 + Layout 5 only — 10 rows pages in the remaining 5 a few
-// seconds later (a flip, same as every other layout); 15 shows the
-// whole roster at once with no row-level flip at all.
-const DATA_COUNT_OPTIONS = [
-  { id: '10', label: '10', description: '10 rows, then the remaining 5 flip in a few seconds later' },
-  { id: '15', label: '15', description: 'All 15 rows at once, no row-level flip' },
+// Level 4 + Layout 5 only — SWT-03 doubles as a Global Leaderboard once
+// its session ends; while a session is still running it looks like any
+// other station.
+const SWT03_SESSION_OPTIONS = [
+  { id: 'ongoing', label: 'Ongoing', description: 'SWT-03 shows its trainee roster like every other station' },
+  { id: 'ended', label: 'Ended', description: 'SWT-03 shows the Global Leaderboard instead' },
 ]
 
 // Layout 5 only — independent font-size controls for the 3 text sizes
@@ -218,7 +214,7 @@ const LEVEL_STORAGE_KEY = 'infoboard-level'
 const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
-const DATA_COUNT_STORAGE_KEY = 'infoboard-layout5-data-count'
+const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
 const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
 const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
@@ -280,15 +276,6 @@ function NoColumnIcon() {
       <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M2 8h5M2 13h5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M4 4.5 5.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DataCountIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
-      <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8.4 7h1.1v6M7.7 13h3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -555,29 +542,96 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
+// SWT-03's "session ended" variant — a ranked scoreboard instead of a
+// trainee detail table. Mirrors DetailListTable2's markup/classes so it
+// picks up the same font-size overrides and column styling for free.
+function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
+  return (
+    <>
+      <div className="detail-panel-head">
+        <h2 className="panel-title">Global Leaderboard</h2>
+      </div>
+      <div className="station-column-info">
+        <span>
+          Courseware: <strong>{courseware}</strong>
+        </span>
+        <span>{timeRange}</span>
+      </div>
+      <table className="table table-two">
+        <thead>
+          <tr>
+            {!hideNo && <th>No</th>}
+            <th>Trainee</th>
+            <th>Weapon</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.no}>
+              {!hideNo && <td>{row.no}</td>}
+              <td>
+                <span className="trainee-cell">
+                  <span className="trainee-rank">{row.rank}</span>
+                  <span className="trainee-name" title={row.name}>
+                    {row.name}
+                  </span>
+                </span>
+              </td>
+              <td className="weapon-cell" title={row.weapon}>
+                {row.weapon}
+              </td>
+              <td>{row.score}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
+
+// A station's booking info line — Booking ID, Mode + Courseware, time
+// range, Unit — only rendering whichever fields the station actually has
+// (SWT-03 has no real booking tied to it, only a courseware + time slot).
+function SwtStationInfo({ station }) {
+  return (
+    <div className="station-column-info">
+      {station.bookingCode && (
+        <span>
+          Booking: <strong>{station.bookingCode}</strong>
+        </span>
+      )}
+      {(station.mode || station.courseware) && (
+        <span>{[station.mode, station.courseware].filter(Boolean).join(', ')}</span>
+      )}
+      <span>
+        {station.startTime} - {station.endTime}
+      </span>
+      {station.unit && (
+        <span>
+          Unit: <strong>{station.unit}</strong>
+        </span>
+      )}
+    </div>
+  )
+}
+
 function LayoutFive({
   tableModel,
   activeStation,
   level,
   hideNoColumn,
-  dataCount,
   tableFontSize,
   detailFontSize,
   stationFontSize,
+  swt03Session,
 }) {
-  // Level 4 (SWT) only: Data Count picks the step sequence (10-then-5 per
-  // detail, or all 15 at once). Levels 2/3 always run the 10-then-5
-  // sequence, matching the original behavior. Hiding the No. column is
-  // available for Level 4 the same way.
   const isLevelFour = level === 'level-4'
-  const effectiveDataCount = isLevelFour ? dataCount : '10'
-  const steps = useMemo(
-    () => layoutFiveSteps(detailList, effectiveDataCount),
-    [effectiveDataCount]
-  )
-  // Every station steps through the sequence on the same clock, so the
-  // whole row turns over together — an airport board doesn't flip one
-  // panel at a time.
+  // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
+  // rows) -> Detail 1 (5) -> Detail 2 (10) -> Detail 2 (5) across every
+  // station in lockstep — an airport board doesn't flip one panel at a
+  // time. Level 4 ignores this entirely in favor of real per-station data.
+  const steps = useMemo(() => layoutFiveSteps(detailList), [])
   const { pageIndex } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
   const activeStep = steps[pageIndex]
   const fontSizeVars = {
@@ -587,30 +641,58 @@ function LayoutFive({
   }
   return (
     <main className="layout layout-five" style={fontSizeVars}>
-      {LAYOUT_FIVE_STATIONS.map((station) => (
-        <section
-          key={station.name}
-          className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
-        >
-          <div className="station-column-head">{station.name}</div>
-          <div className="station-column-info">
-            <span>
-              Unit: <strong>{station.unit}</strong>
-            </span>
-            <span>
-              Courseware: <strong>{station.courseware}</strong>
-            </span>
-          </div>
-          <DetailPanel
-            tableModel={tableModel}
-            rows={activeStep.rows}
-            title={activeStep.detail.title}
-            status={activeStep.detail.status}
-            fullRows
-            hideNo={isLevelFour && hideNoColumn}
-          />
-        </section>
-      ))}
+      {isLevelFour
+        ? swtStations.map((station) => {
+            const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
+            return (
+              <section key={station.code} className="panel detail-panel-compact station-column">
+                <div className="station-column-head">{station.code}</div>
+                {showLeaderboard ? (
+                  <StationGlobalLeaderboard
+                    rows={station.leaderboardRows}
+                    courseware={station.courseware}
+                    timeRange={`${station.startTime} - ${station.endTime}`}
+                    hideNo={hideNoColumn}
+                  />
+                ) : (
+                  <>
+                    <SwtStationInfo station={station} />
+                    <DetailPanel
+                      tableModel={tableModel}
+                      rows={station.rows}
+                      title="Detail 1"
+                      status="Ready"
+                      fullRows
+                      hideNo={hideNoColumn}
+                    />
+                  </>
+                )}
+              </section>
+            )
+          })
+        : LAYOUT_FIVE_STATIONS.map((station) => (
+            <section
+              key={station.name}
+              className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
+            >
+              <div className="station-column-head">{station.name}</div>
+              <div className="station-column-info">
+                <span>
+                  Unit: <strong>{station.unit}</strong>
+                </span>
+                <span>
+                  Courseware: <strong>{station.courseware}</strong>
+                </span>
+              </div>
+              <DetailPanel
+                tableModel={tableModel}
+                rows={activeStep.rows}
+                title={activeStep.detail.title}
+                status={activeStep.detail.status}
+                fullRows
+              />
+            </section>
+          ))}
       <section className="panel directory-panel layout-five-directory">
         <Directory activeStation={activeStation} />
       </section>
@@ -679,9 +761,9 @@ export default function App() {
     const saved = localStorage.getItem(NO_COLUMN_STORAGE_KEY)
     return NO_COLUMN_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
   })
-  const [dataCount, setDataCount] = useState(() => {
-    const saved = localStorage.getItem(DATA_COUNT_STORAGE_KEY)
-    return DATA_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '15'
+  const [swt03Session, setSwt03Session] = useState(() => {
+    const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
+    return SWT03_SESSION_OPTIONS.some((o) => o.id === saved) ? saved : 'ongoing'
   })
   const [tableFontSize, setTableFontSize] = useState(() => {
     const saved = localStorage.getItem(TABLE_FONT_SIZE_STORAGE_KEY)
@@ -706,8 +788,8 @@ export default function App() {
   }, [noColumn])
 
   useEffect(() => {
-    localStorage.setItem(DATA_COUNT_STORAGE_KEY, dataCount)
-  }, [dataCount])
+    localStorage.setItem(SWT03_SESSION_STORAGE_KEY, swt03Session)
+  }, [swt03Session])
 
   useEffect(() => {
     localStorage.setItem(TABLE_FONT_SIZE_STORAGE_KEY, tableFontSize)
@@ -892,8 +974,7 @@ export default function App() {
         ]
       : []),
     // Level 4 + Layout 5 only — the other layouts' tables always show
-    // row numbers, and this only makes sense on the "flip only, no inner
-    // row rotation" behavior that's also scoped to Level 4 there.
+    // row numbers, and SWT-03's leaderboard variant only exists here.
     ...(level === 'level-4' && layout === 'layout-5'
       ? [
           {
@@ -905,12 +986,12 @@ export default function App() {
             onChange: setNoColumn,
           },
           {
-            id: 'data-count',
-            label: 'Data Count',
-            icon: <DataCountIcon />,
-            options: DATA_COUNT_OPTIONS,
-            active: dataCount,
-            onChange: setDataCount,
+            id: 'swt03-session',
+            label: 'SWT-03 Session',
+            icon: <LeaderboardIcon />,
+            options: SWT03_SESSION_OPTIONS,
+            active: swt03Session,
+            onChange: setSwt03Session,
           },
         ]
       : []),
@@ -971,7 +1052,7 @@ export default function App() {
           showInfoBanner={infoBanner === 'visible'}
           level={level}
           hideNoColumn={noColumn === 'hidden'}
-          dataCount={dataCount}
+          swt03Session={swt03Session}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}

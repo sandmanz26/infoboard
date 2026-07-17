@@ -34,7 +34,9 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
                   </span>
                 </span>
               </td>
-              <td>{row.weapon}</td>
+              <td className="weapon-cell" title={row.weapon}>
+                {row.weapon}
+              </td>
               <td>{row.lane}</td>
             </tr>
           ))}

@@ -15,7 +15,7 @@ export default function TrainingRangeBoard({
   showInfoBanner,
   level,
   hideNoColumn,
-  dataCount,
+  swt03Session,
   tableFontSize,
   detailFontSize,
   stationFontSize,
@@ -32,7 +32,7 @@ export default function TrainingRangeBoard({
         rightPanelComponents={rightPanelComponents}
         level={level}
         hideNoColumn={hideNoColumn}
-        dataCount={dataCount}
+        swt03Session={swt03Session}
         tableFontSize={tableFontSize}
         detailFontSize={detailFontSize}
         stationFontSize={stationFontSize}

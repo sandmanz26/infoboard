@@ -981,6 +981,15 @@ body {
   max-width: 108px;
 }
 
+/* Some real rosters (Layout 5 / Level 4) list a secondary item alongside
+   the primary weapon (e.g. "SAR21, MATADOR") — long enough to push the
+   Lane/Score column out of a narrow station column if left unbounded. */
+.detail-panel-compact .weapon-cell {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .detail-panel-compact .status-pill {
   padding: 2px 6px;
   font-size: 11.5px;

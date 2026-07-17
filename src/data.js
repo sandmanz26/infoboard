@@ -46,6 +46,127 @@ export const stations = [
   { id: 'IMT-04', bayFill: '#f2d13c', bayCenter: [507, 85] },
 ]
 
+// Level 4 (SWT) + Layout 5 — real per-station rosters from the range
+// office's station board, one real booking per column instead of a
+// shared placeholder list. Sizes vary because that's how many trainees
+// are actually booked on each (5 or 15), not a display setting.
+// SWT-03 doubles as a Global Leaderboard once its session ends — see
+// leaderboardRows/isLeaderboardCapable.
+export const swtStations = [
+  {
+    code: 'SWT-01',
+    bookingCode: '20260715-SWT-04',
+    mode: 'Collective',
+    courseware: 'Blockforce Training',
+    unit: '41SAB',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    rows: [
+      { no: 1, rank: '2SG', name: 'Yeo Jun Kai', status: 'Ready', weapon: 'M203', lane: 'Lane 1' },
+      { no: 2, rank: '2SG', name: 'Seah Yu Ting', status: 'Ready', weapon: 'SAR21, MATADOR', lane: 'Lane 2' },
+      { no: 3, rank: 'CPT', name: 'Chan Zi Xuan', status: 'Ready', weapon: 'SPIKELR', lane: 'Lane 3' },
+      { no: 4, rank: '3SG', name: 'Neo Jia Hao', status: 'Ready', weapon: 'M110, CLAYMORE', lane: 'Lane 4' },
+      { no: 5, rank: '3WO', name: 'Low Shi Hui', status: 'Ready', weapon: 'LMG', lane: 'Lane 5' },
+      { no: 6, rank: 'CPT', name: 'Liew Kai Xin', status: 'Ready', weapon: 'SAR21', lane: 'Lane 6' },
+      { no: 7, rank: '2LT', name: 'Sim Wen Qi', status: 'Ready', weapon: 'SAR21', lane: 'Lane 7' },
+      { no: 8, rank: '2LT', name: 'Ho Jia Ying', status: 'Ready', weapon: 'SAR21, COMD BINO', lane: 'Lane 8' },
+      { no: 9, rank: '1WO', name: 'Quek Jun Wei', status: 'Ready', weapon: 'SAR21, DRONE', lane: 'Lane 9' },
+      { no: 10, rank: '1SG', name: 'Muhammad Amir Bin Rahman', status: 'Ready', weapon: 'LMG', lane: 'Lane 10' },
+      { no: 11, rank: 'LCP', name: 'Muhammad Hafiz Bin Salleh', status: 'Ready', weapon: 'SPIKE SR', lane: 'Lane 11' },
+      { no: 12, rank: 'MAJ', name: 'Nur Aisyah Binte Ismail', status: 'Ready', weapon: 'GPMG', lane: 'Lane 12' },
+      { no: 13, rank: 'MAJ', name: 'Deepa Krishnan', status: 'Ready', weapon: 'GPMG', lane: 'Lane 13' },
+      { no: 14, rank: '1SG', name: 'Rohan Patel', status: 'Ready', weapon: 'GPMG, DRONE', lane: 'Lane 14' },
+      { no: 15, rank: 'LCP', name: 'Meera Subramaniam', status: 'Ready', weapon: 'MATADOR', lane: 'Lane 15' },
+    ],
+  },
+  {
+    code: 'SWT-02',
+    bookingCode: '20260715-SWT-04',
+    mode: 'Collective',
+    courseware: 'Blockforce Training',
+    unit: '41SAB',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    rows: [
+      { no: 1, rank: '2SG', name: 'Deepa Krishnan', status: 'Ready', weapon: 'M203', lane: 'Lane 1' },
+      { no: 2, rank: '2SG', name: 'Rohan Patel', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
+      { no: 3, rank: 'CPT', name: 'Meera Subramaniam', status: 'Ready', weapon: 'SPIKELR', lane: 'Lane 3' },
+      { no: 4, rank: '3SG', name: 'Sanjay Pillai', status: 'Ready', weapon: 'M110, CLAYMORE', lane: 'Lane 4' },
+      { no: 5, rank: '3WO', name: 'Nicole Pereira', status: 'Ready', weapon: 'LMG', lane: 'Lane 5' },
+      { no: 6, rank: 'CPT', name: 'Marcus Fernandez', status: 'Ready', weapon: 'SAR21', lane: 'Lane 6' },
+      { no: 7, rank: '2LT', name: 'Brandon Goh', status: 'Ready', weapon: 'SAR21', lane: 'Lane 7' },
+      { no: 8, rank: 'MAJ', name: 'Rachel Lim', status: 'Ready', weapon: 'SAR21, COMD BINO', lane: 'Lane 8' },
+      { no: 9, rank: '1WO', name: 'Jason Ong', status: 'Ready', weapon: 'SAR21, DRONE', lane: 'Lane 9' },
+      { no: 10, rank: '1SG', name: "Adrian D'Cruz", status: 'Ready', weapon: 'LMG', lane: 'Lane 10' },
+      { no: 11, rank: 'LCP', name: 'Chloe Martin', status: 'Ready', weapon: 'SPIKE SR', lane: 'Lane 11' },
+      { no: 12, rank: 'MAJ', name: 'Michelle Gomes', status: 'Ready', weapon: 'GPMG', lane: 'Lane 12' },
+      { no: 13, rank: 'MAJ', name: "Ashley D'Souza", status: 'Ready', weapon: 'GPMG', lane: 'Lane 13' },
+      { no: 14, rank: '1SG', name: 'Daniel Rodrigues', status: 'Ready', weapon: 'GPMG, DRONE', lane: 'Lane 14' },
+      { no: 15, rank: 'LCP', name: 'Ethan Pereira', status: 'Ready', weapon: 'MATADOR', lane: 'Lane 15' },
+    ],
+  },
+  {
+    code: 'SWT-03',
+    courseware: 'M203',
+    startTime: '08:00 AM',
+    endTime: '04:00 PM',
+    isLeaderboardCapable: true,
+    // Placeholder roster shown while the session is still running — no
+    // real roster was supplied for the "not yet ended" state, so this
+    // falls back to the same generic list every other layout uses.
+    rows: detailList,
+    leaderboardRows: [
+      { no: 1, rank: '2SG', name: 'Sanjay Pillai', weapon: 'M203', score: '30/30' },
+      { no: 2, rank: '2SG', name: 'Aishwarya Nair', weapon: 'M203', score: '30/30' },
+      { no: 3, rank: 'CPT', name: 'Harish Chandran', weapon: 'M203', score: '30/30' },
+      { no: 4, rank: '3SG', name: "Ashley D'Souza", weapon: 'M203', score: '30/30' },
+      { no: 5, rank: '3WO', name: 'Daniel Rodrigues', weapon: 'M203', score: '30/30' },
+      { no: 6, rank: 'CPT', name: 'Liew Kai Xin', weapon: 'M203', score: '29/30' },
+      { no: 7, rank: '2LT', name: 'Nicole Pereira', weapon: 'M203', score: '29/30' },
+      { no: 8, rank: 'MAJ', name: 'Marcus Fernandez', weapon: 'M203', score: '29/30' },
+      { no: 9, rank: '1WO', name: 'Toh Wei Jie', weapon: 'M203', score: '29/30' },
+      { no: 10, rank: '1SG', name: 'Quek Jun Wei', weapon: 'M203', score: '29/30' },
+      { no: 11, rank: 'LCP', name: 'Liew Kai Xin', weapon: 'M203', score: '29/30' },
+      { no: 12, rank: 'MAJ', name: 'Nur Aisyah Binte Ismail', weapon: 'M203', score: '28/30' },
+      { no: 13, rank: 'MAJ', name: 'Deepa Krishnan', weapon: 'M203', score: '28/30' },
+      { no: 14, rank: '1SG', name: 'Melissa Gomes', weapon: 'M203', score: '28/30' },
+      { no: 15, rank: 'LCP', name: 'Meera Subramaniam', weapon: 'M203', score: '28/30' },
+    ],
+  },
+  {
+    code: 'SWT-04',
+    bookingCode: '20260715-SWT-05',
+    mode: 'Judgemental',
+    courseware: 'Scenario 5',
+    unit: '41SAB',
+    startTime: '08:00 AM',
+    endTime: '04:00 PM',
+    rows: [
+      { no: 1, rank: '3SG', name: 'Low Shi Hui', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
+      { no: 2, rank: '3SG', name: 'Liew Kai Xin', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
+      { no: 3, rank: 'CPT', name: 'Sim Wen Qi', status: 'Ready', weapon: 'P30', lane: 'Lane 3' },
+      { no: 4, rank: '3SG', name: 'Muhammad Amir Bin Rahman', status: 'Ready', weapon: 'P30', lane: 'Lane 4' },
+      { no: 5, rank: '3WO', name: 'Muhammad Amir Bin Rahman', status: 'Ready', weapon: 'LMG', lane: 'Lane 5' },
+    ],
+  },
+  {
+    code: 'SWT-05',
+    bookingCode: '20260715-SWT-05',
+    mode: 'Judgemental',
+    courseware: 'Scenario 5',
+    unit: '41SAB',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    rows: [
+      { no: 1, rank: '2SG', name: 'Tan Wei Ming', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
+      { no: 2, rank: '2SG', name: 'Lim Jia Hui', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
+      { no: 3, rank: 'CPT', name: 'Lee Kai Wen', status: 'Ready', weapon: 'P30', lane: 'Lane 3' },
+      { no: 4, rank: '3SG', name: 'Goh Yi Xuan', status: 'Ready', weapon: 'P30', lane: 'Lane 4' },
+      { no: 5, rank: '3WO', name: 'Ng Zheng Hao', status: 'Ready', weapon: 'LMG', lane: 'Lane 5' },
+    ],
+  },
+]
+
 // Level 1 lobby — today's booking list for the training floors, sourced
 // straight from the range office's booking sheet. Only the time is shown
 // (no date) since the board only ever lists today's schedule; "unit" here

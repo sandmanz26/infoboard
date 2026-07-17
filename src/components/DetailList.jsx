@@ -37,7 +37,9 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
               <td>
                 <span className="status-pill">{row.status}</span>
               </td>
-              <td>{row.weapon}</td>
+              <td className="weapon-cell" title={row.weapon}>
+                {row.weapon}
+              </td>
               <td>{row.lane}</td>
             </tr>
           ))}
