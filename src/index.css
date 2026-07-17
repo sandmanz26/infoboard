@@ -999,13 +999,24 @@ body {
   text-overflow: ellipsis;
 }
 
-/* No./Rank get a tighter padding than the table's default — they only
-   ever hold 1-3 characters, and the default padding was sized for
-   Name/Weapon instead. */
-.station-column .table th.no-cell,
-.station-column .table td.no-cell,
-.station-column .table th.rank-cell,
-.station-column .table td.rank-cell {
+/* Every Layout 5 cell gets tighter horizontal padding than the table's
+   default (which was sized for a normal-width table, not a ~350px-wide
+   station column) — the couple of px this reclaims per cell all adds
+   up to real room for Name, the one column that actually needs it.
+   Specificity matched to .detail-panel-compact.station-column (both
+   classes land on the same <section>) so it wins regardless of source
+   order against the plain .detail-panel-compact .table td/th rules
+   below, which set padding via the shorthand (including left/right). */
+.detail-panel-compact.station-column .table th,
+.detail-panel-compact.station-column .table td {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.detail-panel-compact.station-column .table th.no-cell,
+.detail-panel-compact.station-column .table td.no-cell,
+.detail-panel-compact.station-column .table th.rank-cell,
+.detail-panel-compact.station-column .table td.rank-cell {
   padding-left: 2px;
   padding-right: 2px;
 }
@@ -1013,26 +1024,33 @@ body {
 /* Narrow columns get a fixed width sized to comfortably fit their
    header label and longest data value at the largest Table Font Size
    setting (15px) — anything smaller just leaves a little unused space
-   rather than risking silent mid-word clipping. No./Rank/Lane are kept
-   as tight as that allows; Weapon gets enough to never wrap-clip a
-   single word like "CLAYMORE"/"COMD BINO"; Name (left unsized here)
-   claims whatever's left, which is the whole point — it's the one
-   column that actually needs the room. */
+   rather than risking silent mid-word clipping. No./Rank/Weapon/Lane
+   are kept as tight as that allows; Name (left unsized here) claims
+   whatever's left, which is the whole point — it's the one column that
+   actually needs the room. */
 .station-column .table .no-cell {
-  width: 30px;
+  width: 28px;
 }
 
 .station-column .table .rank-cell {
-  width: 49px;
+  width: 48px;
 }
 
 .station-column .table .weapon-cell {
-  width: 76px;
+  width: 88px;
+}
+
+/* Default/Compact table models carry a Status column ("Ready"/"Queue"
+   pill) that Table 2.0/Leaderboard don't — without a width it was
+   sharing the leftover space with Name and clipping its own "Status"
+   header once Weapon grew to fit CLAYMORE-length words. */
+.station-column .table .status-cell {
+  width: 66px;
 }
 
 .station-column .table th:last-child,
 .station-column .table td:last-child {
-  width: 71px;
+  width: 68px;
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in

@@ -17,7 +17,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
             {!hideNo && <th className="no-cell">No</th>}
             <th className="rank-cell">Rank</th>
             <th>Name</th>
-            <th>Status</th>
+            <th className="status-cell">Status</th>
             <th className="weapon-cell">Weapon</th>
             <th>Lane</th>
           </tr>
@@ -30,7 +30,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
               <td className="name-cell" title={row.name}>
                 {row.name}
               </td>
-              <td>
+              <td className="status-cell">
                 <span className="status-pill">{row.status}</span>
               </td>
               <td className="weapon-cell" title={row.weapon}>
