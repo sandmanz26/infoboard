@@ -14,7 +14,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
       <table className="table detail-table-compact">
         <thead>
           <tr>
-            {!hideNo && <th>No</th>}
+            {!hideNo && <th className="no-cell">No</th>}
             <th>Rank</th>
             <th>Name</th>
             <th>Status</th>
@@ -25,7 +25,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
         <tbody>
           {rows.map((row) => (
             <tr key={row.no}>
-              {!hideNo && <td>{row.no}</td>}
+              {!hideNo && <td className="no-cell">{row.no}</td>}
               <td>{row.rank}</td>
               <td className="name-cell" title={row.name}>
                 {row.name}

@@ -979,6 +979,23 @@ body {
   font-size: var(--l5-detail-font-size, 15px);
 }
 
+/* Fixed layout so the table always respects the station column's width
+   instead of growing to fit its widest cell and forcing a horizontal
+   scrollbar — No/Lane/Score stay narrow, everything else shares what's
+   left (ellipsis truncation on name/weapon cells picks up the slack). */
+.station-column .table {
+  table-layout: fixed;
+}
+
+.station-column .table .no-cell {
+  width: 24px;
+}
+
+.station-column .table th:last-child,
+.station-column .table td:last-child {
+  width: 15%;
+}
+
 /* Spans the full row under the 5 station columns instead of sitting in
    a narrow sidebar — wider than the default sidebar cap, but still
    capped so the map doesn't grow as tall as it is wide. */

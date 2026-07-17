@@ -18,7 +18,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
       <table className="table detail-table">
         <thead>
           <tr>
-            {!hideNo && <th>No</th>}
+            {!hideNo && <th className="no-cell">No</th>}
             <th>Rank</th>
             <th>Name</th>
             <th>Status</th>
@@ -29,7 +29,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
         <tbody>
           {rows.map((row) => (
             <tr key={row.no}>
-              {!hideNo && <td>{row.no}</td>}
+              {!hideNo && <td className="no-cell">{row.no}</td>}
               <td>{row.rank}</td>
               <td className="name-cell" title={row.name}>
                 {row.name}
