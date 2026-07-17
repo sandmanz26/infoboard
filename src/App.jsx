@@ -58,7 +58,15 @@ const LAYOUTS = [
 //   Data Count 10: Detail 1 (10 rows) -> Detail 1 (5 rows) ->
 //                  Detail 2 (10 rows) -> Detail 2 (5 rows) -> repeat
 //   Data Count 15: Detail 1 (15 rows) -> Detail 2 (15 rows) -> repeat
-const LAYOUT_FIVE_STATIONS = ['IMT-01', 'IMT-02', 'IMT-03', 'IMT-04', 'IMT-05']
+// Unit + courseware are shown under each column's base station name so
+// the booking that station is currently running is clear at a glance.
+const LAYOUT_FIVE_STATIONS = [
+  { name: 'Base Station 1', unit: '2 SIR', courseware: 'ATP (SAR21)' },
+  { name: 'Base Station 2', unit: '2 SIR', courseware: 'CSM (SAR21)' },
+  { name: 'Base Station 3', unit: '3 SIR', courseware: 'APS (SAR21)' },
+  { name: 'Base Station 4', unit: '4 SIR', courseware: 'BTP (SAR21)' },
+  { name: 'Base Station 5', unit: '4 SIR', courseware: 'ATP (SAR21)' },
+]
 const LAYOUT_FIVE_DETAILS = [
   { title: 'Detail 1', status: 'Ready' },
   { title: 'Detail 2', status: 'Queue' },
@@ -579,12 +587,20 @@ function LayoutFive({
   }
   return (
     <main className="layout layout-five" style={fontSizeVars}>
-      {LAYOUT_FIVE_STATIONS.map((name) => (
+      {LAYOUT_FIVE_STATIONS.map((station) => (
         <section
-          key={name}
+          key={station.name}
           className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
         >
-          <div className="station-column-head">{name}</div>
+          <div className="station-column-head">{station.name}</div>
+          <div className="station-column-info">
+            <span>
+              Unit: <strong>{station.unit}</strong>
+            </span>
+            <span>
+              Courseware: <strong>{station.courseware}</strong>
+            </span>
+          </div>
           <DetailPanel
             tableModel={tableModel}
             rows={activeStep.rows}

@@ -907,6 +907,20 @@ body {
   border-bottom: 2px solid var(--accent);
 }
 
+.station-column-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  font-size: var(--l5-table-font-size, 12px);
+  color: var(--text-sub);
+}
+
+.station-column-info strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
 /* --l5-table-font-size / --l5-detail-font-size / --l5-station-font-size
    are set inline per Layout 5's 3 font-size switchers. The combined
    .detail-panel-compact.station-column selector outranks the plain
