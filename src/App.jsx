@@ -551,12 +551,12 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
       <div className="detail-panel-head">
         <h2 className="panel-title">Global Leaderboard</h2>
       </div>
-      <div className="station-column-info">
+      <p className="station-column-info">
         <span>
           Courseware: <strong>{courseware}</strong>
         </span>
         <span>{timeRange}</span>
-      </div>
+      </p>
       <table className="table table-two">
         <thead>
           <tr>
@@ -590,20 +590,21 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
   )
 }
 
-// A station's booking info line — Booking ID, Mode + Courseware, time
-// range, Unit — only rendering whichever fields the station actually has
-// (SWT-03 has no real booking tied to it, only a courseware + time slot).
+// A station's booking info — Booking ID, Mode + Courseware, time range,
+// Unit — as one wrapped line with " · " separators instead of a stack of
+// full-width rows, so a station missing a field (SWT-03 has no real
+// booking, only a courseware + time slot) just reads shorter rather than
+// leaving the header block a different height from its neighbors.
 function SwtStationInfo({ station }) {
+  const sessionLabel = [station.mode, station.courseware].filter(Boolean).join(', ')
   return (
-    <div className="station-column-info">
+    <p className="station-column-info">
       {station.bookingCode && (
         <span>
           Booking: <strong>{station.bookingCode}</strong>
         </span>
       )}
-      {(station.mode || station.courseware) && (
-        <span>{[station.mode, station.courseware].filter(Boolean).join(', ')}</span>
-      )}
+      {sessionLabel && <span>{sessionLabel}</span>}
       <span>
         {station.startTime} - {station.endTime}
       </span>
@@ -612,7 +613,7 @@ function SwtStationInfo({ station }) {
           Unit: <strong>{station.unit}</strong>
         </span>
       )}
-    </div>
+    </p>
   )
 }
 

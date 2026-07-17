@@ -905,6 +905,13 @@ body {
   min-height: 590px;
 }
 
+/* SWT-03's leaderboard variant has no status pill next to its title, so
+   without a floor here its "Detail"-row is a few px shorter than every
+   other station's and throws off the table alignment across the row. */
+.station-column .detail-panel-head {
+  min-height: 32px;
+}
+
 .station-column-head {
   font-size: var(--l5-station-font-size, 14px);
   font-weight: 800;
@@ -914,13 +921,24 @@ body {
   border-bottom: 2px solid var(--accent);
 }
 
+/* One wrapped line with " · " separators between whichever fields a
+   station actually has, instead of a stack of full-width rows — a
+   station missing a field (SWT-03 has no real booking, just a
+   courseware + time slot) just reads shorter instead of leaving a gap.
+   min-height reserves room for 2 wrapped lines so every column's
+   Detail/table header still lines up even when one has less to say. */
 .station-column-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 10px;
+  min-height: 2.6em;
+  margin-top: 8px;
+  margin-bottom: 8px;
   font-size: var(--l5-table-font-size, 12px);
+  line-height: 1.3;
   color: var(--text-sub);
+}
+
+.station-column-info span:not(:first-child)::before {
+  content: ' · ';
+  opacity: 0.55;
 }
 
 .station-column-info strong {
