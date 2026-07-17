@@ -6,6 +6,7 @@ const STATUS_CLASS = {
   Ongoing: 'status-pill-queue',
   Upcoming: '',
   Completed: 'status-pill-done',
+  Overdue: 'status-pill-overdue',
 }
 
 const STAT_CARDS = [

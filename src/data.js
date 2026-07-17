@@ -46,100 +46,193 @@ export const stations = [
   { id: 'IMT-04', bayFill: '#f2d13c', bayCenter: [507, 85] },
 ]
 
-// Level 1 lobby — today's booking list for the training floors.
-// Only the time is shown (no date) since the board only ever lists
-// today's schedule. 10 hourly slots x 3 concurrent rooms = 30 bookings,
-// with status derived from where each slot sits relative to "now".
-import { LEVELS } from './levels/levelConfig.js'
+// Level 1 lobby — today's booking list for the training floors, sourced
+// straight from the range office's booking sheet. Only the time is shown
+// (no date) since the board only ever lists today's schedule; "unit" here
+// is the unit's short code (e.g. "2SIR"), shown bold above the booking ID.
+export const bookings = [
+  // CMT — Level 2
+  {
+    unit: '2SIR',
+    code: '20260715-CMT-01',
+    platformType: 'Terrex 50 HMG, Terrex 40 AGL',
+    level: 'L2',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    instructor: 'CPT Darren Lim',
+    status: 'Ongoing',
+  },
+  {
+    unit: '41SAB',
+    code: '20260715-CMT-02',
+    platformType: 'Terrex 50 HMG',
+    level: 'L2',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    instructor: '2WO Sam Jackson',
+    status: 'Upcoming',
+  },
+  {
+    unit: '42SAR',
+    code: '20260715-CMT-03',
+    platformType: 'Terrex 40 AGL',
+    level: 'L2',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    instructor: 'MAJ Jack Reach',
+    status: 'Ongoing',
+  },
+  {
+    unit: '3SAB',
+    code: '20260715-CMT-04',
+    platformType: 'Terrex 50 HMG',
+    level: 'L2',
+    startTime: '08:00 AM',
+    endTime: '09:00 AM',
+    instructor: '3SG Sam Liam',
+    status: 'Completed',
+  },
 
-// L2/L3/L4 -> CMT/CTT/SWT, read straight off the level config so the
-// booking list's unit names never drift out of sync with the switcher.
-const TRAINING_TYPE_BY_SHORT_LEVEL = Object.fromEntries(
-  LEVELS.filter((level) => level.shortCode).map((level) => [level.shortCode, level.context])
-)
+  // CTT — Level 3
+  {
+    unit: '1SIR',
+    code: '20260715-CTT-01',
+    platformType: 'ICV Commander',
+    level: 'L3',
+    startTime: '08:00 AM',
+    endTime: '11:00 AM',
+    instructor: '2LT Dexter',
+    status: 'Overdue',
+  },
+  {
+    unit: '2SIR',
+    code: '20260715-CTT-02',
+    platformType: 'LUV, PCSV Fuel',
+    level: 'L3',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    instructor: 'CPT Darren Lim',
+    status: 'Ongoing',
+  },
+  {
+    unit: '10SIR',
+    code: '20260715-CTT-03',
+    platformType: 'ICV Storm',
+    level: 'L3',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    instructor: 'CPT Daren Ong',
+    status: 'Ongoing',
+  },
+  {
+    unit: '41SAB',
+    code: '20260715-CTT-04',
+    platformType: 'PCSV BCS, ICV Medical, ICV Pioneer',
+    level: 'L3',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    instructor: '2WO Sam Jackson',
+    status: 'Upcoming',
+  },
+  {
+    unit: '42SAR',
+    code: '20260715-CTT-05',
+    platformType: 'ICV Trooper, L2SG, M3G, PCSV Mortar, PCSV Rebro, Tonner',
+    level: 'L3',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    instructor: 'MAJ Jack Unreach',
+    status: 'Ongoing',
+  },
+  {
+    unit: '6SAR',
+    code: '20260715-CTT-06',
+    platformType: 'ATTC-LAMBE',
+    level: 'L3',
+    startTime: '02:00 PM',
+    endTime: '04:00 PM',
+    instructor: '3SG Sam Liam',
+    status: 'Upcoming',
+  },
+  {
+    unit: '15SIB',
+    code: '20260715-CTT-07',
+    platformType: 'ATTC-LAMBE, Tonner, LUV, PCSV FMP',
+    level: 'L3',
+    startTime: '03:00 PM',
+    endTime: '06:00 PM',
+    instructor: '1WO Sally Yong',
+    status: 'Upcoming',
+  },
 
-const BOOKING_PROGRAMMES = {
-  Marksmanship: ['ATP (SAR21)', 'CSM (SAR21)', 'APS (SAR21)', 'BTP (SAR21)'],
-  Collective: ['Type Training A', 'Type Training B', 'Section Battle Course'],
-  Judgemental: ['Scenarios 1', 'Scenarios 2', 'Scenarios 3'],
-}
-const BOOKING_MODES = ['Marksmanship', 'Collective', 'Judgemental']
-const BOOKING_LEVELS = ['L2', 'L3', 'L4']
-
-// CMT (Level 2) bookings show a vehicle/variant instead of a courseware
-// programme in their "Platform Type" column.
-const CMT_PLATFORM_TYPES = [
-  'Terrex 40 AGL',
-  'Terrex 50 HMG',
-  'ICV Commander',
-  'ICV Trooper',
-  'ICV Scout',
-  'ICV Pioneer',
-  'ICV Medical',
-  'ICV Storm',
-  'L2SG',
-  'L2-AEV',
-  'M3G',
-  'ATTC-LAMBE',
-  'PCSV Mortar',
-  'PCSV Rebro',
-  'PCSV Fuel',
-  'PCSV Bn Casualty Station (BCS)',
-  'PCSV Combat Train (Logistics)',
-  'PCSV FMP (Maintenance)',
-  'Tonner',
-  'LUV',
+  // SWT — Level 4
+  {
+    unit: '21SAB',
+    code: '20260715-SWT-01',
+    mode: 'Marksmanship',
+    programme: 'ATP(M) (SAR21/LMG)',
+    level: 'L4',
+    startTime: '09:00 AM',
+    endTime: '11:00 AM',
+    instructor: '2LT Sabrina',
+    status: 'Overdue',
+  },
+  {
+    unit: '21SAB',
+    code: '20260715-SWT-02',
+    mode: 'Marksmanship',
+    programme: 'ATP (SP) (SAR21/LMG)',
+    level: 'L4',
+    startTime: '11:00 AM',
+    endTime: '01:00 PM',
+    instructor: '2LT Sabrina',
+    status: 'Overdue',
+  },
+  {
+    unit: '10SIR',
+    code: '20260715-SWT03',
+    mode: 'Collective',
+    programme: 'Component Type Training (A-E)',
+    level: 'L4',
+    startTime: '08:00 AM',
+    endTime: '12:00 PM',
+    instructor: 'CPT Daren Ong',
+    status: 'Completed',
+  },
+  {
+    unit: '41SAB',
+    code: '20260715-SWT-04',
+    mode: 'Collective',
+    programme: 'Blockforce Training',
+    level: 'L4',
+    startTime: '01:00 PM',
+    endTime: '06:00 PM',
+    instructor: 'MWO William Hung',
+    status: 'Ongoing',
+  },
+  {
+    unit: '412SAR',
+    code: '20260715-SWT-05',
+    mode: 'Judgemental',
+    programme: 'Scenario 5',
+    level: 'L4',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    instructor: '2LT Tom Hung',
+    status: 'Ongoing',
+  },
+  {
+    unit: '10SIR',
+    code: '20260715-SWT-06',
+    mode: 'Judgemental',
+    programme: 'Scenario 20',
+    level: 'L4',
+    startTime: '09:00 AM',
+    endTime: '10:00 AM',
+    instructor: '3SG Eric Bishop',
+    status: 'Completed',
+  },
 ]
-const BOOKING_INSTRUCTORS = ['Bryan', 'Chun Xiong', 'Daniek', 'Ken Chow']
-const BOOKING_TIME_SLOTS = [
-  '07:00 AM',
-  '08:00 AM',
-  '09:00 AM',
-  '10:00 AM',
-  '11:00 AM',
-  '12:00 PM',
-  '01:00 PM',
-  '02:00 PM',
-  '03:00 PM',
-  '04:00 PM',
-]
-// 11:00 AM — everything before is done, this slot is starting now, and
-// everything after is upcoming. Exported so the lobby's summary cards
-// (Starting / Ready / Upcoming) can bucket off the same reference point.
-export const NOW_SLOT_INDEX = 4
-
-function nextHour(time) {
-  const [, hh, mm, period] = time.match(/(\d+):(\d+) (\w+)/)
-  let hour = (Number(hh) % 12) + 1
-  const nextPeriod = hour === 12 ? (period === 'AM' ? 'PM' : 'AM') : period
-  return `${String(hour).padStart(2, '0')}:${mm} ${nextPeriod}`
-}
-
-export const bookings = BOOKING_TIME_SLOTS.flatMap((startTime, slotIndex) =>
-  [0, 1, 2].map((room) => {
-    const n = slotIndex * 3 + room
-    const unit = 30 - n
-    const mode = BOOKING_MODES[n % BOOKING_MODES.length]
-    const programmes = BOOKING_PROGRAMMES[mode]
-    const level = BOOKING_LEVELS[n % BOOKING_LEVELS.length]
-    const status =
-      slotIndex < NOW_SLOT_INDEX ? 'Completed' : slotIndex === NOW_SLOT_INDEX ? 'Ongoing' : 'Upcoming'
-    return {
-      unit: `${TRAINING_TYPE_BY_SHORT_LEVEL[level]} Training for Unit ${unit}`,
-      code: `#111024-KC${String(n + 1).padStart(4, '0')}`,
-      mode,
-      programme: programmes[n % programmes.length],
-      platformType:
-        level === 'L2' ? CMT_PLATFORM_TYPES[n % CMT_PLATFORM_TYPES.length] : programmes[n % programmes.length],
-      level,
-      slotIndex,
-      startTime,
-      endTime: nextHour(startTime),
-      instructor: BOOKING_INSTRUCTORS[n % BOOKING_INSTRUCTORS.length],
-      status,
-    }
-  })
-)
 
 // Level 1 lobby — rotating announcement cards.
 export const announcements = [

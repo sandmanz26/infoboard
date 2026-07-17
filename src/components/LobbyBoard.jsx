@@ -1,4 +1,4 @@
-import { bookings, announcements, NOW_SLOT_INDEX } from '../data.js'
+import { bookings, announcements } from '../data.js'
 import BookingList from './BookingList.jsx'
 import AnnouncementPanel from './AnnouncementPanel.jsx'
 import usePagedRows from '../hooks/usePagedRows.js'
@@ -21,11 +21,14 @@ export default function LobbyBoard() {
   const rows = BOOKINGS_BY_LEVEL[activeLevel.id]
 
   // Summary counts for the cards above the table, scoped to whichever
-  // level's bookings are currently on screen.
+  // level's bookings are currently on screen. Card labels (set in
+  // BookingList's STAT_CARDS) are "Ongoing" / "Completed" / "Starting" —
+  // the stats keys below just feed those labels, so the mapping looks
+  // crossed at a glance but lines up with what each card actually shows.
   const stats = {
-    starting: rows.filter((b) => b.slotIndex === NOW_SLOT_INDEX).length,
-    ready: rows.filter((b) => b.slotIndex === NOW_SLOT_INDEX + 1).length,
-    upcoming: rows.filter((b) => b.slotIndex > NOW_SLOT_INDEX + 1).length,
+    upcoming: rows.filter((b) => b.status === 'Ongoing').length,
+    ready: rows.filter((b) => b.status === 'Completed').length,
+    starting: rows.filter((b) => b.status === 'Upcoming').length,
   }
 
   return (

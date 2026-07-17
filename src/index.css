@@ -29,6 +29,8 @@
   --queue-amber-bg: #fdefd8;
   --done-green: #1a7f4b;
   --done-green-bg: #e3f5eb;
+  --overdue-red: #c0392b;
+  --overdue-red-bg: #fbe4e1;
 
   /* one rank-tier family shared by the podium, medals and MPI pills
      (previously each used its own slightly different gold/silver/bronze) */
@@ -383,6 +385,11 @@ body {
 .status-pill-done {
   color: var(--done-green);
   background: var(--done-green-bg);
+}
+
+.status-pill-overdue {
+  color: var(--overdue-red);
+  background: var(--overdue-red-bg);
 }
 
 .detail-panel-head {
