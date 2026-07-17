@@ -136,9 +136,9 @@ const DETAIL_FONT_SIZE_OPTIONS = [
   { id: 'large', label: 'Large', value: '19px' },
 ]
 const STATION_FONT_SIZE_OPTIONS = [
-  { id: 'small', label: 'Small', value: '12px' },
-  { id: 'medium', label: 'Medium', value: '14px' },
-  { id: 'large', label: 'Large', value: '18px' },
+  { id: 'small', label: 'Small', value: '9px' },
+  { id: 'medium', label: 'Medium', value: '11px' },
+  { id: 'large', label: 'Large', value: '14px' },
 ]
 
 // Left container (combined detail list) vs. right container (directory
@@ -590,8 +590,20 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
   )
 }
 
-// A station's booking info — Booking ID, Mode + Courseware, time range,
-// Unit — as one wrapped line with " · " separators instead of a stack of
+// The title row above each station's info/table — station name on the
+// left, Booking ID (if any) right-aligned on the same row instead of
+// buried in the info line below.
+function StationColumnHead({ name, bookingCode }) {
+  return (
+    <div className="station-column-head">
+      <span className="station-column-name">{name}</span>
+      {bookingCode && <span className="station-column-booking">{bookingCode}</span>}
+    </div>
+  )
+}
+
+// A station's booking info — Mode + Courseware, time range, Unit — as
+// one wrapped line with " · " separators instead of a stack of
 // full-width rows, so a station missing a field (SWT-03 has no real
 // booking, only a courseware + time slot) just reads shorter rather than
 // leaving the header block a different height from its neighbors.
@@ -599,11 +611,6 @@ function SwtStationInfo({ station }) {
   const sessionLabel = [station.mode, station.courseware].filter(Boolean).join(', ')
   return (
     <p className="station-column-info">
-      {station.bookingCode && (
-        <span>
-          Booking: <strong>{station.bookingCode}</strong>
-        </span>
-      )}
       {sessionLabel && <span>{sessionLabel}</span>}
       <span>
         {station.startTime} - {station.endTime}
@@ -647,7 +654,7 @@ function LayoutFive({
             const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
             return (
               <section key={station.code} className="panel detail-panel-compact station-column">
-                <div className="station-column-head">{station.code}</div>
+                <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
                 {showLeaderboard ? (
                   <StationGlobalLeaderboard
                     rows={station.leaderboardRows}
@@ -676,7 +683,7 @@ function LayoutFive({
               key={station.name}
               className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
             >
-              <div className="station-column-head">{station.name}</div>
+              <StationColumnHead name={station.name} />
               <div className="station-column-info">
                 <span>
                   Unit: <strong>{station.unit}</strong>

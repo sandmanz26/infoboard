@@ -913,12 +913,28 @@ body {
 }
 
 .station-column-head {
-  font-size: var(--l5-station-font-size, 14px);
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
   padding-bottom: 8px;
   margin-bottom: 8px;
   border-bottom: 2px solid var(--accent);
+}
+
+.station-column-name {
+  font-size: var(--l5-station-font-size, 12px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+/* Right-aligned on the same row as the station name instead of its own
+   line further down — reads as this column's identity at a glance. */
+.station-column-booking {
+  font-size: var(--l5-table-font-size, 12px);
+  font-weight: 600;
+  color: var(--text-sub);
+  white-space: nowrap;
 }
 
 /* One wrapped line with " · " separators between whichever fields a
