@@ -22,7 +22,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
             <th className="rank-cell">Rank</th>
             <th>Name</th>
             <th>Status</th>
-            <th>Weapon</th>
+            <th className="weapon-cell">Weapon</th>
             <th>Lane</th>
           </tr>
         </thead>

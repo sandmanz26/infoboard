@@ -33,7 +33,7 @@ export default function DetailListTable2({
             ) : (
               <th>Trainee</th>
             )}
-            <th>Weapon</th>
+            <th className="weapon-cell">Weapon</th>
             <th>Lane</th>
           </tr>
         </thead>

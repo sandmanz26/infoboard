@@ -999,26 +999,40 @@ body {
   text-overflow: ellipsis;
 }
 
-/* Narrow columns get a fixed width sized to comfortably fit their
-   header label and longest data value (e.g. "Lane 15") at the largest
-   Table Font Size setting (15px) — anything smaller just leaves a
-   little unused space rather than risking silent mid-word clipping. */
-.station-column .table .no-cell {
-  width: 40px;
+/* No./Rank get a tighter padding than the table's default — they only
+   ever hold 1-3 characters, and the default padding was sized for
+   Name/Weapon instead. */
+.station-column .table th.no-cell,
+.station-column .table td.no-cell,
+.station-column .table th.rank-cell,
+.station-column .table td.rank-cell {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
-/* Rank codes (2SG, CPT, MAJ, REC…) never need more than a few
-   characters — without this it was taking an equal share alongside
-   Name/Weapon under the fixed layout above, far more than it needs.
-   Sized for the "RANK" header, not just the data, since the label is
-   what actually needs the room. */
+/* Narrow columns get a fixed width sized to comfortably fit their
+   header label and longest data value at the largest Table Font Size
+   setting (15px) — anything smaller just leaves a little unused space
+   rather than risking silent mid-word clipping. No./Rank/Lane are kept
+   as tight as that allows; Weapon gets enough to never wrap-clip a
+   single word like "CLAYMORE"/"COMD BINO"; Name (left unsized here)
+   claims whatever's left, which is the whole point — it's the one
+   column that actually needs the room. */
+.station-column .table .no-cell {
+  width: 30px;
+}
+
 .station-column .table .rank-cell {
-  width: 58px;
+  width: 49px;
+}
+
+.station-column .table .weapon-cell {
+  width: 76px;
 }
 
 .station-column .table th:last-child,
 .station-column .table td:last-child {
-  width: 72px;
+  width: 71px;
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in
@@ -1053,6 +1067,13 @@ body {
   max-width: 88px;
 }
 
+/* Layout 5's station tables give Name the leftover width instead of an
+   88px cap (see the fixed column widths above) — 30 real characters
+   needs the room, not a truncated preview of it. */
+.station-column .name-cell {
+  max-width: none;
+}
+
 .detail-panel-compact .trainee-name {
   max-width: 108px;
 }
@@ -1070,7 +1091,10 @@ body {
    wrapStationWeapon in App.jsx) so it reads as stacked lines instead of
    one run-on string — needs its own rule (matched specificity to the
    .table td rule above it) since the table's default nowrap would
-   otherwise collapse that newline back onto one line. */
+   otherwise collapse that newline back onto one line. Applies to the
+   header too (th.weapon-cell) so "WEAPON" doesn't ellipsis-clip the
+   same way No./Rank did before they got their own fixed widths. */
+.station-column .table th.weapon-cell,
 .station-column .table td.weapon-cell {
   max-width: none;
   overflow: visible;

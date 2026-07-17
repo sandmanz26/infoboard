@@ -564,7 +564,7 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
             {!hideNo && <th className="no-cell">No</th>}
             <th className="rank-cell">Rank</th>
             <th>Name</th>
-            <th>Weapon</th>
+            <th className="weapon-cell">Weapon</th>
             <th>Score</th>
           </tr>
         </thead>
@@ -590,8 +590,11 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
 
 // Layout 5 only — names longer than this are excerpted with an ellipsis
 // (a fixed character count instead of a pixel max-width, so the cutoff
-// point stays the same regardless of the Table Font Size setting).
-const STATION_NAME_MAX_CHARS = 12
+// point stays the same regardless of the Table Font Size setting). The
+// Name column gets the lion's share of each row's width (see index.css)
+// specifically so 30 characters is realistic to actually show, not just
+// a raised ceiling that still gets visually clipped.
+const STATION_NAME_MAX_CHARS = 30
 
 function truncateStationName(name) {
   if (!name || name.length <= STATION_NAME_MAX_CHARS) return name

@@ -18,7 +18,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
             <th className="rank-cell">Rank</th>
             <th>Name</th>
             <th>Status</th>
-            <th>Weapon</th>
+            <th className="weapon-cell">Weapon</th>
             <th>Lane</th>
           </tr>
         </thead>
