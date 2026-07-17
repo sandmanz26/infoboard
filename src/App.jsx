@@ -941,6 +941,7 @@ export default function App() {
       <Header
         station={currentLevelLabel}
         detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
+        title={level === 'level-4' ? 'Specialized Weapon Training' : 'Infoboard'}
       />
       {isTrainingLevel ? (
         <TrainingBoard

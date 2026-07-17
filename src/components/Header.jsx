@@ -1,6 +1,6 @@
 import Clock from './Clock.jsx'
 
-export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' }) {
+export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', title = 'Infoboard' }) {
   return (
     <header className="header">
       <div className="header-left">
@@ -18,7 +18,7 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2' })
             <span className="brand-line2">Management System</span>
           </div>
         </div>
-        <div className="header-tab">Infoboard</div>
+        <div className="header-tab">{title}</div>
       </div>
       <div className="header-right">
         <Clock />
