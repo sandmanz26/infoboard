@@ -362,7 +362,7 @@ function TypographyIcon() {
 // forces that same all-15-at-once behavior for any table model (used by
 // Layout 5 / Level 4, where the only flip should be Detail 1 -> Detail 2,
 // not a second row-level rotation nested inside it).
-function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows }) {
+function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows, splitRank }) {
   const { page, pageIndex, pageCount } = usePagedRows(rows, DETAIL_ROWS_PER_PAGE, DETAIL_ROWS_PAGE_INTERVAL_MS)
   const displayRows = fullRows ? rows : page
   const displayPageIndex = fullRows ? undefined : pageIndex
@@ -388,6 +388,7 @@ function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows }) {
         pageIndex={displayPageIndex}
         pageCount={displayPageCount}
         hideNo={hideNo}
+        splitRank={splitRank}
       />
     )
   }
@@ -561,7 +562,8 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
         <thead>
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
-            <th>Trainee</th>
+            <th>Rank</th>
+            <th>Name</th>
             <th>Weapon</th>
             <th>Score</th>
           </tr>
@@ -570,13 +572,9 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
           {rows.map((row) => (
             <tr key={row.no}>
               {!hideNo && <td className="no-cell">{row.no}</td>}
-              <td>
-                <span className="trainee-cell">
-                  <span className="trainee-rank">{row.rank}</span>
-                  <span className="trainee-name" title={row.name}>
-                    {row.name}
-                  </span>
-                </span>
+              <td>{row.rank}</td>
+              <td className="name-cell" title={row.name}>
+                {row.name}
               </td>
               <td className="weapon-cell" title={row.weapon}>
                 {row.weapon}
@@ -588,6 +586,31 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
       </table>
     </>
   )
+}
+
+// Layout 5 only — names longer than this are excerpted with an ellipsis
+// (a fixed character count instead of a pixel max-width, so the cutoff
+// point stays the same regardless of the Table Font Size setting).
+const STATION_NAME_MAX_CHARS = 12
+
+function truncateStationName(name) {
+  if (!name || name.length <= STATION_NAME_MAX_CHARS) return name
+  return `${name.slice(0, STATION_NAME_MAX_CHARS)}…`
+}
+
+// "SAR21, MATADOR" -> "SAR21\nMATADOR" so a trainee carrying more than
+// one item renders as stacked lines (via white-space: pre-line in CSS)
+// instead of one run-on, comma-separated string.
+function wrapStationWeapon(weapon) {
+  return weapon ? weapon.split(',').map((w) => w.trim()).join('\n') : weapon
+}
+
+function formatStationRows(rows) {
+  return rows.map((row) => ({
+    ...row,
+    name: truncateStationName(row.name),
+    weapon: wrapStationWeapon(row.weapon),
+  }))
 }
 
 // The title row above each station's info/table — station name on the
@@ -657,7 +680,7 @@ function LayoutFive({
                 <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
                 {showLeaderboard ? (
                   <StationGlobalLeaderboard
-                    rows={station.leaderboardRows}
+                    rows={formatStationRows(station.leaderboardRows)}
                     courseware={station.courseware}
                     timeRange={`${station.startTime} - ${station.endTime}`}
                     hideNo={hideNoColumn}
@@ -667,11 +690,12 @@ function LayoutFive({
                     <SwtStationInfo station={station} />
                     <DetailPanel
                       tableModel={tableModel}
-                      rows={station.rows}
+                      rows={formatStationRows(station.rows)}
                       title="Detail 1"
                       status="Ready"
                       fullRows
                       hideNo={hideNoColumn}
+                      splitRank
                     />
                   </>
                 )}
@@ -694,10 +718,11 @@ function LayoutFive({
               </div>
               <DetailPanel
                 tableModel={tableModel}
-                rows={activeStep.rows}
+                rows={formatStationRows(activeStep.rows)}
                 title={activeStep.detail.title}
                 status={activeStep.detail.status}
                 fullRows
+                splitRank
               />
             </section>
           ))}
@@ -719,7 +744,7 @@ const LAYOUT_COMPONENTS = {
 export default function App() {
   const [layout, setLayout] = useState(() => {
     const saved = localStorage.getItem(LAYOUT_STORAGE_KEY)
-    return LAYOUTS.some((l) => l.id === saved) ? saved : 'layout-1'
+    return LAYOUTS.some((l) => l.id === saved) ? saved : 'layout-5'
   })
   const [tableModel, setTableModel] = useState(() => {
     const saved = localStorage.getItem(TABLE_MODEL_STORAGE_KEY)

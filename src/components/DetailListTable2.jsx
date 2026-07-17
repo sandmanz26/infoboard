@@ -1,7 +1,15 @@
 import PageDots from './PageDots.jsx'
 import { statusTone } from '../statusTone.js'
 
-export default function DetailListTable2({ rows, title = 'Detail List', status = 'Ready', pageIndex, pageCount, hideNo }) {
+export default function DetailListTable2({
+  rows,
+  title = 'Detail List',
+  status = 'Ready',
+  pageIndex,
+  pageCount,
+  hideNo,
+  splitRank,
+}) {
   return (
     <>
       <div className="detail-panel-head">
@@ -17,7 +25,14 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
         <thead>
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
-            <th>Trainee</th>
+            {splitRank ? (
+              <>
+                <th>Rank</th>
+                <th>Name</th>
+              </>
+            ) : (
+              <th>Trainee</th>
+            )}
             <th>Weapon</th>
             <th>Lane</th>
           </tr>
@@ -26,14 +41,23 @@ export default function DetailListTable2({ rows, title = 'Detail List', status =
           {rows.map((row) => (
             <tr key={row.no}>
               {!hideNo && <td className="no-cell">{row.no}</td>}
-              <td>
-                <span className="trainee-cell">
-                  <span className="trainee-rank">{row.rank}</span>
-                  <span className="trainee-name" title={row.name}>
+              {splitRank ? (
+                <>
+                  <td>{row.rank}</td>
+                  <td className="name-cell" title={row.name}>
                     {row.name}
+                  </td>
+                </>
+              ) : (
+                <td>
+                  <span className="trainee-cell">
+                    <span className="trainee-rank">{row.rank}</span>
+                    <span className="trainee-name" title={row.name}>
+                      {row.name}
+                    </span>
                   </span>
-                </span>
-              </td>
+                </td>
+              )}
               <td className="weapon-cell" title={row.weapon}>
                 {row.weapon}
               </td>
