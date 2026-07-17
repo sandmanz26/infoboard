@@ -891,11 +891,11 @@ body {
   grid-template-columns: repeat(5, 1fr);
 }
 
-/* Fixed to the height 15 rows needs (Data Count's tallest state) so
-   switching between 10 and 15 — or the 10-then-5 flip itself — never
-   resizes the column; shorter states just leave blank space below. */
-.layout-five .station-column {
-  min-height: 830px;
+/* Only the paginated (10-then-5) state needs a fixed height — sized to
+   the 10-row page so the flip to 5 rows doesn't shrink the column.
+   Data Count 15 (no pagination) is left free to size to its own content. */
+.layout-five .station-column-paginated {
+  min-height: 590px;
 }
 
 .station-column-head {

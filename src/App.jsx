@@ -54,13 +54,26 @@ const LAYOUTS = [
 // Layout 5: one column per base station (no Directory/Leaderboard sidebar
 // here — each station is its own self-contained detail board). A booking
 // spans multiple stations, and each station runs multiple details, so
-// every column flips between its details on the same rotating-page
-// pattern used everywhere else in the app.
+// every column steps through one fixed sequence:
+//   Data Count 10: Detail 1 (10 rows) -> Detail 1 (5 rows) ->
+//                  Detail 2 (10 rows) -> Detail 2 (5 rows) -> repeat
+//   Data Count 15: Detail 1 (15 rows) -> Detail 2 (15 rows) -> repeat
 const LAYOUT_FIVE_STATIONS = ['IMT-01', 'IMT-02', 'IMT-03', 'IMT-04', 'IMT-05']
 const LAYOUT_FIVE_DETAILS = [
   { title: 'Detail 1', status: 'Ready' },
   { title: 'Detail 2', status: 'Queue' },
 ]
+const LAYOUT_FIVE_STEP_INTERVAL_MS = 5000
+
+function layoutFiveSteps(rows, dataCount) {
+  if (dataCount === '15') {
+    return LAYOUT_FIVE_DETAILS.map((detail) => ({ detail, rows }))
+  }
+  return LAYOUT_FIVE_DETAILS.flatMap((detail) => [
+    { detail, rows: rows.slice(0, DETAIL_ROWS_PER_PAGE), paginated: true },
+    { detail, rows: rows.slice(DETAIL_ROWS_PER_PAGE), paginated: true },
+  ])
+}
 
 const TABLE_MODELS = [
   { id: 'default', label: 'Default Table', description: 'Original detail list table' },
@@ -492,26 +505,35 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
 }
 
 function LayoutFive({ tableModel, activeStation, level, hideNoColumn, dataCount }) {
-  // Every station flips on the same clock, so the whole row turns over
-  // together — an airport board doesn't flip one panel at a time.
-  const { pageIndex } = usePagedRows(LAYOUT_FIVE_DETAILS, 1, DETAIL_GROUP_PAGE_INTERVAL_MS)
-  const activeDetail = LAYOUT_FIVE_DETAILS[pageIndex]
-  // Level 4 (SWT) only: Data Count picks whether each detail shows all 15
-  // rows at once (no row-level flip, only Detail 1 -> Detail 2) or the
-  // usual 10-then-5 rotation everywhere else uses. Hiding the No. column
-  // is available the same way.
+  // Level 4 (SWT) only: Data Count picks the step sequence (10-then-5 per
+  // detail, or all 15 at once). Levels 2/3 always run the 10-then-5
+  // sequence, matching the original behavior. Hiding the No. column is
+  // available for Level 4 the same way.
   const isLevelFour = level === 'level-4'
+  const effectiveDataCount = isLevelFour ? dataCount : '10'
+  const steps = useMemo(
+    () => layoutFiveSteps(detailList, effectiveDataCount),
+    [effectiveDataCount]
+  )
+  // Every station steps through the sequence on the same clock, so the
+  // whole row turns over together — an airport board doesn't flip one
+  // panel at a time.
+  const { pageIndex } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
+  const activeStep = steps[pageIndex]
   return (
     <main className="layout layout-five">
       {LAYOUT_FIVE_STATIONS.map((name) => (
-        <section key={name} className="panel detail-panel-compact station-column">
+        <section
+          key={name}
+          className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
+        >
           <div className="station-column-head">{name}</div>
           <DetailPanel
             tableModel={tableModel}
-            rows={detailList}
-            title={activeDetail.title}
-            status={activeDetail.status}
-            fullRows={isLevelFour && dataCount === '15'}
+            rows={activeStep.rows}
+            title={activeStep.detail.title}
+            status={activeStep.detail.status}
+            fullRows
             hideNo={isLevelFour && hideNoColumn}
           />
         </section>
