@@ -899,12 +899,29 @@ body {
 }
 
 .station-column-head {
-  font-size: 14px;
+  font-size: var(--l5-station-font-size, 14px);
   font-weight: 800;
   letter-spacing: 0.01em;
   padding-bottom: 8px;
   margin-bottom: 8px;
   border-bottom: 2px solid var(--accent);
+}
+
+/* --l5-table-font-size / --l5-detail-font-size / --l5-station-font-size
+   are set inline per Layout 5's 3 font-size switchers. The combined
+   .detail-panel-compact.station-column selector outranks the plain
+   .detail-panel-compact rules that would otherwise set these sizes. */
+.detail-panel-compact.station-column .table td,
+.detail-panel-compact.station-column .table th,
+.detail-panel-compact.station-column .detail-card-name,
+.detail-panel-compact.station-column .detail-card-weapon,
+.detail-panel-compact.station-column .trainee-rank,
+.detail-panel-compact.station-column .trainee-name {
+  font-size: var(--l5-table-font-size, 12px);
+}
+
+.detail-panel-compact.station-column .panel-title {
+  font-size: var(--l5-detail-font-size, 15px);
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in

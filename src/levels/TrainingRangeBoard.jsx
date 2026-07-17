@@ -16,6 +16,9 @@ export default function TrainingRangeBoard({
   level,
   hideNoColumn,
   dataCount,
+  tableFontSize,
+  detailFontSize,
+  stationFontSize,
 }) {
   return (
     <>
@@ -30,6 +33,9 @@ export default function TrainingRangeBoard({
         level={level}
         hideNoColumn={hideNoColumn}
         dataCount={dataCount}
+        tableFontSize={tableFontSize}
+        detailFontSize={detailFontSize}
+        stationFontSize={stationFontSize}
       />
     </>
   )

@@ -118,6 +118,25 @@ const DATA_COUNT_OPTIONS = [
   { id: '15', label: '15', description: 'All 15 rows at once, no row-level flip' },
 ]
 
+// Layout 5 only — independent font-size controls for the 3 text sizes
+// on screen: the trainee table, the "Detail N" title, and the base
+// station name at the top of each column.
+const TABLE_FONT_SIZE_OPTIONS = [
+  { id: 'small', label: 'Small', value: '10px' },
+  { id: 'medium', label: 'Medium', value: '12px' },
+  { id: 'large', label: 'Large', value: '15px' },
+]
+const DETAIL_FONT_SIZE_OPTIONS = [
+  { id: 'small', label: 'Small', value: '13px' },
+  { id: 'medium', label: 'Medium', value: '15px' },
+  { id: 'large', label: 'Large', value: '19px' },
+]
+const STATION_FONT_SIZE_OPTIONS = [
+  { id: 'small', label: 'Small', value: '12px' },
+  { id: 'medium', label: 'Medium', value: '14px' },
+  { id: 'large', label: 'Large', value: '18px' },
+]
+
 // Left container (combined detail list) vs. right container (directory
 // map + leaderboard) width split — only Layout 3 pairs those two panels.
 const PANEL_RATIOS = [
@@ -192,6 +211,9 @@ const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 const DATA_COUNT_STORAGE_KEY = 'infoboard-layout5-data-count'
+const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
+const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
+const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
 
 function LayoutIcon() {
   return (
@@ -259,6 +281,27 @@ function DataCountIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M8.4 7h1.1v6M7.7 13h3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function FontSizeIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <path
+        d="M2.5 14.5 6 5.5h1L10.5 14.5M3.6 11.5h5.3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.5 14.5V9.2h2a1.65 1.65 0 0 1 0 3.3h-2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -504,7 +547,16 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
   )
 }
 
-function LayoutFive({ tableModel, activeStation, level, hideNoColumn, dataCount }) {
+function LayoutFive({
+  tableModel,
+  activeStation,
+  level,
+  hideNoColumn,
+  dataCount,
+  tableFontSize,
+  detailFontSize,
+  stationFontSize,
+}) {
   // Level 4 (SWT) only: Data Count picks the step sequence (10-then-5 per
   // detail, or all 15 at once). Levels 2/3 always run the 10-then-5
   // sequence, matching the original behavior. Hiding the No. column is
@@ -520,8 +572,13 @@ function LayoutFive({ tableModel, activeStation, level, hideNoColumn, dataCount 
   // panel at a time.
   const { pageIndex } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
   const activeStep = steps[pageIndex]
+  const fontSizeVars = {
+    '--l5-table-font-size': TABLE_FONT_SIZE_OPTIONS.find((o) => o.id === tableFontSize)?.value,
+    '--l5-detail-font-size': DETAIL_FONT_SIZE_OPTIONS.find((o) => o.id === detailFontSize)?.value,
+    '--l5-station-font-size': STATION_FONT_SIZE_OPTIONS.find((o) => o.id === stationFontSize)?.value,
+  }
   return (
-    <main className="layout layout-five">
+    <main className="layout layout-five" style={fontSizeVars}>
       {LAYOUT_FIVE_STATIONS.map((name) => (
         <section
           key={name}
@@ -610,6 +667,18 @@ export default function App() {
     const saved = localStorage.getItem(DATA_COUNT_STORAGE_KEY)
     return DATA_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '15'
   })
+  const [tableFontSize, setTableFontSize] = useState(() => {
+    const saved = localStorage.getItem(TABLE_FONT_SIZE_STORAGE_KEY)
+    return TABLE_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
+  })
+  const [detailFontSize, setDetailFontSize] = useState(() => {
+    const saved = localStorage.getItem(DETAIL_FONT_SIZE_STORAGE_KEY)
+    return DETAIL_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
+  })
+  const [stationFontSize, setStationFontSize] = useState(() => {
+    const saved = localStorage.getItem(STATION_FONT_SIZE_STORAGE_KEY)
+    return STATION_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
+  })
   const [stationIndex, setStationIndex] = useState(0)
 
   useEffect(() => {
@@ -623,6 +692,18 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(DATA_COUNT_STORAGE_KEY, dataCount)
   }, [dataCount])
+
+  useEffect(() => {
+    localStorage.setItem(TABLE_FONT_SIZE_STORAGE_KEY, tableFontSize)
+  }, [tableFontSize])
+
+  useEffect(() => {
+    localStorage.setItem(DETAIL_FONT_SIZE_STORAGE_KEY, detailFontSize)
+  }, [detailFontSize])
+
+  useEffect(() => {
+    localStorage.setItem(STATION_FONT_SIZE_STORAGE_KEY, stationFontSize)
+  }, [stationFontSize])
 
   useEffect(() => {
     localStorage.setItem(INFO_BANNER_STORAGE_KEY, infoBanner)
@@ -817,6 +898,36 @@ export default function App() {
           },
         ]
       : []),
+    // Layout 5 only — independent font-size controls, available on any
+    // level since they're purely visual, not tied to Level 4's flip logic.
+    ...(layout === 'layout-5'
+      ? [
+          {
+            id: 'table-font-size',
+            label: 'Table Font Size',
+            icon: <FontSizeIcon />,
+            options: TABLE_FONT_SIZE_OPTIONS,
+            active: tableFontSize,
+            onChange: setTableFontSize,
+          },
+          {
+            id: 'detail-font-size',
+            label: 'Detail Name Font Size',
+            icon: <FontSizeIcon />,
+            options: DETAIL_FONT_SIZE_OPTIONS,
+            active: detailFontSize,
+            onChange: setDetailFontSize,
+          },
+          {
+            id: 'station-font-size',
+            label: 'Base Station Font Size',
+            icon: <FontSizeIcon />,
+            options: STATION_FONT_SIZE_OPTIONS,
+            active: stationFontSize,
+            onChange: setStationFontSize,
+          },
+        ]
+      : []),
   ]
 
   const ActiveLayout = LAYOUT_COMPONENTS[layout] ?? LayoutOne
@@ -844,6 +955,9 @@ export default function App() {
           level={level}
           hideNoColumn={noColumn === 'hidden'}
           dataCount={dataCount}
+          tableFontSize={tableFontSize}
+          detailFontSize={detailFontSize}
+          stationFontSize={stationFontSize}
         />
       ) : (
         <>
