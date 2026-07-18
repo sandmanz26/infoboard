@@ -658,7 +658,7 @@ function StationColumnHead({ name, bookingCode }) {
 // full-width rows, so a station missing a field (SWT-03 has no real
 // booking, only a courseware + time slot) just reads shorter rather than
 // leaving the header block a different height from its neighbors.
-function SwtStationInfo({ station }) {
+function SwtStationInfo({ station, hideUnit }) {
   const sessionLabel = [station.mode, station.courseware].filter(Boolean).join(', ')
   return (
     <p className="station-column-info">
@@ -666,7 +666,7 @@ function SwtStationInfo({ station }) {
       <span>
         {station.startTime} - {station.endTime}
       </span>
-      {station.unit && (
+      {station.unit && !hideUnit && (
         <span>
           Unit: <strong>{station.unit}</strong>
         </span>
@@ -716,7 +716,7 @@ function LayoutFive({
                   />
                 ) : (
                   <>
-                    <SwtStationInfo station={station} />
+                    <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
                     <DetailPanel
                       tableModel={tableModel}
                       rows={formatStationRows(station.rows)}
