@@ -894,10 +894,16 @@ body {
 
 /* ---------- Layout 5: 5 base station columns, no sidebar ---------- */
 
+/* .layout sets align-items: start, so a grid item normally sizes to its
+   own content — real per-station rosters vary a lot (5 rows vs. 15),
+   which left short columns visibly shorter than tall ones. Stretch
+   instead, so every column in a row matches the tallest one regardless
+   of how many rows it actually has. */
 .layout-five {
   grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   padding: 12px;
+  align-items: stretch;
 }
 
 /* Only the paginated (10-then-5) state needs a fixed height — sized to
