@@ -16,6 +16,7 @@ export default function TrainingRangeBoard({
   level,
   hideNoColumn,
   swt03Session,
+  detailTitleMode,
   tableFontSize,
   detailFontSize,
   stationFontSize,
@@ -33,6 +34,7 @@ export default function TrainingRangeBoard({
         level={level}
         hideNoColumn={hideNoColumn}
         swt03Session={swt03Session}
+        detailTitleMode={detailTitleMode}
         tableFontSize={tableFontSize}
         detailFontSize={detailFontSize}
         stationFontSize={stationFontSize}

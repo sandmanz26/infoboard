@@ -122,6 +122,15 @@ const SWT03_SESSION_OPTIONS = [
   { id: 'ended', label: 'Ended', description: 'SWT-03 shows the Global Leaderboard instead' },
 ]
 
+// Level 4 + Layout 5 only — swaps each station's "Detail 1" title for
+// its own unit code (e.g. "41SAB"). Real per-station data has no second
+// detail group to flip to, so "Unit" isn't a variant of the flip — it
+// replaces it, always showing the one static label.
+const DETAIL_LABEL_OPTIONS = [
+  { id: 'detail', label: 'Detail', description: 'Show "Detail 1" above each station\'s roster' },
+  { id: 'unit', label: 'Unit', description: 'Show the station\'s unit code (e.g. "41SAB") instead of "Detail 1"' },
+]
+
 // Layout 5 only — independent font-size controls for the 3 text sizes
 // on screen: the trainee table, the "Detail N" title, and the base
 // station name at the top of each column.
@@ -215,6 +224,7 @@ const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
+const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
 const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
 const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
@@ -276,6 +286,21 @@ function NoColumnIcon() {
       <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M2 8h5M2 13h5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M4 4.5 5.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DetailLabelIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <path
+        d="M3 5.5 8 3l9 4.5-9 4.5-9-4.5 4-2Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path d="M3 10.5 8 13l9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M3 14.5 8 17l9-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -659,6 +684,7 @@ function LayoutFive({
   detailFontSize,
   stationFontSize,
   swt03Session,
+  detailTitleMode,
 }) {
   const isLevelFour = level === 'level-4'
   // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
@@ -694,7 +720,7 @@ function LayoutFive({
                     <DetailPanel
                       tableModel={tableModel}
                       rows={formatStationRows(station.rows)}
-                      title="Detail 1"
+                      title={detailTitleMode === 'unit' && station.unit ? station.unit : 'Detail 1'}
                       status="Ready"
                       fullRows
                       hideNo={hideNoColumn}
@@ -801,6 +827,10 @@ export default function App() {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
     return SWT03_SESSION_OPTIONS.some((o) => o.id === saved) ? saved : 'ongoing'
   })
+  const [detailTitleMode, setDetailTitleMode] = useState(() => {
+    const saved = localStorage.getItem(DETAIL_LABEL_STORAGE_KEY)
+    return DETAIL_LABEL_OPTIONS.some((o) => o.id === saved) ? saved : 'detail'
+  })
   const [tableFontSize, setTableFontSize] = useState(() => {
     const saved = localStorage.getItem(TABLE_FONT_SIZE_STORAGE_KEY)
     return TABLE_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
@@ -826,6 +856,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(SWT03_SESSION_STORAGE_KEY, swt03Session)
   }, [swt03Session])
+
+  useEffect(() => {
+    localStorage.setItem(DETAIL_LABEL_STORAGE_KEY, detailTitleMode)
+  }, [detailTitleMode])
 
   useEffect(() => {
     localStorage.setItem(TABLE_FONT_SIZE_STORAGE_KEY, tableFontSize)
@@ -1029,6 +1063,14 @@ export default function App() {
             active: swt03Session,
             onChange: setSwt03Session,
           },
+          {
+            id: 'detail-label',
+            label: 'Detail Title',
+            icon: <DetailLabelIcon />,
+            options: DETAIL_LABEL_OPTIONS,
+            active: detailTitleMode,
+            onChange: setDetailTitleMode,
+          },
         ]
       : []),
     // Layout 5 only — independent font-size controls, available on any
@@ -1089,6 +1131,7 @@ export default function App() {
           level={level}
           hideNoColumn={noColumn === 'hidden'}
           swt03Session={swt03Session}
+          detailTitleMode={detailTitleMode}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}
