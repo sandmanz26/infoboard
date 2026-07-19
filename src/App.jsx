@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { detailList, podium, leaderboard, stations, swtStations } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
@@ -715,10 +715,37 @@ function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, 
   )
   const { pageIndex } = usePagedRows(pages, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
   const activeRows = pages[pageIndex]
+  // "10 - 5" produces two pages of different sizes for a station with
+  // more than 10 rows — without a height floor, the panel would shrink
+  // when it flips to the shorter 5-row page. "15" and "5 - 5 - 5" don't
+  // need this: either there's no flip at all, or every page is already
+  // the same size.
+  const hasUnevenPages = pages.length > 1 && pages.some((p) => p.length !== pages[0].length)
+
+  // A flat px floor can't track every font-size combination the
+  // switchers allow, so measure instead and floor future renders at the
+  // tallest height this column has actually reached. A ResizeObserver
+  // (rather than a one-off measurement keyed on the page) is needed
+  // because the real content also grows after mount when webfonts
+  // finish loading and the text reflows at its real metrics — a single
+  // snapshot can lock in an undersized floor from the fallback-font frame.
+  const columnRef = useRef(null)
+  const [minHeight, setMinHeight] = useState(0)
+  useEffect(() => {
+    if (!hasUnevenPages || !columnRef.current) return
+    const el = columnRef.current
+    const observer = new ResizeObserver(() => {
+      setMinHeight((prev) => Math.max(prev, el.getBoundingClientRect().height))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasUnevenPages])
 
   return (
     <section
+      ref={columnRef}
       className={`panel detail-panel-compact station-column${showLeaderboard ? ' station-column-leaderboard' : ''}`}
+      style={hasUnevenPages ? { minHeight } : undefined}
     >
       <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
       {showLeaderboard ? (
