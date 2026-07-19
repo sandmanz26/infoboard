@@ -131,6 +131,34 @@ const DETAIL_LABEL_OPTIONS = [
   { id: 'unit', label: 'Unit', description: 'Show the station\'s unit code (e.g. "41SAB") instead of "Detail 1"' },
 ]
 
+// Level 4 + Layout 5 only — how each station's own roster pages/flips
+// over time, independent of how many rows that station actually has.
+// A station with fewer rows than a page needs just skips the empty
+// page (e.g. a 5-row station never flips under "10 - 5" or "5-5-5").
+const DATA_COUNT_OPTIONS = [
+  { id: '10-5', label: '10 - 5', description: 'Show 10 rows, then flip to the remaining rows a few seconds later' },
+  { id: '15', label: '15', description: 'Show every row at once, no flip' },
+  { id: '5-5-5', label: '5 - 5 - 5', description: 'Show 5 rows, then flip to the next 5, then the next 5' },
+]
+
+const DATA_COUNT_PAGE_SIZES = {
+  '10-5': [10, 5],
+  '15': [Infinity],
+  '5-5-5': [5, 5, 5],
+}
+
+function chunkStationRows(rows, dataCount) {
+  const sizes = DATA_COUNT_PAGE_SIZES[dataCount] ?? DATA_COUNT_PAGE_SIZES['15']
+  const pages = []
+  let offset = 0
+  for (const size of sizes) {
+    const page = rows.slice(offset, offset + size)
+    if (page.length > 0) pages.push(page)
+    offset += size
+  }
+  return pages.length > 0 ? pages : [rows]
+}
+
 // Layout 5 only — independent font-size controls for the 3 text sizes
 // on screen: the trainee table, the "Detail N" title, and the base
 // station name at the top of each column.
@@ -225,6 +253,7 @@ const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
 const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
+const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
 const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
 const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
@@ -675,6 +704,48 @@ function SwtStationInfo({ station, hideUnit }) {
   )
 }
 
+// One station's column for Level 4 — split out so its row-paging timer
+// (which depends on stationDataCount and that station's own row count)
+// is a per-instance hook, not one called inside the parent's .map().
+function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, stationDataCount, swt03Session }) {
+  const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
+  const pages = useMemo(
+    () => chunkStationRows(formatStationRows(station.rows), stationDataCount),
+    [station.rows, stationDataCount]
+  )
+  const { pageIndex } = usePagedRows(pages, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
+  const activeRows = pages[pageIndex]
+
+  return (
+    <section
+      className={`panel detail-panel-compact station-column${showLeaderboard ? ' station-column-leaderboard' : ''}`}
+    >
+      <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
+      {showLeaderboard ? (
+        <StationGlobalLeaderboard
+          rows={formatStationRows(station.leaderboardRows)}
+          courseware={station.courseware}
+          timeRange={`${station.startTime} - ${station.endTime}`}
+          hideNo={hideNoColumn}
+        />
+      ) : (
+        <>
+          <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
+          <DetailPanel
+            tableModel={tableModel}
+            rows={activeRows}
+            title={detailTitleMode === 'unit' && station.unit ? station.unit : 'Detail 1'}
+            status="Ready"
+            fullRows
+            hideNo={hideNoColumn}
+            splitRank
+          />
+        </>
+      )}
+    </section>
+  )
+}
+
 function LayoutFive({
   tableModel,
   activeStation,
@@ -685,6 +756,7 @@ function LayoutFive({
   stationFontSize,
   swt03Session,
   detailTitleMode,
+  stationDataCount,
 }) {
   const isLevelFour = level === 'level-4'
   // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
@@ -702,35 +774,17 @@ function LayoutFive({
   return (
     <main className="layout layout-five" style={fontSizeVars}>
       {isLevelFour
-        ? swtStations.map((station) => {
-            const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
-            return (
-              <section key={station.code} className="panel detail-panel-compact station-column">
-                <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
-                {showLeaderboard ? (
-                  <StationGlobalLeaderboard
-                    rows={formatStationRows(station.leaderboardRows)}
-                    courseware={station.courseware}
-                    timeRange={`${station.startTime} - ${station.endTime}`}
-                    hideNo={hideNoColumn}
-                  />
-                ) : (
-                  <>
-                    <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
-                    <DetailPanel
-                      tableModel={tableModel}
-                      rows={formatStationRows(station.rows)}
-                      title={detailTitleMode === 'unit' && station.unit ? station.unit : 'Detail 1'}
-                      status="Ready"
-                      fullRows
-                      hideNo={hideNoColumn}
-                      splitRank
-                    />
-                  </>
-                )}
-              </section>
-            )
-          })
+        ? swtStations.map((station) => (
+            <SwtStationColumn
+              key={station.code}
+              station={station}
+              tableModel={tableModel}
+              hideNoColumn={hideNoColumn}
+              detailTitleMode={detailTitleMode}
+              stationDataCount={stationDataCount}
+              swt03Session={swt03Session}
+            />
+          ))
         : LAYOUT_FIVE_STATIONS.map((station) => (
             <section
               key={station.name}
@@ -831,6 +885,10 @@ export default function App() {
     const saved = localStorage.getItem(DETAIL_LABEL_STORAGE_KEY)
     return DETAIL_LABEL_OPTIONS.some((o) => o.id === saved) ? saved : 'detail'
   })
+  const [stationDataCount, setStationDataCount] = useState(() => {
+    const saved = localStorage.getItem(STATION_DATA_COUNT_STORAGE_KEY)
+    return DATA_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '15'
+  })
   const [tableFontSize, setTableFontSize] = useState(() => {
     const saved = localStorage.getItem(TABLE_FONT_SIZE_STORAGE_KEY)
     return TABLE_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
@@ -860,6 +918,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(DETAIL_LABEL_STORAGE_KEY, detailTitleMode)
   }, [detailTitleMode])
+
+  useEffect(() => {
+    localStorage.setItem(STATION_DATA_COUNT_STORAGE_KEY, stationDataCount)
+  }, [stationDataCount])
 
   useEffect(() => {
     localStorage.setItem(TABLE_FONT_SIZE_STORAGE_KEY, tableFontSize)
@@ -1071,6 +1133,14 @@ export default function App() {
             active: detailTitleMode,
             onChange: setDetailTitleMode,
           },
+          {
+            id: 'station-data-count',
+            label: 'Data Count',
+            icon: <DetailCountIcon />,
+            options: DATA_COUNT_OPTIONS,
+            active: stationDataCount,
+            onChange: setStationDataCount,
+          },
         ]
       : []),
     // Layout 5 only — independent font-size controls, available on any
@@ -1132,6 +1202,7 @@ export default function App() {
           hideNoColumn={noColumn === 'hidden'}
           swt03Session={swt03Session}
           detailTitleMode={detailTitleMode}
+          stationDataCount={stationDataCount}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}
