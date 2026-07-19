@@ -588,7 +588,7 @@ function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
             <th className="rank-cell">Rank</th>
-            <th>Name</th>
+            <th className="name-cell">Name</th>
             <th className="weapon-cell">Weapon</th>
             <th>Score</th>
           </tr>

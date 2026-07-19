@@ -949,10 +949,13 @@ body {
    station actually has, instead of a stack of full-width rows — a
    station missing a field (SWT-03 has no real booking, just a
    courseware + time slot) just reads shorter instead of leaving a gap.
-   min-height reserves room for 2 wrapped lines so every column's
-   Detail/table header still lines up even when one has less to say. */
+   Every station's info now fits on one line in practice (Booking ID
+   moved to the header row, Unit is hidden when it's shown as the title
+   instead), so there's no longer a 2-line case to reserve height for —
+   min-height just matches the single line, instead of leaving a blank
+   second line's worth of gap above "Detail 1"/table below it. */
 .station-column-info {
-  min-height: 2.6em;
+  min-height: 1.3em;
   margin-top: 8px;
   margin-bottom: 8px;
   font-size: var(--l5-table-font-size, 12px);
@@ -1027,23 +1030,21 @@ body {
   padding-right: 2px;
 }
 
-/* Narrow columns get a fixed width sized to comfortably fit their
-   header label and longest data value at the largest Table Font Size
-   setting (15px) — anything smaller just leaves a little unused space
-   rather than risking silent mid-word clipping. No./Rank/Weapon/Lane
-   are kept as tight as that allows; Name (left unsized here) claims
-   whatever's left, which is the whole point — it's the one column that
-   actually needs the room. */
+/* Column widths per the configuration tested directly in devtools. */
 .station-column .table .no-cell {
   width: 28px;
 }
 
 .station-column .table .rank-cell {
-  width: 48px;
+  width: 40px;
+}
+
+.station-column .table .name-cell {
+  width: 84px;
 }
 
 .station-column .table .weapon-cell {
-  width: 88px;
+  width: 72px;
 }
 
 /* Default/Compact table models carry a Status column ("Ready"/"Queue"
@@ -1091,9 +1092,8 @@ body {
   max-width: 88px;
 }
 
-/* Layout 5's station tables give Name the leftover width instead of an
-   88px cap (see the fixed column widths above) — 30 real characters
-   needs the room, not a truncated preview of it. */
+/* Layout 5's station tables size Name via the fixed column width above
+   instead of an 88px cap. */
 .station-column .name-cell {
   max-width: none;
 }

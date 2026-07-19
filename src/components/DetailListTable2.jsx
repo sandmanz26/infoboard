@@ -28,7 +28,7 @@ export default function DetailListTable2({
             {splitRank ? (
               <>
                 <th className="rank-cell">Rank</th>
-                <th>Name</th>
+                <th className="name-cell">Name</th>
               </>
             ) : (
               <th>Trainee</th>

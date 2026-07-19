@@ -16,7 +16,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
             <th className="rank-cell">Rank</th>
-            <th>Name</th>
+            <th className="name-cell">Name</th>
             <th className="status-cell">Status</th>
             <th className="weapon-cell">Weapon</th>
             <th>Lane</th>

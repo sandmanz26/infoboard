@@ -20,7 +20,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
           <tr>
             {!hideNo && <th className="no-cell">No</th>}
             <th className="rank-cell">Rank</th>
-            <th>Name</th>
+            <th className="name-cell">Name</th>
             <th className="status-cell">Status</th>
             <th className="weapon-cell">Weapon</th>
             <th>Lane</th>
