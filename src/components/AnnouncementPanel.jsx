@@ -1,3 +1,5 @@
+import NoticeCard from './NoticeCard.jsx'
+
 function RangeIllustration() {
   return (
     <svg viewBox="0 0 320 140" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -28,19 +30,28 @@ export default function AnnouncementPanel({ items }) {
                 <RangeIllustration />
               </div>
             )}
-            <div className="announcement-body">
-              <h3 className="announcement-title">{item.title}</h3>
-              {item.caption && <p className="announcement-caption">{item.caption}</p>}
-              {item.bullets && (
-                <ul className="announcement-bullets">
-                  {item.bullets.map((b) => (
-                    <li key={b}>{b}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            {(item.title || item.caption || item.bullets) && (
+              <div className="announcement-body">
+                {item.title && <h3 className="announcement-title">{item.title}</h3>}
+                {item.caption && <p className="announcement-caption">{item.caption}</p>}
+                {item.bullets && (
+                  <ul className="announcement-bullets">
+                    {item.bullets.map((b) =>
+                      typeof b === 'string' ? (
+                        <li key={b}>{b}</li>
+                      ) : (
+                        <li key={b.label}>
+                          <strong>{b.label}:</strong> {b.text}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
         ))}
+        <NoticeCard />
       </div>
     </>
   )

@@ -179,7 +179,7 @@ export const bookings = [
     platformType: 'Terrex 50 HMG, Terrex 40 AGL',
     level: 'L2',
     startTime: '08:00 AM',
-    endTime: '12:00 PM',
+    endTime: '03:00 PM',
     instructor: 'CPT Darren Lim',
     status: 'Ongoing',
   },
@@ -231,7 +231,7 @@ export const bookings = [
     platformType: 'LUV, PCSV Fuel',
     level: 'L3',
     startTime: '08:00 AM',
-    endTime: '12:00 PM',
+    endTime: '03:00 PM',
     instructor: 'CPT Darren Lim',
     status: 'Ongoing',
   },
@@ -241,7 +241,7 @@ export const bookings = [
     platformType: 'ICV Storm',
     level: 'L3',
     startTime: '08:00 AM',
-    endTime: '12:00 PM',
+    endTime: '03:00 PM',
     instructor: 'CPT Daren Ong',
     status: 'Ongoing',
   },
@@ -358,27 +358,41 @@ export const bookings = [
 // Level 1 lobby — rotating announcement cards.
 export const announcements = [
   {
-    id: 'range-day',
-    title: 'Range Day Highlights',
-    caption: 'Unit 20 completing zeroing drills on the SAR21 range this morning.',
+    id: 'training-photo',
     hasImage: true,
   },
   {
-    id: 'dos-donts',
-    title: "Range Do's and Don'ts",
+    id: 'rules',
+    title: 'Rules',
     bullets: [
-      "Check in at the counter before proceeding to your assigned level.",
-      'Weapons remain pointed downrange at all times.',
-      'No photography inside the live-fire range floors.',
-      'Report any equipment fault to your instructor immediately.',
-    ],
-  },
-  {
-    id: 'facility-notice',
-    title: 'Facility Notice',
-    bullets: [
-      'Level 3 range closed for maintenance on 21 August, 0800-1200.',
-      'New booking slots for September now open at the reception counter.',
+      {
+        label: 'Ballistic Compliance',
+        text: 'Servicemen must wear issued equipment. They must stay in marked firing lanes.',
+      },
+      {
+        label: 'Firearms Control',
+        text: 'Weapons must only be loaded or cleared at designated points under the supervision of a Range Safety Officer.',
+      },
+      {
+        label: 'Protective Gear',
+        text: 'Eye and ear protection are strictly mandatory at all times on the range.',
+      },
+      {
+        label: 'Restricted Access',
+        text: 'The Singapore Armed Forces (SAF) restricts entry to authorized personnel only. Trespassing constitutes a serious offense.',
+      },
+      {
+        label: 'Identification',
+        text: 'Personnel must carry valid identification, such as their SAF 11B, NRIC, or Work Pass.',
+      },
     ],
   },
 ]
+
+// The Notice card (below) is operator-editable at runtime, so it isn't
+// part of the static `announcements` list above — this is only the
+// default text shown before an operator has typed their own.
+export const DEFAULT_NOTICE_TEXT = [
+  'Level 3 range closed for maintenance on 21 August, 0800-1200.',
+  'New booking slots for September now open at the reception counter.',
+].join('\n')
