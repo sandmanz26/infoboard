@@ -1048,15 +1048,15 @@ body {
 
 /* Column widths per the configuration tested directly in devtools. */
 .station-column .table .no-cell {
-  width: 28px;
+  width: 24px;
 }
 
 .station-column .table .rank-cell {
-  width: 40px;
+  width: 36px;
 }
 
 .station-column .table .name-cell {
-  width: 84px;
+  width: 90px;
 }
 
 .station-column .table .weapon-cell {
@@ -1084,7 +1084,7 @@ body {
    touched since it never gets the lane-cell class. */
 .station-column .table th.lane-cell,
 .station-column .table td.lane-cell {
-  width: 42px;
+  width: 40px;
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in
