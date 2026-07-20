@@ -958,6 +958,35 @@ body {
   white-space: nowrap;
 }
 
+/* Countdown to this station's next page/Detail flip — fills up over the
+   flip interval, then resets (remounted via key={pageIndex} in App.jsx)
+   the instant the flip happens. */
+.flip-progress-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.flip-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  animation-name: flip-progress-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes flip-progress-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 /* Session/courseware on the left, time range on the right — opposite
    corners of the row instead of run together inline — so a station
    missing a field (SWT-03 has no real booking, just a courseware + time

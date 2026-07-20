@@ -725,6 +725,20 @@ function StationColumnHead({ name, bookingCode }) {
   )
 }
 
+// Countdown to this station's next page/Detail flip — a CSS animation
+// rather than a JS-driven tick so it doesn't force a re-render every
+// frame. `key={pageIndex}` remounts the fill on every flip, restarting
+// the animation from empty; pageCount <= 1 means usePagedRows never set
+// up an interval at all (nothing will change), so no bar is shown.
+function FlipProgressBar({ pageIndex, pageCount, intervalMs }) {
+  if (pageCount <= 1) return null
+  return (
+    <div className="flip-progress-track" aria-hidden="true">
+      <div key={pageIndex} className="flip-progress-fill" style={{ animationDuration: `${intervalMs}ms` }} />
+    </div>
+  )
+}
+
 // A station's booking info — Mode + Courseware, time range, Unit — as
 // one wrapped line with " · " separators instead of a stack of
 // full-width rows, so a station missing a field (SWT-03 has no real
@@ -754,7 +768,7 @@ function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, 
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
   const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
   const stepIntervalMs = station.details ? DETAIL_GROUP_STEP_INTERVAL_MS : LAYOUT_FIVE_STEP_INTERVAL_MS
-  const { pageIndex } = usePagedRows(steps, 1, stepIntervalMs)
+  const { pageIndex, pageCount } = usePagedRows(steps, 1, stepIntervalMs)
   const activeStep = steps[pageIndex]
   // "10 - 5" produces two pages of different sizes for a station with
   // more than 10 rows (and a multi-Detail station repeats that per
@@ -799,6 +813,7 @@ function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, 
         />
       ) : (
         <>
+          <FlipProgressBar pageIndex={pageIndex} pageCount={pageCount} intervalMs={stepIntervalMs} />
           <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
           <DetailPanel
             tableModel={tableModel}
@@ -834,7 +849,7 @@ function LayoutFive({
   // station in lockstep — an airport board doesn't flip one panel at a
   // time. Level 4 ignores this entirely in favor of real per-station data.
   const steps = useMemo(() => layoutFiveSteps(detailList), [])
-  const { pageIndex } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
+  const { pageIndex, pageCount } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
   const activeStep = steps[pageIndex]
   const fontSizeVars = {
     '--l5-table-font-size': TABLE_FONT_SIZE_OPTIONS.find((o) => o.id === tableFontSize)?.value,
@@ -861,6 +876,7 @@ function LayoutFive({
               className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
             >
               <StationColumnHead name={station.name} />
+              <FlipProgressBar pageIndex={pageIndex} pageCount={pageCount} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
               <div className="station-column-info">
                 <span>
                   Unit: <strong>{station.unit}</strong>
