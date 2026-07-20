@@ -7,7 +7,7 @@ export default function DetailListCards({ rows, title = 'Detail List', status = 
       <div className="detail-panel-head">
         <h2 className="panel-title">{title}</h2>
         <span className="detail-panel-head-meta">
-          <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+          <span className={`status-pill${status === 'Queue' || status === 'Ongoing' ? ' status-pill-queue' : ''}`}>
             {status}
           </span>
           <PageDots pageIndex={pageIndex} pageCount={pageCount} tone={statusTone(status)} />

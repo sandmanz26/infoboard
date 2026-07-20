@@ -6,7 +6,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
       <div className="detail-panel-head">
         <h2 className="panel-title">{title}</h2>
         {status && (
-          <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+          <span className={`status-pill${status === 'Queue' || status === 'Ongoing' ? ' status-pill-queue' : ''}`}>
             {status}
           </span>
         )}

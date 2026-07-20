@@ -166,6 +166,30 @@ function chunkStationRows(rows, dataCount) {
   return pages.length > 0 ? pages : [rows]
 }
 
+// A station with multiple Detail groups (see SWT-01's `details` array in
+// data.js) flips slower than the default per-station pagination — long
+// enough to actually read a full Detail before it moves to the next.
+const DETAIL_GROUP_STEP_INTERVAL_MS = 8000
+
+// Stations without a `details` array are treated as a single implicit
+// Detail 1 group (status "Ready"), matching every station's behavior
+// before multi-Detail rotation existed. Each group is paginated by the
+// same Data Count pattern, then all groups' pages are concatenated into
+// one flat step sequence — e.g. 3 groups under "10 - 5" is 6 steps:
+// Detail 1 x10, Detail 1 x5, Detail 2 x10, Detail 2 x5, Detail 3 x10,
+// Detail 3 x5 — so a single per-station pagination timer drives both the
+// within-Detail flip and the Detail-to-Detail flip.
+function buildStationSteps(station, dataCount) {
+  const groups = station.details ?? [{ status: 'Ready', rows: station.rows }]
+  return groups.flatMap((group, detailIndex) =>
+    chunkStationRows(formatStationRows(group.rows), dataCount).map((rows) => ({
+      rows,
+      status: group.status,
+      detailIndex,
+    }))
+  )
+}
+
 // Layout 5 only — independent font-size controls for the 3 text sizes
 // on screen: the trainee table, the "Detail N" title, and the base
 // station name at the top of each column.
@@ -728,18 +752,17 @@ function SwtStationInfo({ station, hideUnit }) {
 // is a per-instance hook, not one called inside the parent's .map().
 function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, stationDataCount, swt03Session }) {
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
-  const pages = useMemo(
-    () => chunkStationRows(formatStationRows(station.rows), stationDataCount),
-    [station.rows, stationDataCount]
-  )
-  const { pageIndex } = usePagedRows(pages, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
-  const activeRows = pages[pageIndex]
+  const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
+  const stepIntervalMs = station.details ? DETAIL_GROUP_STEP_INTERVAL_MS : LAYOUT_FIVE_STEP_INTERVAL_MS
+  const { pageIndex } = usePagedRows(steps, 1, stepIntervalMs)
+  const activeStep = steps[pageIndex]
   // "10 - 5" produces two pages of different sizes for a station with
-  // more than 10 rows — without a height floor, the panel would shrink
-  // when it flips to the shorter 5-row page. "15" and "5 - 5 - 5" don't
-  // need this: either there's no flip at all, or every page is already
-  // the same size.
-  const hasUnevenPages = pages.length > 1 && pages.some((p) => p.length !== pages[0].length)
+  // more than 10 rows (and a multi-Detail station repeats that per
+  // group) — without a height floor, the panel would shrink whenever it
+  // flips to a shorter page. "15" and "5 - 5 - 5" don't need this:
+  // either there's no flip at all, or every page is already the same
+  // size.
+  const hasUnevenPages = steps.length > 1 && steps.some((s) => s.rows.length !== steps[0].rows.length)
 
   // A flat px floor can't track every font-size combination the
   // switchers allow, so measure instead and floor future renders at the
@@ -779,9 +802,9 @@ function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, 
           <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
           <DetailPanel
             tableModel={tableModel}
-            rows={activeRows}
-            title={detailTitleMode === 'unit' && station.unit ? station.unit : 'Detail 1'}
-            status="Ready"
+            rows={activeStep.rows}
+            title={detailTitleMode === 'unit' && station.unit ? station.unit : `Detail ${activeStep.detailIndex + 1}`}
+            status={activeStep.status}
             fullRows
             hideNo={hideNoColumn}
             splitRank

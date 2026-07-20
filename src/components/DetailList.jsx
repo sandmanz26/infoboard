@@ -8,7 +8,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
         <h2 className="panel-title">{title}</h2>
         <span className="detail-panel-head-meta">
           {status && (
-            <span className={`status-pill${status === 'Queue' ? ' status-pill-queue' : ''}`}>
+            <span className={`status-pill${status === 'Queue' || status === 'Ongoing' ? ' status-pill-queue' : ''}`}>
               {status}
             </span>
           )}
