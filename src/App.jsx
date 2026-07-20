@@ -70,7 +70,11 @@ const LAYOUT_FIVE_DETAILS = [
   { title: 'Detail 1', status: 'Ready' },
   { title: 'Detail 2', status: 'Queue' },
 ]
-const LAYOUT_FIVE_STEP_INTERVAL_MS = 5000
+// One shared cadence for every Layout 5 column (Level 2/3's placeholder
+// rotation and Level 4's per-station rotation both flip on this same
+// beat now, driven by a single tick — see `flipTick` in the App
+// component and the single progress bar rendered under the header).
+const LAYOUT_FIVE_STEP_INTERVAL_MS = 8000
 
 function layoutFiveSteps(rows) {
   return LAYOUT_FIVE_DETAILS.flatMap((detail) => [
@@ -174,11 +178,6 @@ function chunkStationRows(rows, dataCount) {
   }
   return pages.length > 0 ? pages : [rows]
 }
-
-// A station with multiple Detail groups (see SWT-01's `details` array in
-// data.js) flips slower than the default per-station pagination — long
-// enough to actually read a full Detail before it moves to the next.
-const DETAIL_GROUP_STEP_INTERVAL_MS = 8000
 
 // Stations without a `details` array are treated as a single implicit
 // Detail 1 group (status "Ready"), matching every station's behavior
@@ -735,16 +734,15 @@ function StationColumnHead({ name, bookingCode }) {
   )
 }
 
-// Countdown to this station's next page/Detail flip — a CSS animation
-// rather than a JS-driven tick so it doesn't force a re-render every
-// frame. `key={pageIndex}` remounts the fill on every flip, restarting
-// the animation from empty; pageCount <= 1 means usePagedRows never set
-// up an interval at all (nothing will change), so no bar is shown.
-function FlipProgressBar({ pageIndex, pageCount, intervalMs }) {
-  if (pageCount <= 1) return null
+// One shared countdown for every Layout 5 column, rendered once under
+// the header rather than once per station — a CSS animation rather
+// than a JS-driven tick so it doesn't force a re-render every frame.
+// `key={tick}` remounts the fill on every shared flip, restarting the
+// animation from empty in lockstep across all columns.
+function FlipProgressBar({ tick, intervalMs }) {
   return (
     <div className="flip-progress-track" aria-hidden="true">
-      <div key={pageIndex} className="flip-progress-fill" style={{ animationDuration: `${intervalMs}ms` }} />
+      <div key={tick} className="flip-progress-fill" style={{ animationDuration: `${intervalMs}ms` }} />
     </div>
   )
 }
@@ -771,9 +769,12 @@ function SwtStationInfo({ station, hideUnit }) {
   )
 }
 
-// One station's column for Level 4 — split out so its row-paging timer
+// One station's column for Level 4 — split out so its row-chunking
 // (which depends on stationDataCount and that station's own row count)
-// is a per-instance hook, not one called inside the parent's .map().
+// is a per-instance computation, not one called inside the parent's
+// .map(). Its position in the rotation still advances on the single
+// shared `flipTick` from the App component, so every column (and every
+// Level 2/3 placeholder column) flips at the exact same moment.
 function SwtStationColumn({
   station,
   tableModel,
@@ -782,10 +783,10 @@ function SwtStationColumn({
   stationDataCount,
   startDetail,
   swt03Session,
+  flipTick,
 }) {
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
   const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
-  const stepIntervalMs = station.details ? DETAIL_GROUP_STEP_INTERVAL_MS : LAYOUT_FIVE_STEP_INTERVAL_MS
   // "Start Detail" picks which Detail group this station's rotation opens
   // on — find that group's first step in the combined sequence. Falls
   // back to step 0 if the station doesn't actually have that many Detail
@@ -795,7 +796,7 @@ function SwtStationColumn({
     const idx = steps.findIndex((s) => s.detailIndex === startDetailIndex)
     return idx === -1 ? 0 : idx
   }, [steps, startDetailIndex])
-  const { pageIndex, pageCount } = usePagedRows(steps, 1, stepIntervalMs, initialStepIndex)
+  const pageIndex = (initialStepIndex + flipTick) % steps.length
   const activeStep = steps[pageIndex]
   // "10 - 5" produces two pages of different sizes for a station with
   // more than 10 rows (and a multi-Detail station repeats that per
@@ -840,7 +841,6 @@ function SwtStationColumn({
         />
       ) : (
         <>
-          <FlipProgressBar pageIndex={pageIndex} pageCount={pageCount} intervalMs={stepIntervalMs} />
           <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
           <DetailPanel
             tableModel={tableModel}
@@ -870,14 +870,17 @@ function LayoutFive({
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
+  flipTick,
 }) {
   const isLevelFour = level === 'level-4'
   // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
   // rows) -> Detail 1 (5) -> Detail 2 (10) -> Detail 2 (5) across every
   // station in lockstep — an airport board doesn't flip one panel at a
   // time. Level 4 ignores this entirely in favor of real per-station data.
+  // Both branches advance on the same shared flipTick (see App), so
+  // every column across the whole layout changes at the same moment.
   const steps = useMemo(() => layoutFiveSteps(detailList), [])
-  const { pageIndex, pageCount } = usePagedRows(steps, 1, LAYOUT_FIVE_STEP_INTERVAL_MS)
+  const pageIndex = flipTick % steps.length
   const activeStep = steps[pageIndex]
   const fontSizeVars = {
     '--l5-table-font-size': TABLE_FONT_SIZE_OPTIONS.find((o) => o.id === tableFontSize)?.value,
@@ -897,6 +900,7 @@ function LayoutFive({
               stationDataCount={stationDataCount}
               startDetail={startDetailByStation?.[station.code] ?? '1'}
               swt03Session={swt03Session}
+              flipTick={flipTick}
             />
           ))
         : LAYOUT_FIVE_STATIONS.map((station) => (
@@ -905,7 +909,6 @@ function LayoutFive({
               className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
             >
               <StationColumnHead name={station.name} />
-              <FlipProgressBar pageIndex={pageIndex} pageCount={pageCount} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
               <div className="station-column-info">
                 <span>
                   Unit: <strong>{station.unit}</strong>
@@ -1034,6 +1037,17 @@ export default function App() {
     return STATION_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
   })
   const [stationIndex, setStationIndex] = useState(0)
+
+  // One shared tick drives every Layout 5 column's rotation (both
+  // Level 4's per-station steps and Level 2/3's placeholder steps) so
+  // they all flip at the exact same moment, instead of each column
+  // running its own independent timer.
+  const [flipTick, setFlipTick] = useState(0)
+  useEffect(() => {
+    if (layout !== 'layout-5') return
+    const id = setInterval(() => setFlipTick((t) => t + 1), LAYOUT_FIVE_STEP_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [layout])
 
   useEffect(() => {
     localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
@@ -1353,6 +1367,9 @@ export default function App() {
         detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
         title={level === 'level-4' ? 'Specialized Weapon Training' : 'Infoboard'}
       />
+      {isTrainingLevel && layout === 'layout-5' && (
+        <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
+      )}
       {isTrainingLevel ? (
         <TrainingBoard
           ActiveLayout={ActiveLayout}
@@ -1370,6 +1387,7 @@ export default function App() {
           detailTitleMode={detailTitleMode}
           stationDataCount={stationDataCount}
           startDetailByStation={startDetailByStation}
+          flipTick={flipTick}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}

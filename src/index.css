@@ -958,23 +958,12 @@ body {
   white-space: nowrap;
 }
 
-/* Countdown to this station's next page/Detail flip — fills up over the
-   flip interval, then resets (remounted via key={pageIndex} in App.jsx)
-   the instant the flip happens. Sits flush on the card's own top edge
-   (absolute, inside .station-column's now-relative box) rather than in
-   normal flow, so it reads as a thin accent border instead of taking up
-   its own row and pushing the rest of the card's content down. */
-.station-column {
-  position: relative;
-}
-
+/* One shared countdown for the whole Layout 5 rotation, sitting flush
+   under the header instead of one bar per station column — fills up
+   over the flip interval, then resets (remounted via key={tick} in
+   App.jsx) the instant every column flips at once. */
 .flip-progress-track {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  height: 4px;
   background: var(--border);
   overflow: hidden;
 }
