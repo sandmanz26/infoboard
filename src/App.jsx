@@ -1367,7 +1367,7 @@ export default function App() {
       <Header
         station={currentLevelLabel}
         detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
-        title={level === 'level-4' ? 'Specialized Weapon Training' : 'Infoboard'}
+        title={level === 'level-4' ? 'Specialized Weapon Trainer\nTraining Information Board' : 'Infoboard'}
       />
       {isTrainingLevel && layout === 'layout-5' && (
         <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />

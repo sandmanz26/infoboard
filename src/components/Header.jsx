@@ -1,6 +1,7 @@
 import Clock from './Clock.jsx'
 
 export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', title = 'Infoboard' }) {
+  const titleLines = title.split('\n')
   return (
     <header className="header">
       <div className="header-left">
@@ -18,7 +19,11 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', t
             <span className="brand-line2">Management System</span>
           </div>
         </div>
-        <div className="header-tab">{title}</div>
+      </div>
+      <div className="header-tab">
+        {titleLines.map((line, i) => (
+          <div key={i}>{line}</div>
+        ))}
       </div>
       <div className="header-right">
         <Clock />
