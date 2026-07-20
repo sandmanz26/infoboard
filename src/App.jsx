@@ -961,7 +961,7 @@ export default function App() {
   })
   const [infoBanner, setInfoBanner] = useState(() => {
     const saved = localStorage.getItem(INFO_BANNER_STORAGE_KEY)
-    return INFO_BANNER_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+    return INFO_BANNER_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
   })
   const [noColumn, setNoColumn] = useState(() => {
     const saved = localStorage.getItem(NO_COLUMN_STORAGE_KEY)
@@ -969,7 +969,7 @@ export default function App() {
   })
   const [directoryVisibility, setDirectoryVisibility] = useState(() => {
     const saved = localStorage.getItem(DIRECTORY_STORAGE_KEY)
-    return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+    return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
   })
   const [swt03Session, setSwt03Session] = useState(() => {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
@@ -1129,20 +1129,28 @@ export default function App() {
             onChange: setTableModel,
           },
           {
-            id: 'leaderboard-model',
-            label: 'Leaderboard',
-            icon: <LeaderboardIcon />,
-            options: LEADERBOARD_MODELS,
-            active: leaderboardModel,
-            onChange: setLeaderboardModel,
-          },
-          {
             id: 'slideshow',
             label: 'Slideshow',
             icon: <SlideshowIcon />,
             options: SLIDESHOW_INTERVALS,
             active: slideInterval,
             onChange: setSlideInterval,
+          },
+        ]
+      : []),
+    // Leaderboard model only drives LeaderboardPanel in Layouts 1-3's
+    // right sidebar — Layout 5 has no such sidebar (SWT-03's own Global
+    // Leaderboard variant is a separate, hardcoded component), so the
+    // switcher is a dead control there.
+    ...(isTrainingLevel && layout !== 'layout-5'
+      ? [
+          {
+            id: 'leaderboard-model',
+            label: 'Leaderboard',
+            icon: <LeaderboardIcon />,
+            options: LEADERBOARD_MODELS,
+            active: leaderboardModel,
+            onChange: setLeaderboardModel,
           },
         ]
       : []),

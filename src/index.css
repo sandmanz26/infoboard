@@ -1124,6 +1124,7 @@ body {
 .station-column .table th.lane-cell,
 .station-column .table td.lane-cell {
   width: 40px;
+  text-align: center;
 }
 
 /* Spans the full row under the 5 station columns instead of sitting in
