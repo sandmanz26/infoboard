@@ -129,6 +129,15 @@ const DIRECTORY_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the Directory map' },
 ]
 
+// Level 4 + Layout 5 only — which Detail group a station's rotation
+// begins from on page load (e.g. SWT-01 opens straight into Detail 2
+// instead of always starting at Detail 1), one switcher per station.
+const START_DETAIL_OPTIONS = [
+  { id: '1', label: 'Detail 1', description: "Start this station's rotation from Detail 1" },
+  { id: '2', label: 'Detail 2', description: "Start this station's rotation from Detail 2" },
+  { id: '3', label: 'Detail 3', description: "Start this station's rotation from Detail 3" },
+]
+
 // Level 4 + Layout 5 only — swaps each station's "Detail 1" title for
 // its own unit code (e.g. "41SAB"). Real per-station data has no second
 // detail group to flip to, so "Unit" isn't a variant of the flip — it
@@ -284,6 +293,7 @@ const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 const DIRECTORY_STORAGE_KEY = 'infoboard-layout5-directory'
+const START_DETAIL_STORAGE_KEY = 'infoboard-layout5-start-detail'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
 const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
 const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
@@ -764,11 +774,28 @@ function SwtStationInfo({ station, hideUnit }) {
 // One station's column for Level 4 — split out so its row-paging timer
 // (which depends on stationDataCount and that station's own row count)
 // is a per-instance hook, not one called inside the parent's .map().
-function SwtStationColumn({ station, tableModel, hideNoColumn, detailTitleMode, stationDataCount, swt03Session }) {
+function SwtStationColumn({
+  station,
+  tableModel,
+  hideNoColumn,
+  detailTitleMode,
+  stationDataCount,
+  startDetail,
+  swt03Session,
+}) {
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
   const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
   const stepIntervalMs = station.details ? DETAIL_GROUP_STEP_INTERVAL_MS : LAYOUT_FIVE_STEP_INTERVAL_MS
-  const { pageIndex, pageCount } = usePagedRows(steps, 1, stepIntervalMs)
+  // "Start Detail" picks which Detail group this station's rotation opens
+  // on — find that group's first step in the combined sequence. Falls
+  // back to step 0 if the station doesn't actually have that many Detail
+  // groups (e.g. a single-Detail station ignores this entirely).
+  const startDetailIndex = Number(startDetail) - 1
+  const initialStepIndex = useMemo(() => {
+    const idx = steps.findIndex((s) => s.detailIndex === startDetailIndex)
+    return idx === -1 ? 0 : idx
+  }, [steps, startDetailIndex])
+  const { pageIndex, pageCount } = usePagedRows(steps, 1, stepIntervalMs, initialStepIndex)
   const activeStep = steps[pageIndex]
   // "10 - 5" produces two pages of different sizes for a station with
   // more than 10 rows (and a multi-Detail station repeats that per
@@ -842,6 +869,7 @@ function LayoutFive({
   swt03Session,
   detailTitleMode,
   stationDataCount,
+  startDetailByStation,
 }) {
   const isLevelFour = level === 'level-4'
   // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
@@ -867,6 +895,7 @@ function LayoutFive({
               hideNoColumn={hideNoColumn}
               detailTitleMode={detailTitleMode}
               stationDataCount={stationDataCount}
+              startDetail={startDetailByStation?.[station.code] ?? '1'}
               swt03Session={swt03Session}
             />
           ))
@@ -971,6 +1000,15 @@ export default function App() {
     const saved = localStorage.getItem(DIRECTORY_STORAGE_KEY)
     return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
   })
+  const [startDetailByStation, setStartDetailByStation] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(START_DETAIL_STORAGE_KEY))
+      if (saved && typeof saved === 'object') return saved
+    } catch {
+      /* ignore malformed saved value */
+    }
+    return {}
+  })
   const [swt03Session, setSwt03Session] = useState(() => {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
     return SWT03_SESSION_OPTIONS.some((o) => o.id === saved) ? saved : 'ongoing'
@@ -1008,6 +1046,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(DIRECTORY_STORAGE_KEY, directoryVisibility)
   }, [directoryVisibility])
+
+  useEffect(() => {
+    localStorage.setItem(START_DETAIL_STORAGE_KEY, JSON.stringify(startDetailByStation))
+  }, [startDetailByStation])
 
   useEffect(() => {
     localStorage.setItem(SWT03_SESSION_STORAGE_KEY, swt03Session)
@@ -1255,6 +1297,15 @@ export default function App() {
             active: stationDataCount,
             onChange: setStationDataCount,
           },
+          ...swtStations.map((station) => ({
+            id: `start-detail-${station.code}`,
+            label: `${station.code} Start Detail`,
+            icon: <DetailCountIcon />,
+            options: START_DETAIL_OPTIONS,
+            active: startDetailByStation[station.code] ?? '1',
+            onChange: (value) =>
+              setStartDetailByStation((prev) => ({ ...prev, [station.code]: value })),
+          })),
         ]
       : []),
     // Layout 5 only — independent font-size controls, available on any
@@ -1318,6 +1369,7 @@ export default function App() {
           swt03Session={swt03Session}
           detailTitleMode={detailTitleMode}
           stationDataCount={stationDataCount}
+          startDetailByStation={startDetailByStation}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}

@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 // interval — the same "one page at a time, flip to the next" pattern as
 // an airport departures board, so a long leaderboard stays readable at
 // a glance instead of shrinking to fit everything at once.
-export default function usePagedRows(rows, pageSize, intervalMs) {
+export default function usePagedRows(rows, pageSize, intervalMs, initialIndex = 0) {
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
-  const [pageIndex, setPageIndex] = useState(0)
+  const [pageIndex, setPageIndex] = useState(initialIndex)
 
   useEffect(() => {
-    setPageIndex(0)
-  }, [rows, pageSize])
+    setPageIndex(initialIndex)
+  }, [rows, pageSize, initialIndex])
 
   useEffect(() => {
     if (pageCount <= 1) return

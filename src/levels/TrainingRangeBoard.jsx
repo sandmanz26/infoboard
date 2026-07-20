@@ -19,6 +19,7 @@ export default function TrainingRangeBoard({
   swt03Session,
   detailTitleMode,
   stationDataCount,
+  startDetailByStation,
   tableFontSize,
   detailFontSize,
   stationFontSize,
@@ -39,6 +40,7 @@ export default function TrainingRangeBoard({
         swt03Session={swt03Session}
         detailTitleMode={detailTitleMode}
         stationDataCount={stationDataCount}
+        startDetailByStation={startDetailByStation}
         tableFontSize={tableFontSize}
         detailFontSize={detailFontSize}
         stationFontSize={stationFontSize}
