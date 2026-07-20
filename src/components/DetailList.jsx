@@ -1,7 +1,7 @@
 import PageDots from './PageDots.jsx'
 import { statusTone } from '../statusTone.js'
 
-export default function DetailList({ rows, title = 'Detail List', status, pageIndex, pageCount, hideNo }) {
+export default function DetailList({ rows, title = 'Detail List', status, pageIndex, pageCount, hideNo, splitRank }) {
   return (
     <>
       <div className="detail-panel-head">
@@ -23,7 +23,7 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
             <th className="name-cell">Name</th>
             <th className="status-cell">Status</th>
             <th className="weapon-cell">Weapon</th>
-            <th>Lane</th>
+            <th className={splitRank ? 'lane-cell' : undefined}>Lane</th>
           </tr>
         </thead>
         <tbody>
@@ -40,7 +40,11 @@ export default function DetailList({ rows, title = 'Detail List', status, pageIn
               <td className="weapon-cell" title={row.weapon}>
                 {row.weapon}
               </td>
-              <td>{row.lane}</td>
+              {/* Layout 5 (splitRank) drops the redundant "Lane " prefix
+                  repeated on every row now that the column is narrow. */}
+              <td className={splitRank ? 'lane-cell' : undefined}>
+                {splitRank ? String(row.lane).replace(/^Lane\s*/i, '') : row.lane}
+              </td>
             </tr>
           ))}
         </tbody>

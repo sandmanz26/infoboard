@@ -1,6 +1,6 @@
 // All rows in one dense table — no pagination, no rotation. Built for TV
 // display where scrolling isn't an option: every row must fit on screen.
-export default function DetailListCompact({ rows, title = 'Detail List', status, hideNo }) {
+export default function DetailListCompact({ rows, title = 'Detail List', status, hideNo, splitRank }) {
   return (
     <>
       <div className="detail-panel-head">
@@ -19,7 +19,7 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
             <th className="name-cell">Name</th>
             <th className="status-cell">Status</th>
             <th className="weapon-cell">Weapon</th>
-            <th>Lane</th>
+            <th className={splitRank ? 'lane-cell' : undefined}>Lane</th>
           </tr>
         </thead>
         <tbody>
@@ -36,7 +36,11 @@ export default function DetailListCompact({ rows, title = 'Detail List', status,
               <td className="weapon-cell" title={row.weapon}>
                 {row.weapon}
               </td>
-              <td>{row.lane}</td>
+              {/* Layout 5 (splitRank) drops the redundant "Lane " prefix
+                  repeated on every row now that the column is narrow. */}
+              <td className={splitRank ? 'lane-cell' : undefined}>
+                {splitRank ? String(row.lane).replace(/^Lane\s*/i, '') : row.lane}
+              </td>
             </tr>
           ))}
         </tbody>

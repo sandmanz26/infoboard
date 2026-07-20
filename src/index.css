@@ -1076,6 +1076,17 @@ body {
   width: 68px;
 }
 
+/* Lane's cell text is now just the number (the "Lane " prefix is
+   stripped in the component), so it no longer needs the shared
+   :last-child width above — matched specificity (th/td type selector
+   included, same as the rule above) plus source order is what makes
+   this win. Leaderboard's Score column (also a table last-child) isn't
+   touched since it never gets the lane-cell class. */
+.station-column .table th.lane-cell,
+.station-column .table td.lane-cell {
+  width: 42px;
+}
+
 /* Spans the full row under the 5 station columns instead of sitting in
    a narrow sidebar — wider than the default sidebar cap, but still
    capped so the map doesn't grow as tall as it is wide. */

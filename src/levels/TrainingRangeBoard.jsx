@@ -15,6 +15,7 @@ export default function TrainingRangeBoard({
   showInfoBanner,
   level,
   hideNoColumn,
+  hideDirectory,
   swt03Session,
   detailTitleMode,
   stationDataCount,
@@ -34,6 +35,7 @@ export default function TrainingRangeBoard({
         rightPanelComponents={rightPanelComponents}
         level={level}
         hideNoColumn={hideNoColumn}
+        hideDirectory={hideDirectory}
         swt03Session={swt03Session}
         detailTitleMode={detailTitleMode}
         stationDataCount={stationDataCount}

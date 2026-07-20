@@ -122,6 +122,13 @@ const SWT03_SESSION_OPTIONS = [
   { id: 'ended', label: 'Ended', description: 'SWT-03 shows the Global Leaderboard instead' },
 ]
 
+// Level 4 + Layout 5 only — the Directory map spans the full row below
+// the 5 station columns; Level 2/3's own Layout 5 always shows it.
+const DIRECTORY_OPTIONS = [
+  { id: 'visible', label: 'Visible', description: 'Show the Directory map below the station columns' },
+  { id: 'hidden', label: 'Hidden', description: 'Hide the Directory map' },
+]
+
 // Level 4 + Layout 5 only — swaps each station's "Detail 1" title for
 // its own unit code (e.g. "41SAB"). Real per-station data has no second
 // detail group to flip to, so "Unit" isn't a variant of the flip — it
@@ -168,6 +175,7 @@ const TABLE_FONT_SIZE_OPTIONS = [
   { id: 'large', label: 'Large', value: '15px' },
 ]
 const DETAIL_FONT_SIZE_OPTIONS = [
+  { id: 'xsmall', label: 'X-Small', value: '11px' },
   { id: 'small', label: 'Small', value: '13px' },
   { id: 'medium', label: 'Medium', value: '15px' },
   { id: 'large', label: 'Large', value: '19px' },
@@ -251,6 +259,7 @@ const LEVEL_STORAGE_KEY = 'infoboard-level'
 const RIGHT_PANEL_STORAGE_KEY = 'infoboard-right-panel'
 const INFO_BANNER_STORAGE_KEY = 'infoboard-info-banner'
 const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
+const DIRECTORY_STORAGE_KEY = 'infoboard-layout5-directory'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
 const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
 const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
@@ -315,6 +324,15 @@ function NoColumnIcon() {
       <rect x="2" y="3" width="16" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M2 8h5M2 13h5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M4 4.5 5.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DirectoryIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <path d="M10 2.5 3 5.5v9L10 17.5l7-3v-9L10 2.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M10 2.5v15M3 5.5l7 3 7-3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -447,7 +465,7 @@ function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows, splitR
     )
   }
   if (tableModel === 'compact') {
-    return <DetailListCompact rows={rows} title={title} status={status} hideNo={hideNo} />
+    return <DetailListCompact rows={rows} title={title} status={status} hideNo={hideNo} splitRank={splitRank} />
   }
   return (
     <DetailList
@@ -457,6 +475,7 @@ function DetailPanel({ tableModel, rows, title, status, hideNo, fullRows, splitR
       pageIndex={displayPageIndex}
       pageCount={displayPageCount}
       hideNo={hideNo}
+      splitRank={splitRank}
     />
   )
 }
@@ -778,6 +797,7 @@ function LayoutFive({
   activeStation,
   level,
   hideNoColumn,
+  hideDirectory,
   tableFontSize,
   detailFontSize,
   stationFontSize,
@@ -836,9 +856,13 @@ function LayoutFive({
               />
             </section>
           ))}
-      <section className="panel directory-panel layout-five-directory">
-        <Directory activeStation={activeStation} />
-      </section>
+      {/* Level 2/3's Layout 5 always shows the Directory — only Level 4
+          (real per-station data) offers a toggle to hide it. */}
+      {(!isLevelFour || !hideDirectory) && (
+        <section className="panel directory-panel layout-five-directory">
+          <Directory activeStation={activeStation} />
+        </section>
+      )}
     </main>
   )
 }
@@ -904,6 +928,10 @@ export default function App() {
     const saved = localStorage.getItem(NO_COLUMN_STORAGE_KEY)
     return NO_COLUMN_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
   })
+  const [directoryVisibility, setDirectoryVisibility] = useState(() => {
+    const saved = localStorage.getItem(DIRECTORY_STORAGE_KEY)
+    return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+  })
   const [swt03Session, setSwt03Session] = useState(() => {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
     return SWT03_SESSION_OPTIONS.some((o) => o.id === saved) ? saved : 'ongoing'
@@ -937,6 +965,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(NO_COLUMN_STORAGE_KEY, noColumn)
   }, [noColumn])
+
+  useEffect(() => {
+    localStorage.setItem(DIRECTORY_STORAGE_KEY, directoryVisibility)
+  }, [directoryVisibility])
 
   useEffect(() => {
     localStorage.setItem(SWT03_SESSION_STORAGE_KEY, swt03Session)
@@ -1145,6 +1177,14 @@ export default function App() {
             onChange: setNoColumn,
           },
           {
+            id: 'directory-visibility',
+            label: 'Directory',
+            icon: <DirectoryIcon />,
+            options: DIRECTORY_OPTIONS,
+            active: directoryVisibility,
+            onChange: setDirectoryVisibility,
+          },
+          {
             id: 'swt03-session',
             label: 'SWT-03 Session',
             icon: <LeaderboardIcon />,
@@ -1227,6 +1267,7 @@ export default function App() {
           showInfoBanner={infoBanner === 'visible'}
           level={level}
           hideNoColumn={noColumn === 'hidden'}
+          hideDirectory={directoryVisibility === 'hidden'}
           swt03Session={swt03Session}
           detailTitleMode={detailTitleMode}
           stationDataCount={stationDataCount}
