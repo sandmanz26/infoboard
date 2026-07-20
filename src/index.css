@@ -1001,7 +1001,7 @@ body {
   gap: 10px;
   min-height: 1.3em;
   margin-top: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
   font-size: var(--l5-table-font-size, 12px);
   line-height: 1.3;
   color: var(--text-sub);
@@ -1013,6 +1013,19 @@ body {
 }
 
 .station-column-info strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* Its own line above the Detail title instead of sharing the
+   courseware/time row — reads as a distinct piece of station identity. */
+.station-column-unit {
+  margin: 0 0 8px 0;
+  font-size: var(--l5-table-font-size, 12px);
+  color: var(--text-sub);
+}
+
+.station-column-unit strong {
   color: var(--text-main);
   font-weight: 700;
 }

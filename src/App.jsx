@@ -752,7 +752,7 @@ function FlipProgressBar({ tick, intervalMs }) {
 // full-width rows, so a station missing a field (SWT-03 has no real
 // booking, only a courseware + time slot) just reads shorter rather than
 // leaving the header block a different height from its neighbors.
-function SwtStationInfo({ station, hideUnit }) {
+function SwtStationInfo({ station }) {
   const sessionLabel = [station.mode, station.courseware].filter(Boolean).join(', ')
   return (
     <p className="station-column-info">
@@ -760,11 +760,6 @@ function SwtStationInfo({ station, hideUnit }) {
       <span>
         {station.startTime} - {station.endTime}
       </span>
-      {station.unit && !hideUnit && (
-        <span>
-          Unit: <strong>{station.unit}</strong>
-        </span>
-      )}
     </p>
   )
 }
@@ -841,7 +836,14 @@ function SwtStationColumn({
         />
       ) : (
         <>
-          <SwtStationInfo station={station} hideUnit={detailTitleMode === 'unit' && station.unit} />
+          <SwtStationInfo station={station} />
+          {/* When Unit is already the Detail title itself (detailTitleMode
+              === 'unit'), a separate line here would just repeat it. */}
+          {station.unit && detailTitleMode !== 'unit' && (
+            <p className="station-column-unit">
+              Unit: <strong>{station.unit}</strong>
+            </p>
+          )}
           <DetailPanel
             tableModel={tableModel}
             rows={activeStep.rows}

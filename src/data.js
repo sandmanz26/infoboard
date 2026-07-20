@@ -273,7 +273,7 @@ export const swtStations = [
     bookingCode: '20260715-SWT-05',
     mode: 'Judgemental',
     courseware: 'Scenario 5',
-    unit: '41SAB',
+    unit: '41SAR',
     startTime: '08:00 AM',
     endTime: '04:00 PM',
     details: [
@@ -314,7 +314,7 @@ export const swtStations = [
     bookingCode: '20260715-SWT-05',
     mode: 'Judgemental',
     courseware: 'Scenario 5',
-    unit: '41SAB',
+    unit: '41SAR',
     startTime: '01:00 PM',
     endTime: '06:00 PM',
     details: [
