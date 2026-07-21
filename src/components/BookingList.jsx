@@ -25,12 +25,11 @@ const COLUMN_RENDERERS = {
   },
   id: {
     label: 'Booking ID',
-    cell: (row) => (
-      <>
-        <div className="booking-unit">{row.unit}</div>
-        <div className="booking-code">{row.code}</div>
-      </>
-    ),
+    cell: (row) => <div className="booking-code">{row.code}</div>,
+  },
+  unit: {
+    label: 'Unit',
+    cell: (row) => <div className="booking-unit">{row.unit}</div>,
   },
   platformType: {
     label: 'Platform Type',
@@ -66,11 +65,12 @@ const COLUMN_RENDERERS = {
 
 const CMT_CTT_COLUMNS = [
   { key: 'no', width: '4%' },
-  { key: 'id', width: '20%' },
-  { key: 'platformType', width: '24%' },
-  { key: 'startTime', width: '11%' },
-  { key: 'endTime', width: '11%' },
-  { key: 'instructor', width: '15%' },
+  { key: 'id', width: '16%' },
+  { key: 'platformType', width: '22%' },
+  { key: 'startTime', width: '10%' },
+  { key: 'endTime', width: '10%' },
+  { key: 'unit', width: '9%' },
+  { key: 'instructor', width: '14%' },
   { key: 'status', width: '15%' },
 ]
 
@@ -79,12 +79,13 @@ const LEVEL_TABLE_COLUMNS = {
   'level-3': CMT_CTT_COLUMNS,
   'level-4': [
     { key: 'no', width: '4%' },
-    { key: 'id', width: '18%' },
-    { key: 'mode', width: '11%' },
-    { key: 'courseware', width: '16%' },
-    { key: 'startTime', width: '10%' },
-    { key: 'endTime', width: '10%' },
-    { key: 'instructor', width: '14%' },
+    { key: 'id', width: '15%' },
+    { key: 'mode', width: '10%' },
+    { key: 'courseware', width: '14%' },
+    { key: 'startTime', width: '9%' },
+    { key: 'endTime', width: '9%' },
+    { key: 'unit', width: '9%' },
+    { key: 'instructor', width: '13%' },
     { key: 'status', width: '17%' },
   ],
 }
