@@ -1820,9 +1820,15 @@ body {
   color: var(--text-sub);
 }
 
+/* Matched to the same status colors used by the status pills in the
+   table below: the "Ongoing" card counts status === 'Ongoing' rows
+   (amber pill), "Completed" counts 'Completed' rows (green pill), and
+   "Starting" counts 'Upcoming' rows (blue pill) — tone names here are
+   legacy (upcoming/ready/starting) and don't match the status values
+   they actually represent, see LobbyBoard.jsx's stats computation. */
 .booking-stat-upcoming .booking-stat-icon {
-  color: var(--ready-blue);
-  background: var(--ready-blue-bg);
+  color: var(--queue-amber);
+  background: var(--queue-amber-bg);
 }
 
 .booking-stat-ready .booking-stat-icon {
@@ -1831,8 +1837,8 @@ body {
 }
 
 .booking-stat-starting .booking-stat-icon {
-  color: var(--queue-amber);
-  background: var(--queue-amber-bg);
+  color: var(--ready-blue);
+  background: var(--ready-blue-bg);
 }
 
 .booking-table {
