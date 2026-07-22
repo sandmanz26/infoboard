@@ -12,7 +12,7 @@ const STATUS_CLASS = {
 const STAT_CARDS = [
   { key: 'upcoming', label: 'Ongoing', tone: 'upcoming' },
   { key: 'ready', label: 'Completed', tone: 'ready' },
-  { key: 'starting', label: 'Starting', tone: 'starting' },
+  { key: 'starting', label: 'Upcoming', tone: 'starting' },
 ]
 
 // Each column knows its own header label and how to render a cell.
