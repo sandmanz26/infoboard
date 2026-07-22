@@ -352,6 +352,403 @@ export const swtStations = [
   },
 ]
 
+// Level 2 (CMT) + Layout 5 — 11 physical cabins. Unlike SWT's roster
+// (Rank/Name/Weapon/Lane), CMT trains vehicle crews so each trainee has
+// a crew Role instead (VC/VO/PC/SC/SO) and there's no Weapon/Lane at all.
+// `cmtStationColumns` groups the 11 codes into the 5 physical columns
+// they actually sit in on the floor — columns 1-3 stack 3 cabins each,
+// columns 4-5 have just one — so the on-screen grid matches the real
+// layout instead of an even 11-into-5 auto-wrap.
+export const cmtStationColumns = [
+  ['CMT-01', 'CMT-02', 'CMT-03'],
+  ['CMT-04', 'CMT-05', 'CMT-06'],
+  ['CMT-07', 'CMT-08', 'CMT-09'],
+  ['CMT-10'],
+  ['CMT-11'],
+]
+
+export const cmtStations = [
+  {
+    code: 'CMT-01',
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 50HMG',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    // Like SWT-03 on Level 4 — this cabin can toggle into a Session
+    // Leaderboard via its own switcher instead of showing its normal
+    // Detail rotation.
+    isLeaderboardCapable: true,
+    leaderboardRows: [
+      { no: 1, rank: '2LT', name: 'Tan Wei Ming', score: '80' },
+      { no: 2, rank: 'LCP', name: 'Divya Menon', score: '90' },
+      { no: 3, rank: 'MAJ', name: 'Ong Jun Hao', score: '100' },
+      { no: 4, rank: '1SG', name: 'Lee Kai Wen', score: '50' },
+      { no: 5, rank: '3SG', name: 'Siti Nur Afiqah Binte Omar', score: '44' },
+    ],
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Aiman Haziq', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Farah Iskandar', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Praveen Kumar', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Michelle Lau', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Zack Wong', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Bella Wong', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Haziq Rahman', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Priya Nathan', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Samuel Ong', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Nur Amalina', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Vikram Singh', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Michelle Foo', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ismail Hakim', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Wendy Ho', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Vishal Kumar', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-02',
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 50HMG',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Marcus Tan', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Wong Kai Le', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Clara Teo', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Ganesh Kumar', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Serena Goh', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Nur Aisyah Binte Ismail', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Rahul Sharma', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ryan Fernandez', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Ong Jun Hao', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Ahmad Firdaus Bin Rashid', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Kevin Ong', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Amirah Yusof', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ryan Chua', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Grace Lau', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Ridzwan Hamid', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-03',
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 50HMG',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    isLeaderboardCapable: true,
+    leaderboardRows: [
+      { no: 1, rank: '2LT', name: 'Kavitha Devi', score: '80' },
+      { no: 2, rank: 'LCP', name: 'Chloe Martin', score: '90' },
+      { no: 3, rank: 'MAJ', name: 'Lee Kai Wen', score: '100' },
+      { no: 4, rank: '1SG', name: 'Danish Bin Zulkifli', score: '50' },
+      { no: 5, rank: '3SG', name: 'Vikram Menon', score: '44' },
+    ],
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Hazel Tan', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Danish Iskandar', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Genevieve Foo', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Arif Zulkarnain', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Kumaran Suresh', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Farah Liyana', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Benjamin Teo', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Nadia Aziz', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Justin Lau', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Timothy Ang', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Suria Devi', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Jonathan Koh', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Amanda Chia', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Michelle Ong', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Kelvin Ong', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-04',
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Michelle Gomes', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Goh Yi Xuan', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Syafiq Bin Hassan', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Arjun Kumar', role: 'SC' },
+          { no: 5, rank: '3SG', name: "Adrian D'Cruz", role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Farhana Yusof', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Bryan Chua', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ismail Hakim', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Wendy Ho', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Grace Tan', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Amirul Haziq', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Denise Lau', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Farhan Roslan', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Michelle Sim', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Kelvin Ong', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-05',
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Nathaniel Chua', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Farah Iskandar', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Praveen Kumar', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Michelle Lau', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Zack Wong', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Ng Zheng Hao', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Nurul Huda Binte Hamid', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ananya Iyer', role: 'PC' },
+          { no: 4, rank: '1SG', name: "Ashley D'Souza", role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Chua Pei Ling', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Aidil Hakim', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Clara Sim', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Farid Osman', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Wendy Chua', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Kumar Selvam', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-06',
+    // No booking for this cabin today — header only, no info/detail.
+    noBooking: true,
+  },
+  {
+    code: 'CMT-07',
+    bookingCode: '20260715-CMT-03, 42SAR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Meera Subramaniam', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Joel Ang Chong Boon', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Teo Jia En', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Haziq Bin Noor', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Ashwin Kumar', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Isaac Teo', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Aishwarya Pillai', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Farhan Aziz', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Michelle Rodrigues', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Daniel Koh', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Farid Rashid', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Suria Devi', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ridzwan Hamid', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Jasmine Ng', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Dylan Ng', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-08',
+    noBooking: true,
+  },
+  {
+    code: 'CMT-09',
+    bookingCode: '20260715-CMT-03, 42SAR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    details: [
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Chew Hui Min', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Aqilah Binte Ibrahim', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Sanjay Pillai', role: 'PC' },
+          { no: 4, rank: '1SG', name: "Julian D'Silva", role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Yeo Jun Kai', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Bilal Hassan', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Isabelle Koh', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Faisal Ahmad', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Wong Zhi Yang', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Kavya Menon', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Shafiq Adnan', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Belinda Chan', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Ryan Selvaraj', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Nur Shafiqah', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Marcus Yeo', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-10',
+    bookingCode: '20260715-CMT-03, 42SAR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    details: [
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Preeti Sharma', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Dylan Ng', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Hafizah Rosli', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Kenji Tanaka', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Alicia Goh', role: 'SO' },
+        ],
+      },
+      {
+        status: 'In Queue',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Muhammad Hafiz Bin Salleh', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Harish Chandran', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Sarah Rodrigues', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Seah Yu Ting', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Nabilah Binte Yusof', role: 'SO' },
+        ],
+      },
+      {
+        status: 'In Queue',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Firdaus Rahman', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Michelle Koh', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Aaron Lim', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Farhana Yusof', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Bryan Chua', role: 'SO' },
+        ],
+      },
+    ],
+  },
+  {
+    code: 'CMT-11',
+    bookingCode: '20260715-CMT-03, 42SAR',
+    platformType: 'Terrex 40 AGL',
+    startTime: '08:00 AM',
+    endTime: '06:00 PM',
+    details: [
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Ismail Hakim', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Wendy Ho', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Vishal Kumar', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Grace Tan', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Amirul Haziq', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ready',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Denise Lau', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Farhan Roslan', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Michelle Sim', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Kelvin Ong', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Nabilah Rahman', role: 'SO' },
+        ],
+      },
+      {
+        status: 'Ongoing',
+        rows: [
+          { no: 1, rank: '2LT', name: 'Lakshmi Narayanan', role: 'VC' },
+          { no: 2, rank: 'LCP', name: 'Joshua Pereira', role: 'VO' },
+          { no: 3, rank: 'MAJ', name: 'Chan Zi Xuan', role: 'PC' },
+          { no: 4, rank: '1SG', name: 'Aiman Bin Roslan', role: 'SC' },
+          { no: 5, rank: '3SG', name: 'Vivek Raman', role: 'SO' },
+        ],
+      },
+    ],
+  },
+]
+
 // Level 1 lobby — today's booking list for the training floors, sourced
 // straight from the range office's booking sheet. Only the time is shown
 // (no date) since the board only ever lists today's schedule; "unit" here

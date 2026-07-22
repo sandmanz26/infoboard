@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { detailList, podium, leaderboard, stations, swtStations } from './data.js'
+import { detailList, podium, leaderboard, stations, swtStations, cmtStations, cmtStationColumns } from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -8,6 +8,7 @@ import DetailListCards from './components/DetailListCards.jsx'
 import DetailListCompact from './components/DetailListCompact.jsx'
 import TopThree from './components/TopThree.jsx'
 import Directory from './components/Directory.jsx'
+import CmtDirectory from './components/CmtDirectory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
 import LeaderboardCompact from './components/LeaderboardCompact.jsx'
 import LeaderboardCards from './components/LeaderboardCards.jsx'
@@ -294,6 +295,7 @@ const NO_COLUMN_STORAGE_KEY = 'infoboard-no-column'
 const DIRECTORY_STORAGE_KEY = 'infoboard-layout5-directory'
 const START_DETAIL_STORAGE_KEY = 'infoboard-layout5-start-detail'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
+const CMT_LEADERBOARD_SESSION_STORAGE_KEY = 'infoboard-cmt-leaderboard-session'
 const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
 const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
@@ -859,6 +861,151 @@ function SwtStationColumn({
   )
 }
 
+// Level 2 (CMT) equivalent of SwtStationInfo — a cabin only has one
+// Platform Type field (no mode/courseware split like SWT's roster).
+function CmtStationInfo({ station }) {
+  return (
+    <p className="station-column-info">
+      <span>{station.platformType}</span>
+      <span>
+        {station.startTime} - {station.endTime}
+      </span>
+    </p>
+  )
+}
+
+// CMT trains vehicle crews, not shooters — no Weapon/Lane, just a crew
+// Role (VC/VO/PC/SC/SO) per trainee — so its own dedicated table instead
+// of reusing DetailPanel's Weapon/Lane-shaped table models. `leaderboard`
+// swaps the last column from Role to Score for a Session Leaderboard.
+function CmtDetailTable({ rows, title, status, hideNo, leaderboard }) {
+  return (
+    <>
+      <div className="detail-panel-head">
+        <h2 className="panel-title">{title}</h2>
+        {status && (
+          <span
+            className={`status-pill${
+              status === 'Queue' || status === 'Ongoing' || status === 'In Queue' ? ' status-pill-queue' : ''
+            }`}
+          >
+            {status}
+          </span>
+        )}
+      </div>
+      <table className="table table-two">
+        <thead>
+          <tr>
+            {!hideNo && <th className="no-cell">No</th>}
+            <th className="rank-cell">Rank</th>
+            <th className="name-cell">Trainee</th>
+            <th className="role-cell">{leaderboard ? 'Score' : 'Role'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.no}>
+              {!hideNo && <td className="no-cell">{row.no}</td>}
+              <td className="rank-cell">{row.rank}</td>
+              <td className="name-cell" title={row.name}>
+                {row.name}
+              </td>
+              <td className="role-cell">{leaderboard ? row.score : row.role}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
+
+// One cabin's column for Level 2 — mirrors SwtStationColumn's structure
+// (steps/height-lock/flipTick) but with CMT's own info/table components.
+// A cabin with no booking today (station.noBooking) just shows its
+// header, a "No Booking" line, and a blank 5-row table.
+function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail, leaderboardSession, flipTick }) {
+  const showLeaderboard = station.isLeaderboardCapable && leaderboardSession === 'ended'
+  const steps = useMemo(
+    () => (station.noBooking ? [] : buildStationSteps(station, stationDataCount)),
+    [station, stationDataCount]
+  )
+  const startDetailIndex = Number(startDetail) - 1
+  const initialStepIndex = useMemo(() => {
+    if (steps.length === 0) return 0
+    const idx = steps.findIndex((s) => s.detailIndex === startDetailIndex)
+    return idx === -1 ? 0 : idx
+  }, [steps, startDetailIndex])
+  const pageIndex = steps.length > 0 ? (initialStepIndex + flipTick) % steps.length : 0
+  const activeStep = steps[pageIndex]
+  const hasUnevenPages = steps.length > 1 && steps.some((s) => s.rows.length !== steps[0].rows.length)
+
+  const columnRef = useRef(null)
+  const [minHeight, setMinHeight] = useState(0)
+  useEffect(() => {
+    if (!hasUnevenPages || !columnRef.current) return
+    const el = columnRef.current
+    const observer = new ResizeObserver(() => {
+      setMinHeight((prev) => Math.max(prev, el.getBoundingClientRect().height))
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasUnevenPages])
+
+  if (station.noBooking) {
+    return (
+      <section className="panel detail-panel-compact station-column">
+        <StationColumnHead name={station.code} />
+        <p className="station-column-info">
+          <span>No Booking</span>
+        </p>
+        <table className="table table-two">
+          <thead>
+            <tr>
+              {!hideNoColumn && <th className="no-cell">No</th>}
+              <th className="rank-cell">Rank</th>
+              <th className="name-cell">Trainee</th>
+              <th className="role-cell">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3, 4, 5].map((no) => (
+              <tr key={no}>
+                {!hideNoColumn && <td className="no-cell">{no}</td>}
+                <td className="rank-cell" />
+                <td className="name-cell" />
+                <td className="role-cell" />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )
+  }
+
+  return (
+    <section
+      ref={columnRef}
+      className={`panel detail-panel-compact station-column${showLeaderboard ? ' station-column-leaderboard' : ''}`}
+      style={hasUnevenPages ? { minHeight } : undefined}
+    >
+      <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
+      {showLeaderboard ? (
+        <CmtDetailTable rows={station.leaderboardRows} title="Session Leaderboard" hideNo={hideNoColumn} leaderboard />
+      ) : (
+        <>
+          <CmtStationInfo station={station} />
+          <CmtDetailTable
+            rows={activeStep.rows}
+            title={`Detail ${activeStep.detailIndex + 1}`}
+            status={activeStep.status}
+            hideNo={hideNoColumn}
+          />
+        </>
+      )}
+    </section>
+  )
+}
+
 function LayoutFive({
   tableModel,
   activeStation,
@@ -869,18 +1016,20 @@ function LayoutFive({
   detailFontSize,
   stationFontSize,
   swt03Session,
+  cmtLeaderboardSessionByStation,
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
   flipTick,
 }) {
   const isLevelFour = level === 'level-4'
-  // Level 2/3 only: shared placeholder roster that flips Detail 1 (10
+  const isLevelTwo = level === 'level-2'
+  // Level 3 only: shared placeholder roster that flips Detail 1 (10
   // rows) -> Detail 1 (5) -> Detail 2 (10) -> Detail 2 (5) across every
   // station in lockstep — an airport board doesn't flip one panel at a
-  // time. Level 4 ignores this entirely in favor of real per-station data.
-  // Both branches advance on the same shared flipTick (see App), so
-  // every column across the whole layout changes at the same moment.
+  // time. Level 2/4 ignore this entirely in favor of real per-station
+  // data. All branches advance on the same shared flipTick (see App),
+  // so every column across the whole layout changes at the same moment.
   const steps = useMemo(() => layoutFiveSteps(detailList), [])
   const pageIndex = flipTick % steps.length
   const activeStep = steps[pageIndex]
@@ -890,50 +1039,73 @@ function LayoutFive({
     '--l5-station-font-size': STATION_FONT_SIZE_OPTIONS.find((o) => o.id === stationFontSize)?.value,
   }
   return (
-    <main className="layout layout-five" style={fontSizeVars}>
-      {isLevelFour
-        ? swtStations.map((station) => (
-            <SwtStationColumn
-              key={station.code}
-              station={station}
+    <main className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`} style={fontSizeVars}>
+      {isLevelFour ? (
+        swtStations.map((station) => (
+          <SwtStationColumn
+            key={station.code}
+            station={station}
+            tableModel={tableModel}
+            hideNoColumn={hideNoColumn}
+            detailTitleMode={detailTitleMode}
+            stationDataCount={stationDataCount}
+            startDetail={startDetailByStation?.[station.code] ?? '1'}
+            swt03Session={swt03Session}
+            flipTick={flipTick}
+          />
+        ))
+      ) : isLevelTwo ? (
+        // 11 cabins across 5 physical columns (some stack 3, some just
+        // 1) instead of 5 uniform columns — see cmtStationColumns.
+        cmtStationColumns.map((codes, i) => (
+          <div key={i} className="cmt-station-group">
+            {codes.map((code) => {
+              const station = cmtStations.find((s) => s.code === code)
+              return (
+                <CmtStationColumn
+                  key={code}
+                  station={station}
+                  hideNoColumn={hideNoColumn}
+                  stationDataCount={stationDataCount}
+                  startDetail={startDetailByStation?.[code] ?? '1'}
+                  leaderboardSession={cmtLeaderboardSessionByStation?.[code] ?? 'ongoing'}
+                  flipTick={flipTick}
+                />
+              )
+            })}
+          </div>
+        ))
+      ) : (
+        LAYOUT_FIVE_STATIONS.map((station) => (
+          <section
+            key={station.name}
+            className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
+          >
+            <StationColumnHead name={station.name} />
+            <div className="station-column-info">
+              <span>
+                Unit: <strong>{station.unit}</strong>
+              </span>
+              <span>
+                Courseware: <strong>{station.courseware}</strong>
+              </span>
+            </div>
+            <DetailPanel
               tableModel={tableModel}
-              hideNoColumn={hideNoColumn}
-              detailTitleMode={detailTitleMode}
-              stationDataCount={stationDataCount}
-              startDetail={startDetailByStation?.[station.code] ?? '1'}
-              swt03Session={swt03Session}
-              flipTick={flipTick}
+              rows={formatStationRows(activeStep.rows)}
+              title={activeStep.detail.title}
+              status={activeStep.detail.status}
+              fullRows
+              splitRank
             />
-          ))
-        : LAYOUT_FIVE_STATIONS.map((station) => (
-            <section
-              key={station.name}
-              className={`panel detail-panel-compact station-column${activeStep.paginated ? ' station-column-paginated' : ''}`}
-            >
-              <StationColumnHead name={station.name} />
-              <div className="station-column-info">
-                <span>
-                  Unit: <strong>{station.unit}</strong>
-                </span>
-                <span>
-                  Courseware: <strong>{station.courseware}</strong>
-                </span>
-              </div>
-              <DetailPanel
-                tableModel={tableModel}
-                rows={formatStationRows(activeStep.rows)}
-                title={activeStep.detail.title}
-                status={activeStep.detail.status}
-                fullRows
-                splitRank
-              />
-            </section>
-          ))}
-      {/* Level 2/3's Layout 5 always shows the Directory — only Level 4
-          (real per-station data) offers a toggle to hide it. */}
-      {(!isLevelFour || !hideDirectory) && (
+          </section>
+        ))
+      )}
+      {/* Level 3's Layout 5 always shows the Directory — Level 2/4 (real
+          per-station data) each offer a toggle to hide it. */}
+      {(!(isLevelFour || isLevelTwo) || !hideDirectory) && (
         <section className="panel directory-panel layout-five-directory">
-          <Directory activeStation={activeStation} />
+          {isLevelTwo ? <CmtDirectory /> : <Directory activeStation={activeStation} />}
         </section>
       )}
     </main>
@@ -1018,6 +1190,18 @@ export default function App() {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
     return SWT03_SESSION_OPTIONS.some((o) => o.id === saved) ? saved : 'ongoing'
   })
+  // Level 2 (CMT) equivalent of swt03Session — CMT-01 and CMT-03 can each
+  // independently toggle into a Session Leaderboard, so this is keyed by
+  // station code instead of being a single flag.
+  const [cmtLeaderboardSessionByStation, setCmtLeaderboardSessionByStation] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CMT_LEADERBOARD_SESSION_STORAGE_KEY))
+      if (saved && typeof saved === 'object') return saved
+    } catch {
+      /* ignore malformed saved value */
+    }
+    return {}
+  })
   const [detailTitleMode, setDetailTitleMode] = useState(() => {
     const saved = localStorage.getItem(DETAIL_LABEL_STORAGE_KEY)
     return DETAIL_LABEL_OPTIONS.some((o) => o.id === saved) ? saved : 'detail'
@@ -1070,6 +1254,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(SWT03_SESSION_STORAGE_KEY, swt03Session)
   }, [swt03Session])
+
+  useEffect(() => {
+    localStorage.setItem(CMT_LEADERBOARD_SESSION_STORAGE_KEY, JSON.stringify(cmtLeaderboardSessionByStation))
+  }, [cmtLeaderboardSessionByStation])
 
   useEffect(() => {
     localStorage.setItem(DETAIL_LABEL_STORAGE_KEY, detailTitleMode)
@@ -1269,9 +1457,10 @@ export default function App() {
           },
         ]
       : []),
-    // Level 4 + Layout 5 only — the other layouts' tables always show
-    // row numbers, and SWT-03's leaderboard variant only exists here.
-    ...(level === 'level-4' && layout === 'layout-5'
+    // Level 2 (CMT) + Level 4 (SWT) + Layout 5 only — the other layouts'
+    // tables always show row numbers, and per-station Session Leaderboard
+    // variants only exist here.
+    ...((level === 'level-4' || level === 'level-2') && layout === 'layout-5'
       ? [
           {
             id: 'no-column',
@@ -1289,22 +1478,39 @@ export default function App() {
             active: directoryVisibility,
             onChange: setDirectoryVisibility,
           },
-          {
-            id: 'swt03-session',
-            label: 'SWT-03 Session',
-            icon: <LeaderboardIcon />,
-            options: SWT03_SESSION_OPTIONS,
-            active: swt03Session,
-            onChange: setSwt03Session,
-          },
-          {
-            id: 'detail-label',
-            label: 'Detail Title',
-            icon: <DetailLabelIcon />,
-            options: DETAIL_LABEL_OPTIONS,
-            active: detailTitleMode,
-            onChange: setDetailTitleMode,
-          },
+          ...(level === 'level-4'
+            ? [
+                {
+                  id: 'swt03-session',
+                  label: 'SWT-03 Session',
+                  icon: <LeaderboardIcon />,
+                  options: SWT03_SESSION_OPTIONS,
+                  active: swt03Session,
+                  onChange: setSwt03Session,
+                },
+                {
+                  id: 'detail-label',
+                  label: 'Detail Title',
+                  icon: <DetailLabelIcon />,
+                  options: DETAIL_LABEL_OPTIONS,
+                  active: detailTitleMode,
+                  onChange: setDetailTitleMode,
+                },
+              ]
+            : []),
+          ...(level === 'level-2'
+            ? cmtStations
+                .filter((s) => s.isLeaderboardCapable)
+                .map((station) => ({
+                  id: `cmt-leaderboard-${station.code}`,
+                  label: `${station.code} Session`,
+                  icon: <LeaderboardIcon />,
+                  options: SWT03_SESSION_OPTIONS,
+                  active: cmtLeaderboardSessionByStation[station.code] ?? 'ongoing',
+                  onChange: (value) =>
+                    setCmtLeaderboardSessionByStation((prev) => ({ ...prev, [station.code]: value })),
+                }))
+            : []),
           {
             id: 'station-data-count',
             label: 'Data Count',
@@ -1313,7 +1519,7 @@ export default function App() {
             active: stationDataCount,
             onChange: setStationDataCount,
           },
-          ...swtStations.map((station) => ({
+          ...(level === 'level-4' ? swtStations : cmtStations.filter((s) => !s.noBooking)).map((station) => ({
             id: `start-detail-${station.code}`,
             label: `${station.code} Start Detail`,
             icon: <DetailCountIcon />,
@@ -1392,6 +1598,7 @@ export default function App() {
           hideNoColumn={noColumn === 'hidden'}
           hideDirectory={directoryVisibility === 'hidden'}
           swt03Session={swt03Session}
+          cmtLeaderboardSessionByStation={cmtLeaderboardSessionByStation}
           detailTitleMode={detailTitleMode}
           stationDataCount={stationDataCount}
           startDetailByStation={startDetailByStation}

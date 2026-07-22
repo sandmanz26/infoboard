@@ -17,6 +17,7 @@ export default function TrainingRangeBoard({
   hideNoColumn,
   hideDirectory,
   swt03Session,
+  cmtLeaderboardSessionByStation,
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
@@ -39,6 +40,7 @@ export default function TrainingRangeBoard({
         hideNoColumn={hideNoColumn}
         hideDirectory={hideDirectory}
         swt03Session={swt03Session}
+        cmtLeaderboardSessionByStation={cmtLeaderboardSessionByStation}
         detailTitleMode={detailTitleMode}
         stationDataCount={stationDataCount}
         startDetailByStation={startDetailByStation}
