@@ -1827,7 +1827,7 @@ body {
 
 .booking-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -1894,6 +1894,11 @@ body {
 .booking-stat-starting .booking-stat-icon {
   color: var(--ready-blue);
   background: var(--ready-blue-bg);
+}
+
+.booking-stat-overdue .booking-stat-icon {
+  color: var(--overdue-red);
+  background: var(--overdue-red-bg);
 }
 
 .booking-table {

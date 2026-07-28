@@ -1576,9 +1576,11 @@ export default function App() {
         title={
           level === 'level-4'
             ? 'Specialized Weapon Trainer\nTraining Information Board'
-            : level === 'level-1'
-              ? 'Today Bookings'
-              : 'Infoboard'
+            : level === 'level-2'
+              ? 'Company Tactical Mission Trainer\nTraining Information Board'
+              : level === 'level-1'
+                ? 'Today Bookings'
+                : 'Infoboard'
         }
       />
       {isTrainingLevel && layout === 'layout-5' && (
@@ -1609,10 +1611,7 @@ export default function App() {
         />
       ) : (
         <>
-          <InfoBanner
-            lead="Level 1 Lobby"
-            message="Please check in at the reception counter. Today's bookings and facility announcements are shown below."
-          />
+          <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
           <LobbyBoard />
         </>
       )}

@@ -22,13 +22,15 @@ export default function LobbyBoard() {
 
   // Summary counts for the cards above the table, scoped to whichever
   // level's bookings are currently on screen. Card labels (set in
-  // BookingList's STAT_CARDS) are "Ongoing" / "Completed" / "Starting" —
-  // the stats keys below just feed those labels, so the mapping looks
-  // crossed at a glance but lines up with what each card actually shows.
+  // BookingList's STAT_CARDS) are "Ongoing" / "Completed" / "Upcoming" /
+  // "Overdue" — the stats keys below just feed those labels, so the
+  // mapping looks crossed at a glance but lines up with what each card
+  // actually shows.
   const stats = {
     upcoming: rows.filter((b) => b.status === 'Ongoing').length,
     ready: rows.filter((b) => b.status === 'Completed').length,
     starting: rows.filter((b) => b.status === 'Upcoming').length,
+    overdue: rows.filter((b) => b.status === 'Overdue').length,
   }
 
   return (

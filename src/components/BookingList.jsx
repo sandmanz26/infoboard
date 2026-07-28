@@ -13,6 +13,7 @@ const STAT_CARDS = [
   { key: 'upcoming', label: 'Ongoing', tone: 'upcoming' },
   { key: 'ready', label: 'Completed', tone: 'ready' },
   { key: 'starting', label: 'Upcoming', tone: 'starting' },
+  { key: 'overdue', label: 'Overdue', tone: 'overdue' },
 ]
 
 // Each column knows its own header label and how to render a cell.
