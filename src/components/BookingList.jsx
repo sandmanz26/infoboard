@@ -10,9 +10,9 @@ const STATUS_CLASS = {
 }
 
 const STAT_CARDS = [
+  { key: 'starting', label: 'Upcoming', tone: 'starting' },
   { key: 'upcoming', label: 'Ongoing', tone: 'upcoming' },
   { key: 'ready', label: 'Completed', tone: 'ready' },
-  { key: 'starting', label: 'Upcoming', tone: 'starting' },
   { key: 'overdue', label: 'Overdue', tone: 'overdue' },
 ]
 

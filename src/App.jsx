@@ -731,7 +731,15 @@ function StationColumnHead({ name, bookingCode }) {
   return (
     <div className="station-column-head">
       <span className="station-column-name">{name}</span>
-      {bookingCode && <span className="station-column-booking">{bookingCode}</span>}
+      {/* Always rendered (hidden when there's no bookingCode) so the head
+          row's height is identical whether or not a booking code exists —
+          the name span uses --l5-station-font-size while this one uses
+          --l5-table-font-size, so omitting it entirely (rather than hiding
+          it) can leave a No Booking card's head row shorter than a booked
+          card's when those two switchers differ. */}
+      <span className="station-column-booking" style={bookingCode ? undefined : { visibility: 'hidden' }}>
+        {bookingCode || ' '}
+      </span>
     </div>
   )
 }
@@ -955,9 +963,24 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
     return (
       <section className="panel detail-panel-compact station-column">
         <StationColumnHead name={station.code} />
+        {/* Mirrors a booked card's structure exactly (blank info line +
+            a detail-panel-head row) instead of omitting them, so the
+            card's natural height matches a booked card's at any font
+            size — no JS height measurement needed for a card that never
+            changes. */}
         <p className="station-column-info">
-          <span>No Booking</span>
+          <span>&nbsp;</span>
         </p>
+        <div className="detail-panel-head">
+          <h2 className="panel-title">No Booking</h2>
+          {/* Invisible but same-sized as a real status pill — the pill's
+              own box height (padding + its own font-size) can exceed the
+              title text's line-height, so without this the row is a few
+              px shorter than a booked card's at some font sizes. */}
+          <span className="status-pill" style={{ visibility: 'hidden' }}>
+            Ready
+          </span>
+        </div>
         <table className="table table-two">
           <thead>
             <tr>
