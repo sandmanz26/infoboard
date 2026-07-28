@@ -86,7 +86,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: 'REC', name: 'Marcus Tan', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: '2SG', name: 'Priya Nathan', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -106,7 +106,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Vikram Singh', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Michelle Foo', status: 'Ready', weapon: 'M203', lane: 'Lane 2' },
@@ -157,7 +157,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '3SG', name: 'Aidan Koh', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Priya Sundar', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -177,7 +177,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Timothy Ang', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Suria Devi', status: 'Ready', weapon: 'M203', lane: 'Lane 2' },
@@ -210,7 +210,7 @@ export const swtStations = [
     details: [
       { status: 'Ongoing', rows: detailList },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '3SG', name: 'Wong Zhi Yang', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Kavya Menon', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -230,7 +230,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2SG', name: 'Farhana Yusof', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Bryan Chua', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -288,7 +288,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2SG', name: 'Nathaniel Chua', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Farah Iskandar', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -298,7 +298,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '3SG', name: 'Aidil Hakim', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Clara Sim', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -329,7 +329,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2SG', name: 'Isaac Teo', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Aishwarya Pillai', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -339,7 +339,7 @@ export const swtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '3SG', name: 'Bella Wong', status: 'Ready', weapon: 'SAR21', lane: 'Lane 1' },
           { no: 2, rank: 'REC', name: 'Haziq Rahman', status: 'Ready', weapon: 'SAR21', lane: 'Lane 2' },
@@ -397,7 +397,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Bella Wong', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Haziq Rahman', role: 'VO' },
@@ -407,7 +407,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Vikram Singh', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Michelle Foo', role: 'VO' },
@@ -436,7 +436,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Nur Aisyah Binte Ismail', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Rahul Sharma', role: 'VO' },
@@ -446,7 +446,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Kevin Ong', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Amirah Yusof', role: 'VO' },
@@ -483,7 +483,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Farah Liyana', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Benjamin Teo', role: 'VO' },
@@ -493,7 +493,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Suria Devi', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Jonathan Koh', role: 'VO' },
@@ -522,7 +522,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Farhana Yusof', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Bryan Chua', role: 'VO' },
@@ -532,7 +532,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Amirul Haziq', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Denise Lau', role: 'VO' },
@@ -561,7 +561,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Ng Zheng Hao', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Nurul Huda Binte Hamid', role: 'VO' },
@@ -571,7 +571,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Aidil Hakim', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Clara Sim', role: 'VO' },
@@ -605,7 +605,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Isaac Teo', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Aishwarya Pillai', role: 'VO' },
@@ -615,7 +615,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Farid Rashid', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Suria Devi', role: 'VO' },
@@ -648,7 +648,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Bilal Hassan', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Isabelle Koh', role: 'VO' },
@@ -658,7 +658,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Shafiq Adnan', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Belinda Chan', role: 'VO' },
@@ -677,7 +677,7 @@ export const cmtStations = [
     endTime: '06:00 PM',
     details: [
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Preeti Sharma', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Dylan Ng', role: 'VO' },
@@ -716,7 +716,7 @@ export const cmtStations = [
     endTime: '06:00 PM',
     details: [
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Ismail Hakim', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Wendy Ho', role: 'VO' },
@@ -726,7 +726,7 @@ export const cmtStations = [
         ],
       },
       {
-        status: 'Ready',
+        status: 'In Queue',
         rows: [
           { no: 1, rank: '2LT', name: 'Denise Lau', role: 'VC' },
           { no: 2, rank: 'LCP', name: 'Farhan Roslan', role: 'VO' },
