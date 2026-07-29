@@ -21,6 +21,7 @@ export default function TrainingRangeBoard({
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
+  activeZone,
   flipTick,
   tableFontSize,
   detailFontSize,
@@ -44,6 +45,7 @@ export default function TrainingRangeBoard({
         detailTitleMode={detailTitleMode}
         stationDataCount={stationDataCount}
         startDetailByStation={startDetailByStation}
+        activeZone={activeZone}
         flipTick={flipTick}
         tableFontSize={tableFontSize}
         detailFontSize={detailFontSize}

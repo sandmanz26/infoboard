@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { detailList, podium, leaderboard, stations, swtStations, cmtStations, cmtStationColumns } from './data.js'
+import {
+  detailList,
+  podium,
+  leaderboard,
+  stations,
+  swtStations,
+  cmtStations,
+  cmtStationColumns,
+  cttStations,
+  cttStationColumnsByZone,
+  cttZones,
+} from './data.js'
 import Header from './components/Header.jsx'
 import InfoBanner from './components/InfoBanner.jsx'
 import DetailList from './components/DetailList.jsx'
@@ -9,6 +20,7 @@ import DetailListCompact from './components/DetailListCompact.jsx'
 import TopThree from './components/TopThree.jsx'
 import Directory from './components/Directory.jsx'
 import CmtDirectory from './components/CmtDirectory.jsx'
+import CttDirectory from './components/CttDirectory.jsx'
 import Leaderboard from './components/Leaderboard.jsx'
 import LeaderboardCompact from './components/LeaderboardCompact.jsx'
 import LeaderboardCards from './components/LeaderboardCards.jsx'
@@ -133,6 +145,24 @@ const DIRECTORY_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the Directory map below the station columns' },
   { id: 'hidden', label: 'Hidden', description: 'Hide the Directory map' },
 ]
+
+// Level 3 (CTT) only — the Active Zone switcher only lists zones that
+// actually have station data (see cttStationColumnsByZone in data.js).
+// Zone B/C/D2 will show up here automatically once their data is added.
+const CTT_ZONES_WITH_DATA = cttZones.filter((z) => cttStationColumnsByZone[z.id])
+
+// The source floor sheet shows each physical column of cabins already
+// mid-way through a different point in its own Detail 1/Detail 2 cycle
+// (column 1 on Detail 1's leaderboard, column 2 on Detail 2's roster,
+// column 3 already on Detail 2's leaderboard) rather than every cabin
+// starting from Detail 1 in lockstep. Seeding these as the default Start
+// Detail (still fully overridable via the per-station switcher) makes the
+// board match that reference on first load instead of needing manual setup.
+const CTT_DEFAULT_START_DETAIL = Object.fromEntries(
+  ['A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12', 'D14'].map(
+    (code) => [code, '2']
+  )
+)
 
 // Level 4 + Layout 5 only — which Detail group a station's rotation
 // begins from on page load (e.g. SWT-01 opens straight into Detail 2
@@ -301,6 +331,7 @@ const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
 const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
 const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
+const CTT_ZONE_STORAGE_KEY = 'infoboard-ctt-zone'
 
 function LayoutIcon() {
   return (
@@ -894,7 +925,9 @@ function CmtDetailTable({ rows, title, status, hideNo, leaderboard }) {
         {status && (
           <span
             className={`status-pill${
-              status === 'Queue' || status === 'Ongoing' || status === 'In Queue' ? ' status-pill-queue' : ''
+              status === 'Queue' || status === 'Ongoing' || status === 'In Queue' || status === 'Session Leaderboard'
+                ? ' status-pill-queue'
+                : ''
             }`}
           >
             {status}
@@ -1017,11 +1050,18 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
       ) : (
         <>
           <CmtStationInfo station={station} />
+          {/* CTT (Level 3) drives Score-vs-Role straight off each Detail
+              group's own status instead of a separate per-station switcher
+              — "Session Leaderboard" means that group's session is
+              live/scored, "(Ready)" means it's the next group waiting to
+              be called. CMT/SWT's statuses (Ongoing/In Queue) never match
+              this, so they're unaffected. */}
           <CmtDetailTable
             rows={activeStep.rows}
             title={`Detail ${activeStep.detailIndex + 1}`}
             status={activeStep.status}
             hideNo={hideNoColumn}
+            leaderboard={activeStep.status === 'Session Leaderboard'}
           />
         </>
       )}
@@ -1043,16 +1083,18 @@ function LayoutFive({
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
+  activeZone,
   flipTick,
 }) {
   const isLevelFour = level === 'level-4'
   const isLevelTwo = level === 'level-2'
-  // Level 3 only: shared placeholder roster that flips Detail 1 (10
-  // rows) -> Detail 1 (5) -> Detail 2 (10) -> Detail 2 (5) across every
-  // station in lockstep — an airport board doesn't flip one panel at a
-  // time. Level 2/4 ignore this entirely in favor of real per-station
-  // data. All branches advance on the same shared flipTick (see App),
-  // so every column across the whole layout changes at the same moment.
+  const isLevelThree = level === 'level-3'
+  // Any level without its own real per-station data (currently none —
+  // kept as a safety net) falls back to this shared placeholder roster,
+  // flipping Detail 1 (10 rows) -> Detail 1 (5) -> Detail 2 (10) ->
+  // Detail 2 (5) across every station in lockstep, like an airport board.
+  // All branches advance on the same shared flipTick (see App), so every
+  // column across the whole layout changes at the same moment.
   const steps = useMemo(() => layoutFiveSteps(detailList), [])
   const pageIndex = flipTick % steps.length
   const activeStep = steps[pageIndex]
@@ -1061,8 +1103,19 @@ function LayoutFive({
     '--l5-detail-font-size': DETAIL_FONT_SIZE_OPTIONS.find((o) => o.id === detailFontSize)?.value,
     '--l5-station-font-size': STATION_FONT_SIZE_OPTIONS.find((o) => o.id === stationFontSize)?.value,
   }
+  const cttStationColumns = cttStationColumnsByZone[activeZone] ?? []
+  const activeCttZoneLabel = cttZones.find((z) => z.id === activeZone)?.label ?? ''
   return (
     <main className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`} style={fontSizeVars}>
+      {isLevelThree && (
+        <div className="ctt-zone-banner">
+          <div className="ctt-zone-label">{activeCttZoneLabel}</div>
+          <p className="ctt-zone-instruction">
+            Trainee should refer to the detail list below. Please pay close attention to your specific cabin and role
+            assignments and proceed promptly to the cabin when instructed.
+          </p>
+        </div>
+      )}
       {isLevelFour ? (
         swtStations.map((station) => (
           <SwtStationColumn
@@ -1098,6 +1151,30 @@ function LayoutFive({
             })}
           </div>
         ))
+      ) : isLevelThree ? (
+        // Same per-station column mechanics as Level 2 (CmtStationColumn
+        // handles CTT's Score-vs-Role rendering on its own — see the
+        // `leaderboard={activeStep.status === 'Session Leaderboard'}` line
+        // above), just grouped by the currently active Zone instead of one
+        // flat cabin list.
+        cttStationColumns.map((codes, i) => (
+          <div key={i} className="cmt-station-group">
+            {codes.map((code) => {
+              const station = cttStations.find((s) => s.code === code)
+              return (
+                <CmtStationColumn
+                  key={code}
+                  station={station}
+                  hideNoColumn={hideNoColumn}
+                  stationDataCount={stationDataCount}
+                  startDetail={startDetailByStation?.[code] ?? '1'}
+                  leaderboardSession="ongoing"
+                  flipTick={flipTick}
+                />
+              )
+            })}
+          </div>
+        ))
       ) : (
         LAYOUT_FIVE_STATIONS.map((station) => (
           <section
@@ -1124,11 +1201,18 @@ function LayoutFive({
           </section>
         ))
       )}
-      {/* Level 3's Layout 5 always shows the Directory — Level 2/4 (real
-          per-station data) each offer a toggle to hide it. */}
-      {(!(isLevelFour || isLevelTwo) || !hideDirectory) && (
+      {/* Level 3's Layout 5 always shows the Directory (its own Zone map
+          just replaced the old generic map) — Level 2/4 (real per-station
+          data) each offer a toggle to hide it. */}
+      {(isLevelThree || !(isLevelFour || isLevelTwo) || !hideDirectory) && (
         <section className="panel directory-panel layout-five-directory">
-          {isLevelTwo ? <CmtDirectory /> : <Directory activeStation={activeStation} />}
+          {isLevelTwo ? (
+            <CmtDirectory />
+          ) : isLevelThree ? (
+            <CttDirectory activeZone={activeZone} />
+          ) : (
+            <Directory activeStation={activeStation} />
+          )}
         </section>
       )}
     </main>
@@ -1200,6 +1284,12 @@ export default function App() {
     const saved = localStorage.getItem(DIRECTORY_STORAGE_KEY)
     return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
   })
+  // Level 3 (CTT) only — which physical Zone's cabins are currently shown.
+  // Only Zone A and Zone D1 have real station data so far.
+  const [activeZone, setActiveZone] = useState(() => {
+    const saved = localStorage.getItem(CTT_ZONE_STORAGE_KEY)
+    return CTT_ZONES_WITH_DATA.some((z) => z.id === saved) ? saved : 'zone-a'
+  })
   const [startDetailByStation, setStartDetailByStation] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(START_DETAIL_STORAGE_KEY))
@@ -1207,7 +1297,7 @@ export default function App() {
     } catch {
       /* ignore malformed saved value */
     }
-    return {}
+    return CTT_DEFAULT_START_DETAIL
   })
   const [swt03Session, setSwt03Session] = useState(() => {
     const saved = localStorage.getItem(SWT03_SESSION_STORAGE_KEY)
@@ -1269,6 +1359,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(DIRECTORY_STORAGE_KEY, directoryVisibility)
   }, [directoryVisibility])
+
+  useEffect(() => {
+    localStorage.setItem(CTT_ZONE_STORAGE_KEY, activeZone)
+  }, [activeZone])
 
   useEffect(() => {
     localStorage.setItem(START_DETAIL_STORAGE_KEY, JSON.stringify(startDetailByStation))
@@ -1480,10 +1574,10 @@ export default function App() {
           },
         ]
       : []),
-    // Level 2 (CMT) + Level 4 (SWT) + Layout 5 only — the other layouts'
-    // tables always show row numbers, and per-station Session Leaderboard
-    // variants only exist here.
-    ...((level === 'level-4' || level === 'level-2') && layout === 'layout-5'
+    // Level 2 (CMT) + Level 3 (CTT) + Level 4 (SWT) + Layout 5 only — the
+    // other layouts' tables always show row numbers, and per-station
+    // Session Leaderboard/Start Detail variants only exist here.
+    ...((level === 'level-4' || level === 'level-2' || level === 'level-3') && layout === 'layout-5'
       ? [
           {
             id: 'no-column',
@@ -1493,14 +1587,32 @@ export default function App() {
             active: noColumn,
             onChange: setNoColumn,
           },
-          {
-            id: 'directory-visibility',
-            label: 'Directory',
-            icon: <DirectoryIcon />,
-            options: DIRECTORY_OPTIONS,
-            active: directoryVisibility,
-            onChange: setDirectoryVisibility,
-          },
+          // Level 3's Directory is always shown (its own Zone map), so the
+          // visibility toggle would be a dead control there.
+          ...(level !== 'level-3'
+            ? [
+                {
+                  id: 'directory-visibility',
+                  label: 'Directory',
+                  icon: <DirectoryIcon />,
+                  options: DIRECTORY_OPTIONS,
+                  active: directoryVisibility,
+                  onChange: setDirectoryVisibility,
+                },
+              ]
+            : []),
+          ...(level === 'level-3'
+            ? [
+                {
+                  id: 'ctt-zone',
+                  label: 'Active Zone',
+                  icon: <DirectoryIcon />,
+                  options: CTT_ZONES_WITH_DATA,
+                  active: activeZone,
+                  onChange: setActiveZone,
+                },
+              ]
+            : []),
           ...(level === 'level-4'
             ? [
                 {
@@ -1542,7 +1654,12 @@ export default function App() {
             active: stationDataCount,
             onChange: setStationDataCount,
           },
-          ...(level === 'level-4' ? swtStations : cmtStations.filter((s) => !s.noBooking)).map((station) => ({
+          ...(level === 'level-4'
+            ? swtStations
+            : level === 'level-3'
+              ? cttStations
+              : cmtStations.filter((s) => !s.noBooking)
+          ).map((station) => ({
             id: `start-detail-${station.code}`,
             label: `${station.code} Start Detail`,
             icon: <DetailCountIcon />,
@@ -1601,9 +1718,11 @@ export default function App() {
             ? 'Specialized Weapon Trainer\nTraining Information Board'
             : level === 'level-2'
               ? 'Company Tactical Mission Trainer\nTraining Information Board'
-              : level === 'level-1'
-                ? 'Today Bookings'
-                : 'Infoboard'
+              : level === 'level-3'
+                ? 'Command Team Trainer\nTraining Information Board'
+                : level === 'level-1'
+                  ? 'Today Bookings'
+                  : 'Infoboard'
         }
       />
       {isTrainingLevel && layout === 'layout-5' && (
@@ -1627,6 +1746,7 @@ export default function App() {
           detailTitleMode={detailTitleMode}
           stationDataCount={stationDataCount}
           startDetailByStation={startDetailByStation}
+          activeZone={activeZone}
           flipTick={flipTick}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}

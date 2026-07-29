@@ -749,6 +749,112 @@ export const cmtStations = [
   },
 ]
 
+// Level 3 (CTT) + Layout 5 — grouped into physical Zones (Zone A, Zone B,
+// Zone C, Zone D1, Zone D2) instead of one flat station list, matching
+// the real floor's separate training bays. Only Zone A and Zone D1 have
+// real per-station data so far (from the source spreadsheet) — the other
+// three exist in `cttZones` for the Directory floor plan but have no
+// stations yet, and simply won't appear in the Active Zone switcher until
+// they do.
+//
+// CTT crews run 4 to a cabin (2LT/LCP/MAJ/1SG, roles VO/VC/TC/SO — no SC),
+// one fewer than CMT's 5. Each cabin's Detail 1/Detail 2 group can
+// independently be a "Session Leaderboard" (Score column, scored once
+// that detail's session is live/done) or "(Ready)" (Role column, the next
+// group waiting to be called to their cabin) — driven directly by each
+// detail's `status`, unlike CMT/SWT where the Leaderboard is a separate
+// per-station switcher layered on top of the normal Ongoing/In Queue
+// rotation. Which detail a station currently shows on load is still
+// controlled by the existing per-station Start Detail switcher.
+const CTT_ROSTER_LEADERBOARD_A = [
+  { no: 1, rank: '2LT', name: 'Tan Wei Ming', score: '80/100' },
+  { no: 2, rank: 'LCP', name: 'Divya Menon', score: '90/100' },
+  { no: 3, rank: 'MAJ', name: 'Ong Jun Hao', score: '100/100' },
+  { no: 4, rank: '1SG', name: 'Lee Kai Wen', score: '50/100' },
+]
+const CTT_ROSTER_READY_B = [
+  { no: 1, rank: '2LT', name: 'Nur Aisyah Binte Ismail', role: 'VO' },
+  { no: 2, rank: 'LCP', name: 'Rahul Sharma', role: 'VC' },
+  { no: 3, rank: 'MAJ', name: 'Ryan Fernandez', role: 'TC' },
+  { no: 4, rank: '1SG', name: 'Ong Jun Hao', role: 'SO' },
+]
+const CTT_ROSTER_LEADERBOARD_C = [
+  { no: 1, rank: '2LT', name: 'Kavitha Devi', score: '75/100' },
+  { no: 2, rank: 'LCP', name: 'Chloe Martin', score: '85/100' },
+  { no: 3, rank: 'MAJ', name: 'Lee Kai Wen', score: '95/100' },
+  { no: 4, rank: '1SG', name: 'Danish Bin Zulkifli', score: '45/100' },
+]
+const CTT_DETAIL_LEADERBOARD_A = { status: 'Session Leaderboard', rows: CTT_ROSTER_LEADERBOARD_A }
+const CTT_DETAIL_READY_B = { status: '(Ready)', rows: CTT_ROSTER_READY_B }
+const CTT_DETAIL_LEADERBOARD_C = { status: 'Session Leaderboard', rows: CTT_ROSTER_LEADERBOARD_C }
+
+function cttStation(code, detail1, detail2) {
+  return {
+    code,
+    bookingCode: '20260715-CMT-01, 2SIR',
+    platformType: 'Terrex 50HMG',
+    startTime: '08:00 AM',
+    endTime: '03:00 PM',
+    details: [detail1, detail2],
+  }
+}
+
+export const cttZones = [
+  { id: 'zone-a', label: 'Zone A' },
+  { id: 'zone-b', label: 'Zone B' },
+  { id: 'zone-c', label: 'Zone C' },
+  { id: 'zone-d1', label: 'Zone D1' },
+  { id: 'zone-d2', label: 'Zone D2' },
+]
+
+// Same idea as cmtStationColumns — each zone's cabins grouped into the
+// physical columns they actually sit in on the floor.
+export const cttStationColumnsByZone = {
+  'zone-a': [
+    ['A01', 'A02', 'A03', 'A04'],
+    ['A05', 'A06', 'A07', 'A08'],
+    ['A09', 'A10', 'A11', 'A12'],
+  ],
+  'zone-d1': [
+    ['D01', 'D02', 'D03', 'D04'],
+    ['D05', 'D06', 'D07', 'D08'],
+    ['D09', 'D10', 'D11', 'D12'],
+    ['D13'],
+    ['D14'],
+  ],
+}
+
+export const cttStations = [
+  // Zone A
+  cttStation('A01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A03', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A04', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A05', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A06', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A07', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A08', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('A09', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('A10', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('A11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('A12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  // Zone D1
+  cttStation('D01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D03', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D04', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D05', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D06', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D07', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D08', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D09', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('D10', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('D11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('D12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
+  cttStation('D13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+]
+
 // Level 1 lobby — today's booking list for the training floors, sourced
 // straight from the range office's booking sheet. Only the time is shown
 // (no date) since the board only ever lists today's schedule; "unit" here
