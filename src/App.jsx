@@ -161,6 +161,18 @@ const LEADERBOARD_PODIUM_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the podium — the Local table covers every rank' },
 ]
 
+// Leaderboard floor only — how many of the 4 Global courseware panels
+// show. Fewer panels stretch to fill the row instead of leaving a gap
+// (see LeaderboardFloorBoard's gridTemplateColumns — it only takes as
+// many ratio weights as there are panels on screen, so CSS grid's fr
+// units re-normalize against that smaller total on their own).
+const LEADERBOARD_GLOBAL_COUNT_OPTIONS = [
+  { id: '1', label: '1', description: 'Show only the first Global courseware panel, stretched full width' },
+  { id: '2', label: '2', description: 'Show 2 Global courseware panels, each stretched wider' },
+  { id: '3', label: '3', description: 'Show 3 Global courseware panels' },
+  { id: '4', label: '4', description: 'Show all 4 Global courseware panels' },
+]
+
 // The blue info strip under the header (Levels 2-4 only).
 const INFO_BANNER_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
@@ -363,6 +375,7 @@ const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 const LOBBY_INTERVAL_STORAGE_KEY = 'infoboard-lobby-interval'
 const LEADERBOARD_PROPORTION_STORAGE_KEY = 'infoboard-leaderboard-proportion'
 const LEADERBOARD_PODIUM_STORAGE_KEY = 'infoboard-leaderboard-podium'
+const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1351,6 +1364,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_PODIUM_STORAGE_KEY)
     return LEADERBOARD_PODIUM_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
   })
+  const [leaderboardGlobalCount, setLeaderboardGlobalCount] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY)
+    return LEADERBOARD_GLOBAL_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '4'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1545,6 +1562,10 @@ export default function App() {
   }, [leaderboardPodium])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY, leaderboardGlobalCount)
+  }, [leaderboardGlobalCount])
+
+  useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
 
@@ -1616,10 +1637,19 @@ export default function App() {
           },
         ]
       : []),
-    // Leaderboard floor only — column-width ratio across the 5 panels
-    // (Local + 4 Global courseware) and whether the Local podium shows.
+    // Leaderboard floor only — column-width ratio across the panels
+    // (Local + however many Global courseware panels are showing),
+    // whether the Local podium shows, and how many Global panels show.
     ...(isLeaderboardFloor
       ? [
+          {
+            id: 'leaderboard-global-count',
+            label: 'Global Panels',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_GLOBAL_COUNT_OPTIONS,
+            active: leaderboardGlobalCount,
+            onChange: setLeaderboardGlobalCount,
+          },
           {
             id: 'leaderboard-proportion',
             label: 'Panel Proportions',
@@ -1924,6 +1954,7 @@ export default function App() {
         <LeaderboardFloorBoard
           columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
           showPodium={leaderboardPodium === 'visible'}
+          globalCount={Number(leaderboardGlobalCount)}
         />
       ) : (
         <>

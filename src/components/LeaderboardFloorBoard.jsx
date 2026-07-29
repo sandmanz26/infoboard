@@ -132,12 +132,20 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
   )
 }
 
-export default function LeaderboardFloorBoard({ columnRatios, showPodium }) {
-  const gridTemplateColumns = columnRatios.map((ratio) => `${ratio}fr`).join(' ')
+export default function LeaderboardFloorBoard({ columnRatios, showPodium, globalCount }) {
+  const visibleCoursewares = leaderboardFloorGlobalCoursewares.slice(0, globalCount)
+  // Only take as many ratio weights as there are panels on screen (Local
+  // + however many Global courseware panels are showing) — CSS grid's fr
+  // units then re-normalize against that smaller total on their own, so
+  // dropping from 4 Global panels to 2 stretches each of the remaining
+  // ones wider instead of leaving a gap where the other two were.
+  const gridTemplateColumns = [columnRatios[0], ...columnRatios.slice(1, 1 + globalCount)]
+    .map((ratio) => `${ratio}fr`)
+    .join(' ')
   return (
     <main className="layout layout-leaderboard-floor" style={{ gridTemplateColumns }}>
       <LocalLeaderboardPanel showPodium={showPodium} />
-      {leaderboardFloorGlobalCoursewares.map((entry) => (
+      {visibleCoursewares.map((entry) => (
         <GlobalCoursewarePanel key={entry.courseware} {...entry} />
       ))}
     </main>
