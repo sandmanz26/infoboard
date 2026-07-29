@@ -1297,51 +1297,59 @@ function LayoutFive({
   // Bento layout: each cabin card is placed as its own grid cell (column =
   // its physical column, row = its position within that column) instead
   // of being stacked in a flex column, so the Directory ("pathfinder")
-  // can be precisely placed into whatever grid space is actually free —
-  // there are two distinct shapes of "free space" on the source floor
-  // sheet:
-  //  - Zone A: only 3 of the 5 base columns hold real cabins, leaving 2
-  //    *entirely* free columns. The Directory only takes the bottom half
-  //    of those (rows past the midpoint), not their full height.
-  //  - Zone D1: only 4 of the 5 base columns hold real cabins, and the
-  //    last of those (D13) is a single-cabin column — 1 occupied row,
-  //    then 3 *empty* rows below it (plus the entirely free 5th column).
-  //    The Directory fills that leftover space directly (starting right
-  //    after D13's own row), not a bottom-half split.
+  // can be precisely placed into whatever grid space is actually free.
+  // Every zone (A, B, C, D1, D2) shares the same shape on the source
+  // floor sheet: some number of full-height columns, then one or more
+  // short trailing column(s) with just 1 occupied row — the Directory
+  // fills the empty rows left below those short column(s), starting
+  // right after their own row.
   // Row 1 is reserved for the full-width Zone banner (see below) — cabin
   // cards start at row 2, so every row index used for placement carries a
   // +2 offset (rowIndex 0 -> grid row 2, etc).
   const cttMaxRows = Math.max(0, ...cttStationColumns.map((c) => c.length))
   // Negative grid line numbers ("-1" for "the last line") only resolve
-  // against the *explicit* grid — .layout-five never declares
-  // grid-template-rows (its rows are all implicit, sized to content), so
-  // there's no explicit row grid for "-1" to count from. Using it for
-  // grid-row silently produces an invalid (start-after-end) span, which
-  // falls back to auto-placement instead of the position we want. A
-  // concrete final line number (cttMaxRows + 2, matching the +2 banner
-  // offset) sidesteps that entirely. grid-column's "-1" is fine as-is —
-  // grid-template-columns *is* explicit (repeat(5, 1fr)).
+  // against the *explicit* grid — .layout-five's grid-template-columns
+  // has to be declared (not implicit) for "-1" to count from it. Using
+  // "-1" for grid-row would be unsafe the same way, since .layout-five
+  // never declares grid-template-rows (rows are implicit, sized to
+  // content) — a concrete final line number (cttMaxRows + 2, matching the
+  // +2 banner offset) sidesteps that for rows. grid-column's "-1" is fine
+  // as long as cttGridColumnCount (below) is what's actually rendered as
+  // the explicit grid-template-columns.
   const cttLastRowLine = cttMaxRows + 2
   const cttShortColumnIndex = cttStationColumns.findIndex((c) => c.length < cttMaxRows)
+  // Most zones only need as many grid columns as they have real station
+  // columns (the short trailing column(s) already provide the Directory's
+  // full width). Zone D1 has just 1 short column (D13) but the Directory
+  // still needs 2 columns of width, so it gets 1 extra unoccupied buffer
+  // column beyond its real data.
+  const cttGridColumnCount =
+    (cttShortColumnIndex !== -1
+      ? Math.max(cttStationColumns.length, cttShortColumnIndex + 2)
+      : cttStationColumns.length) || 5
   let cttDirectoryStyle
   if (cttShortColumnIndex !== -1) {
-    // Zone D1 shape — short column(s) already occupy part of the grid;
-    // the Directory starts right where they leave off.
     const shortColumnsMaxLength = Math.max(...cttStationColumns.slice(cttShortColumnIndex).map((c) => c.length))
     cttDirectoryStyle = {
       gridColumn: `${cttShortColumnIndex + 1} / -1`,
       gridRow: `${shortColumnsMaxLength + 2} / ${cttLastRowLine}`,
     }
   } else if (cttStationColumns.length > 0 && cttStationColumns.length <= 3) {
-    // Zone A shape — the next columns over are entirely unused by cabins.
+    // Fallback shape for a hypothetical zone with no short column at all
+    // (every zone with real data today has one) — leftover columns are
+    // entirely free, so the Directory only takes their bottom half.
     cttDirectoryStyle = {
       gridColumn: cttStationColumns.length + 1,
       gridRow: `${Math.floor(cttMaxRows / 2) + 2} / ${cttLastRowLine}`,
     }
   }
   const cttUseCornerDirectory = isLevelThree && Boolean(cttDirectoryStyle)
+  const cttGridStyle = isLevelThree ? { gridTemplateColumns: `repeat(${cttGridColumnCount}, 1fr)` } : undefined
   return (
-    <main className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`} style={fontSizeVars}>
+    <main
+      className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`}
+      style={{ ...fontSizeVars, ...cttGridStyle }}
+    >
       {isLevelThree && (
         <div className="ctt-zone-banner" style={{ gridRow: 1 }}>
           <div className="ctt-zone-label">{activeCttZoneLabel}</div>
