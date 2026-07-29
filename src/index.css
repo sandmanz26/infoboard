@@ -1274,13 +1274,13 @@ body {
   max-width: 1100px;
 }
 
-/* Level 3 (CTT) only — sits in the leftover grid columns of the same row
-   as the station cabins (the "corner") instead of spanning full width
-   below them, matching the source floor sheet. Stretches to the row's
-   height (the layout's default align-items: stretch) so it fills the
-   same vertical space as the tallest stacked cabin column beside it. */
+/* Level 3 (CTT) only — sits in the next grid column over from the cabin
+   cards, spanning only the bottom half of their rows (grid-column/row
+   set inline per Zone — see cttDirectoryStyle in App.jsx) instead of
+   spanning full width below them, matching the source floor sheet.
+   Stretches to fill that span's height (the layout's default
+   align-items: stretch). */
 .layout-five-directory-corner {
-  grid-column: span 2;
   display: flex;
   flex-direction: column;
 }

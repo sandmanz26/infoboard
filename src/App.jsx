@@ -89,6 +89,13 @@ const LAYOUT_FIVE_DETAILS = [
 // component and the single progress bar rendered under the header).
 const LAYOUT_FIVE_STEP_INTERVAL_MS = 8000
 
+// Level 3 (CTT) only — how long each Zone "page" stays on screen before
+// auto-advancing to the next one (Zone A -> B -> C -> D1 -> D2 -> repeat),
+// like an airport board cycling through gates. Independent from
+// LAYOUT_FIVE_STEP_INTERVAL_MS, which keeps flipping each cabin's own
+// Detail rotation *within* whichever Zone page is currently showing.
+const CTT_ZONE_ROTATE_INTERVAL_MS = 20000
+
 function layoutFiveSteps(rows) {
   return LAYOUT_FIVE_DETAILS.flatMap((detail) => [
     { detail, rows: rows.slice(0, DETAIL_ROWS_PER_PAGE), paginated: true },
@@ -146,9 +153,11 @@ const DIRECTORY_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the Directory map' },
 ]
 
-// Level 3 (CTT) only — the Active Zone switcher only lists zones that
-// actually have station data (see cttStationColumnsByZone in data.js).
-// Zone B/C/D2 will show up here automatically once their data is added.
+// Level 3 (CTT) only — the Start Zone switcher only lists zones that
+// actually have station data (see cttStationColumnsByZone in data.js) as
+// a starting point for the auto-rotation. Zone B/C/D2 will show up here
+// automatically once their data is added — until then the rotation still
+// pages through them (see zoneTick in App), just showing an empty page.
 const CTT_ZONES_WITH_DATA = cttZones.filter((z) => cttStationColumnsByZone[z.id])
 
 // The source floor sheet shows each physical column of cabins already
@@ -1084,6 +1093,7 @@ function LayoutFive({
   stationDataCount,
   startDetailByStation,
   activeZone,
+  zoneTick,
   flipTick,
 }) {
   const isLevelFour = level === 'level-4'
@@ -1103,12 +1113,35 @@ function LayoutFive({
     '--l5-detail-font-size': DETAIL_FONT_SIZE_OPTIONS.find((o) => o.id === detailFontSize)?.value,
     '--l5-station-font-size': STATION_FONT_SIZE_OPTIONS.find((o) => o.id === stationFontSize)?.value,
   }
-  const cttStationColumns = cttStationColumnsByZone[activeZone] ?? []
-  const activeCttZoneLabel = cttZones.find((z) => z.id === activeZone)?.label ?? ''
+  // Level 3's Layout 5 pages through Zones like an airport board — Zone A
+  // -> B -> C -> D1 -> D2 -> repeat, each on its own CTT_ZONE_ROTATE_
+  // INTERVAL_MS beat (zoneTick, from App) — independent of flipTick, which
+  // keeps flipping each cabin's own Detail rotation *within* whichever
+  // Zone page is currently on screen. The Active Zone switcher just picks
+  // which zone the rotation *starts* from, not a fixed pin.
+  const cttStartZoneIndex = Math.max(0, cttZones.findIndex((z) => z.id === activeZone))
+  const displayedZone = cttZones[(cttStartZoneIndex + zoneTick) % cttZones.length]?.id ?? activeZone
+  const cttStationColumns = cttStationColumnsByZone[displayedZone] ?? []
+  const activeCttZoneLabel = cttZones.find((z) => z.id === displayedZone)?.label ?? ''
+  // Bento layout: when a Zone's cabins don't fill every physical column
+  // (e.g. Zone A's 3 of 5), each cabin card is placed as its own grid
+  // cell (column = its physical column, row = its position within that
+  // column) instead of being stacked in a flex column. That leaves the
+  // next column free as real grid rows/columns the Directory ("pathfinder")
+  // can be precisely placed into — bottom half only (rows past the
+  // midpoint), per the source floor sheet, not the full column height.
+  // Row 1 is reserved for the full-width Zone banner (see below) — cabin
+  // cards start at row 2, so every row index used for placement carries a
+  // +2 offset (rowIndex 0 -> grid row 2, etc).
+  const cttMaxRows = Math.max(0, ...cttStationColumns.map((c) => c.length))
+  const cttUseCornerDirectory = isLevelThree && cttStationColumns.length > 0 && cttStationColumns.length <= 3
+  const cttDirectoryStyle = cttUseCornerDirectory
+    ? { gridColumn: cttStationColumns.length + 1, gridRow: `${Math.floor(cttMaxRows / 2) + 2} / -1` }
+    : undefined
   return (
     <main className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`} style={fontSizeVars}>
       {isLevelThree && (
-        <div className="ctt-zone-banner">
+        <div className="ctt-zone-banner" style={{ gridRow: 1 }}>
           <div className="ctt-zone-label">{activeCttZoneLabel}</div>
           <p className="ctt-zone-instruction">
             Trainee should refer to the detail list below. Please pay close attention to your specific cabin and role
@@ -1156,14 +1189,16 @@ function LayoutFive({
         // handles CTT's Score-vs-Role rendering on its own — see the
         // `leaderboard={activeStep.status === 'Session Leaderboard'}` line
         // above), just grouped by the currently active Zone instead of one
-        // flat cabin list.
-        cttStationColumns.map((codes, i) => (
-          <div key={i} className="cmt-station-group">
-            {codes.map((code) => {
-              const station = cttStations.find((s) => s.code === code)
-              return (
+        // flat cabin list. Each card is its own grid cell (column = its
+        // physical column, row = its position within that column) rather
+        // than a flex-stacked column, so the Directory can share the same
+        // row/column coordinate space (see cttDirectoryStyle above).
+        cttStationColumns.flatMap((codes, colIndex) =>
+          codes.map((code, rowIndex) => {
+            const station = cttStations.find((s) => s.code === code)
+            return (
+              <div key={code} style={{ gridColumn: colIndex + 1, gridRow: rowIndex + 2 }}>
                 <CmtStationColumn
-                  key={code}
                   station={station}
                   hideNoColumn={hideNoColumn}
                   stationDataCount={stationDataCount}
@@ -1171,10 +1206,10 @@ function LayoutFive({
                   leaderboardSession="ongoing"
                   flipTick={flipTick}
                 />
-              )
-            })}
-          </div>
-        ))
+              </div>
+            )
+          })
+        )
       ) : (
         LAYOUT_FIVE_STATIONS.map((station) => (
           <section
@@ -1204,22 +1239,21 @@ function LayoutFive({
       {/* Level 3's Layout 5 always shows the Directory (its own Zone map
           just replaced the old generic map) — Level 2/4 (real per-station
           data) each offer a toggle to hide it. When a Zone's cabins don't
-          fill all 5 grid columns (e.g. Zone A's 3), the source sheet tucks
-          the floor plan into the leftover columns of that same row instead
-          of pushing it below — grid auto-placement does that for free once
-          the panel isn't forced to span the full row. Zones that do fill
+          fill all 5 grid columns (e.g. Zone A's 3), the source sheet places
+          the floor plan in the next column over, spanning only the bottom
+          half of the cabin rows (see cttDirectoryStyle) instead of the
+          full column height or a full-width row below. Zones that do fill
           every column (e.g. Zone D1's 5) fall back to the full-width row
           below, same as before. */}
       {(isLevelThree || !(isLevelFour || isLevelTwo) || !hideDirectory) && (
         <section
-          className={`panel directory-panel${
-            isLevelThree && cttStationColumns.length <= 3 ? ' layout-five-directory-corner' : ' layout-five-directory'
-          }`}
+          className={`panel directory-panel${cttUseCornerDirectory ? ' layout-five-directory-corner' : ' layout-five-directory'}`}
+          style={cttDirectoryStyle}
         >
           {isLevelTwo ? (
             <CmtDirectory />
           ) : isLevelThree ? (
-            <CttDirectory activeZone={activeZone} />
+            <CttDirectory activeZone={displayedZone} />
           ) : (
             <Directory activeStation={activeStation} />
           )}
@@ -1357,6 +1391,15 @@ export default function App() {
     const id = setInterval(() => setFlipTick((t) => t + 1), LAYOUT_FIVE_STEP_INTERVAL_MS)
     return () => clearInterval(id)
   }, [layout])
+
+  // Level 3 (CTT) only — advances which Zone page is on screen, on its
+  // own slower cadence than flipTick's per-cabin Detail rotation.
+  const [zoneTick, setZoneTick] = useState(0)
+  useEffect(() => {
+    if (level !== 'level-3' || layout !== 'layout-5') return
+    const id = setInterval(() => setZoneTick((t) => t + 1), CTT_ZONE_ROTATE_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [level, layout])
 
   useEffect(() => {
     localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
@@ -1615,7 +1658,7 @@ export default function App() {
             ? [
                 {
                   id: 'ctt-zone',
-                  label: 'Active Zone',
+                  label: 'Start Zone',
                   icon: <DirectoryIcon />,
                   options: CTT_ZONES_WITH_DATA,
                   active: activeZone,
@@ -1757,6 +1800,7 @@ export default function App() {
           stationDataCount={stationDataCount}
           startDetailByStation={startDetailByStation}
           activeZone={activeZone}
+          zoneTick={zoneTick}
           flipTick={flipTick}
           tableFontSize={tableFontSize}
           detailFontSize={detailFontSize}
