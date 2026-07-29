@@ -955,7 +955,6 @@ export const cttStationColumnsByZone = {
     ['D05', 'D06', 'D07', 'D08'],
     ['D09', 'D10', 'D11', 'D12'],
     ['D13'],
-    ['D14'],
   ],
 }
 
@@ -987,7 +986,6 @@ export const cttStations = [
   cttStation('D11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   cttStation('D12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   cttStation('D13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('D14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
 ]
 
 // Level 1 lobby — today's booking list for the training floors, sourced

@@ -257,7 +257,7 @@ const CTT_ZONES_WITH_DATA = cttZones.filter((z) => cttStationColumnsByZone[z.id]
 // Detail (still fully overridable via the per-station switcher) makes the
 // board match that reference on first load instead of needing manual setup.
 const CTT_DEFAULT_START_DETAIL = Object.fromEntries(
-  ['A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12', 'D14'].map(
+  ['A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12'].map(
     (code) => [code, '2']
   )
 )
@@ -1303,11 +1303,11 @@ function LayoutFive({
   //  - Zone A: only 3 of the 5 base columns hold real cabins, leaving 2
   //    *entirely* free columns. The Directory only takes the bottom half
   //    of those (rows past the midpoint), not their full height.
-  //  - Zone D1: all 5 base columns hold cabins, but the last 2 (D13/D14)
-  //    are single-cabin columns — 1 occupied row, then 3 *empty* rows
-  //    below them within those same columns. The Directory fills that
-  //    leftover space directly (starting right after D13/D14's own row),
-  //    not a bottom-half split.
+  //  - Zone D1: only 4 of the 5 base columns hold real cabins, and the
+  //    last of those (D13) is a single-cabin column — 1 occupied row,
+  //    then 3 *empty* rows below it (plus the entirely free 5th column).
+  //    The Directory fills that leftover space directly (starting right
+  //    after D13's own row), not a bottom-half split.
   // Row 1 is reserved for the full-width Zone banner (see below) — cabin
   // cards start at row 2, so every row index used for placement carries a
   // +2 offset (rowIndex 0 -> grid row 2, etc).
@@ -1442,7 +1442,7 @@ function LayoutFive({
           just replaced the old generic map) — Level 2/4 (real per-station
           data) each offer a toggle to hide it. Whenever a Zone has *any*
           leftover grid space (entirely unused columns like Zone A's, or
-          empty rows below short columns like Zone D1's D13/D14), the
+          empty rows below short columns like Zone D1's D13), the
           Directory sits in that corner instead of a full-width row below
           — see cttDirectoryStyle above for exactly where. Only a Zone
           with zero leftover space anywhere would fall back to the plain
