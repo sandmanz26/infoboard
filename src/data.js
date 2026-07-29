@@ -60,10 +60,11 @@ export const leaderboardFloorPodium = {
   },
 }
 
-// The full local ranking, 1st through 9 — when the podium switcher is on
-// (the default), LocalLeaderboardPanel filters the medal (1st-3rd) rows
-// back out since the podium above already covers them; with the podium
-// hidden, the table shows every rank instead.
+// The full local ranking, 1st through 15 — the Local Rows switcher slices
+// this down to 5/10/15; when the podium switcher is on (the default),
+// LocalLeaderboardPanel filters the medal (1st-3rd) rows back out since
+// the podium above already covers them; with the podium hidden, the
+// table shows every rank instead.
 export const leaderboardFloorLocalRows = [
   { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Danyial Lizam Bin Mustafa', score: '20 / 20', mpi: '1.00' },
   { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Mohamad Anuar Bin Kassim', score: '20 / 20', mpi: '2.00' },
@@ -77,6 +78,9 @@ export const leaderboardFloorLocalRows = [
   { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', score: '18 / 20', mpi: '2.00' },
   { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', score: '18 / 20', mpi: '4.00' },
   { ranking: '9', medal: null, rank: 'REC', name: 'Rajesh Gunalan a/l Thanabalan', score: '17 / 20', mpi: '2.00' },
+  { ranking: '10', medal: null, rank: '3SG', name: 'Farid Bin Osman', score: '17 / 20', mpi: '3.00' },
+  { ranking: '11', medal: null, rank: 'REC', name: 'Vellaisamy Muthu', score: '16 / 20', mpi: '3.00' },
+  { ranking: '12', medal: null, rank: '3SG', name: 'Teo Wei Jian', score: '16 / 20', mpi: '4.00' },
 ]
 
 // Global panel aggregates across units — no podium, ties are common at
@@ -112,6 +116,11 @@ export const leaderboardFloorGlobalRows = [
   { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
   { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
   { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Ibrahim Abdul Halim', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
+  { ranking: '4', medal: null, rank: 'REC', name: 'Guo Guo Qiang', unitName: '1SIR', score: '20 / 20', mpi: '3.50' },
+  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', unitName: '1SIR', score: '19 / 20', mpi: '4.00' },
+  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', unitName: '1SIR', score: '19 / 20', mpi: '4.50' },
+  { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', unitName: '1SIR', score: '18 / 20', mpi: '5.00' },
+  { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', unitName: '1SIR', score: '18 / 20', mpi: '5.50' },
 ]
 
 // The Leaderboard floor's Global panel splits into 4 narrower sub-panels,
@@ -136,6 +145,11 @@ export const leaderboardFloorGlobalCoursewares = [
       { ranking: '5', medal: null, rank: 'REC', name: 'Karthik Selvam', unitName: '9SIR', score: '16 / 20', mpi: '4.50' },
       { ranking: '6', medal: null, rank: '3SG', name: 'Lim Hui Ying', unitName: '3SIR', score: '15 / 20', mpi: '5.00' },
       { ranking: '7', medal: null, rank: 'REC', name: 'Zulkarnain Bin Hassan', unitName: '9SIR', score: '14 / 20', mpi: '5.50' },
+      { ranking: '8', medal: null, rank: '3SG', name: 'Nur Fitri Binte Rahman', unitName: '3SIR', score: '14 / 20', mpi: '6.00' },
+      { ranking: '9', medal: null, rank: 'REC', name: 'Saravanan Pillai', unitName: '9SIR', score: '13 / 20', mpi: '6.50' },
+      { ranking: '10', medal: null, rank: '3SG', name: 'Goh Wei Xuan', unitName: '3SIR', score: '13 / 20', mpi: '7.00' },
+      { ranking: '11', medal: null, rank: 'REC', name: 'Muhammad Firdaus Bin Halim', unitName: '9SIR', score: '12 / 20', mpi: '7.50' },
+      { ranking: '12', medal: null, rank: '3SG', name: 'Tan Li Ting', unitName: '3SIR', score: '12 / 20', mpi: '8.00' },
     ],
   },
   {
@@ -152,6 +166,11 @@ export const leaderboardFloorGlobalCoursewares = [
       { ranking: '6', medal: null, rank: 'REC', name: 'Lee Jun Hao', unitName: '2SIR', score: '16 / 20', mpi: '4.50' },
       { ranking: '7', medal: null, rank: '3SG', name: 'Farah Diyana Binte Kamal', unitName: '1SIR', score: '15 / 20', mpi: '5.00' },
       { ranking: '8', medal: null, rank: 'REC', name: 'Muthu Kumar', unitName: '2SIR', score: '14 / 20', mpi: '5.50' },
+      { ranking: '9', medal: null, rank: '3SG', name: 'Nur Izzati Binte Anuar', unitName: '2SIR', score: '14 / 20', mpi: '6.00' },
+      { ranking: '10', medal: null, rank: 'REC', name: 'Vijay Anand', unitName: '1SIR', score: '13 / 20', mpi: '6.50' },
+      { ranking: '11', medal: null, rank: '3SG', name: 'Chong Wei Liang', unitName: '2SIR', score: '13 / 20', mpi: '7.00' },
+      { ranking: '12', medal: null, rank: 'REC', name: 'Farhan Bin Ismail', unitName: '1SIR', score: '12 / 20', mpi: '7.50' },
+      { ranking: '13', medal: null, rank: '3SG', name: 'Pang Jia Wei', unitName: '2SIR', score: '12 / 20', mpi: '8.00' },
     ],
   },
   {
@@ -168,6 +187,11 @@ export const leaderboardFloorGlobalCoursewares = [
       { ranking: '6', medal: null, rank: 'REC', name: 'Ganesh Balakrishnan', unitName: '9SIR', score: '15 / 20', mpi: '5.25' },
       { ranking: '7', medal: null, rank: '3SG', name: 'Wong Mei Ling', unitName: '3SIR', score: '14 / 20', mpi: '5.75' },
       { ranking: '8', medal: null, rank: 'REC', name: 'Haziq Bin Yaacob', unitName: '9SIR', score: '13 / 20', mpi: '6.25' },
+      { ranking: '9', medal: null, rank: '3SG', name: 'Lee Zhi Wei', unitName: '3SIR', score: '13 / 20', mpi: '6.75' },
+      { ranking: '10', medal: null, rank: 'REC', name: 'Suresh Balan', unitName: '9SIR', score: '12 / 20', mpi: '7.25' },
+      { ranking: '11', medal: null, rank: '3SG', name: 'Amirah Binte Hassan', unitName: '3SIR', score: '12 / 20', mpi: '7.75' },
+      { ranking: '12', medal: null, rank: 'REC', name: 'Karthikeyan Raja', unitName: '9SIR', score: '11 / 20', mpi: '8.25' },
+      { ranking: '13', medal: null, rank: '3SG', name: 'Ho Jing Wen', unitName: '3SIR', score: '11 / 20', mpi: '8.75' },
     ],
   },
 ]

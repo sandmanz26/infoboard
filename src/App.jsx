@@ -194,13 +194,22 @@ const LEADERBOARD_FONT_SIZE_OPTIONS = [
 ]
 
 // Leaderboard floor only — how many winners each Global courseware panel
-// shows. Every courseware now carries 10 rows of data, so picking one
-// count here shows that many rows on every panel at once — keeping
-// their heights equal instead of each panel sizing to its own row count.
+// shows. Every courseware carries 15 rows of data, so picking one count
+// here shows that many rows on every panel at once — keeping their
+// heights equal instead of each panel sizing to its own row count.
 const LEADERBOARD_GLOBAL_ROWS_OPTIONS = [
-  { id: '3', label: 'Top 3', description: 'Show only the medal positions (1st-3rd) on every Global panel' },
   { id: '5', label: 'Top 5', description: 'Show the top 5 winners on every Global panel' },
   { id: '10', label: 'Top 10', description: 'Show the top 10 winners on every Global panel' },
+  { id: '15', label: 'Top 15', description: 'Show the top 15 winners on every Global panel' },
+]
+
+// Leaderboard floor only — how many local trainees the Local panel shows
+// in total (podium positions count toward this when it's visible, same
+// as LEADERBOARD_GLOBAL_ROWS_OPTIONS does for the Global panels).
+const LEADERBOARD_LOCAL_ROWS_OPTIONS = [
+  { id: '5', label: 'Top 5', description: 'Show the top 5 local trainees' },
+  { id: '10', label: 'Top 10', description: 'Show the top 10 local trainees' },
+  { id: '15', label: 'Top 15', description: 'Show the top 15 local trainees' },
 ]
 
 // Leaderboard floor only — only meaningful when Global Panels is set to
@@ -419,6 +428,7 @@ const LEADERBOARD_PODIUM_STORAGE_KEY = 'infoboard-leaderboard-podium'
 const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count'
 const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
 const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
+const LEADERBOARD_LOCAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-local-rows'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
@@ -1174,7 +1184,7 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
 
   if (station.noBooking) {
     return (
-      <section className="panel detail-panel-compact station-column">
+      <section className="panel detail-panel-compact station-column station-column-unavailable">
         <StationColumnHead name={station.code} />
         {/* Mirrors a booked card's structure exactly (blank info line +
             a detail-panel-head row) instead of omitting them, so the
@@ -1204,12 +1214,31 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
             </tr>
           </thead>
           <tbody>
-            {[1, 2, 3, 4, 5].map((no) => (
+            {/* Same 5-row count as a booked card (2 blank + the "Not
+                Available" message row + 2 more blank) so this card's
+                height still matches a booked card's exactly — only the
+                middle row's look changes, not the row count. Blank cells
+                need a non-breaking space (not truly empty) or the row
+                collapses shorter than a real content row's line-height. */}
+            {[1, 2].map((no) => (
               <tr key={no}>
-                {!hideNoColumn && <td className="no-cell">{no}</td>}
-                <td className="rank-cell" />
-                <td className="name-cell" />
-                <td className="role-cell" />
+                {!hideNoColumn && <td className="no-cell">&nbsp;</td>}
+                <td className="rank-cell">&nbsp;</td>
+                <td className="name-cell">&nbsp;</td>
+                <td className="role-cell">&nbsp;</td>
+              </tr>
+            ))}
+            <tr>
+              <td colSpan={hideNoColumn ? 3 : 4} className="table-not-available-cell">
+                Not Available
+              </td>
+            </tr>
+            {[4, 5].map((no) => (
+              <tr key={no}>
+                {!hideNoColumn && <td className="no-cell">&nbsp;</td>}
+                <td className="rank-cell">&nbsp;</td>
+                <td className="name-cell">&nbsp;</td>
+                <td className="role-cell">&nbsp;</td>
               </tr>
             ))}
           </tbody>
@@ -1532,6 +1561,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY)
     return LEADERBOARD_GLOBAL_ROWS_OPTIONS.some((o) => o.id === saved) ? saved : '5'
   })
+  const [leaderboardLocalRows, setLeaderboardLocalRows] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_LOCAL_ROWS_STORAGE_KEY)
+    return LEADERBOARD_LOCAL_ROWS_OPTIONS.some((o) => o.id === saved) ? saved : '5'
+  })
   const [leaderboardSlide, setLeaderboardSlide] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
     return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
@@ -1556,6 +1589,14 @@ export default function App() {
     const saved = localStorage.getItem(LEVEL_STORAGE_KEY)
     return LEVELS.some((l) => l.id === saved) ? saved : 'level-4'
   })
+  // Level 2 (CMT) only ever renders correctly under Layout 5 — force it
+  // back whenever Level 2 is (re)selected instead of leaving whatever
+  // layout was last picked on another level (the switcher itself is
+  // hidden for Level 2, see switcherGroups below, so this is the only
+  // place that can still change it).
+  useEffect(() => {
+    if (level === 'level-2') setLayout('layout-5')
+  }, [level])
   const [rightPanelComponents, setRightPanelComponents] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(RIGHT_PANEL_STORAGE_KEY))
@@ -1757,6 +1798,10 @@ export default function App() {
   }, [leaderboardGlobalRows])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_LOCAL_ROWS_STORAGE_KEY, leaderboardLocalRows)
+  }, [leaderboardLocalRows])
+
+  useEffect(() => {
     localStorage.setItem(LEADERBOARD_SLIDE_STORAGE_KEY, leaderboardSlide)
   }, [leaderboardSlide])
 
@@ -1895,6 +1940,14 @@ export default function App() {
             onChange: setLeaderboardFontSize,
           },
           {
+            id: 'leaderboard-local-rows',
+            label: 'Local Rows',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_LOCAL_ROWS_OPTIONS,
+            active: leaderboardLocalRows,
+            onChange: setLeaderboardLocalRows,
+          },
+          {
             id: 'leaderboard-global-rows',
             label: 'Global Winners Shown',
             icon: <DetailCountIcon />,
@@ -1921,14 +1974,22 @@ export default function App() {
       : []),
     ...(isTrainingLevel
       ? [
-          {
-            id: 'layout',
-            label: 'Layout',
-            icon: <LayoutIcon />,
-            options: LAYOUTS,
-            active: layout,
-            onChange: setLayout,
-          },
+          // Level 2 (CMT) only ever renders under Layout 5 (see the effect
+          // above that pins it back whenever Level 2 is selected) — the
+          // switcher would just be a dead control there, so it's hidden
+          // instead of shown alongside a locked-in choice.
+          ...(level !== 'level-2'
+            ? [
+                {
+                  id: 'layout',
+                  label: 'Layout',
+                  icon: <LayoutIcon />,
+                  options: LAYOUTS,
+                  active: layout,
+                  onChange: setLayout,
+                },
+              ]
+            : []),
           {
             id: 'table-model',
             label: 'Table Model',
@@ -2156,7 +2217,12 @@ export default function App() {
 
   return (
     <>
-      <FitToScreen active={display === 'tv'}>
+      {/* The Leaderboard floor always fits to the screen height (no
+          scroll), independent of the Display switcher — its row-count
+          switchers (Local Rows / Global Winners Shown) can go up to 15
+          rows per panel, and a leaderboard is meant to be read as a
+          single static screen rather than scrolled. */}
+      <FitToScreen active={display === 'tv' || isLeaderboardFloor}>
         <div className="app" style={{ fontFamily: activeFont.stack }}>
           <Header
             station={currentLevelLabel}
@@ -2210,6 +2276,7 @@ export default function App() {
               globalCount={Number(leaderboardGlobalCount)}
               fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
               globalRowCount={Number(leaderboardGlobalRows)}
+              localRowCount={Number(leaderboardLocalRows)}
               slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
             />
           ) : (

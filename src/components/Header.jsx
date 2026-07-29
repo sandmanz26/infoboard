@@ -31,10 +31,6 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', t
           <span className="station-badge-label">{detailLabel}</span>
           <span className="station-badge-code">{station}</span>
         </div>
-        <span className="live-indicator">
-          <span className="live-dot" aria-hidden="true" />
-          Live
-        </span>
       </div>
     </header>
   )

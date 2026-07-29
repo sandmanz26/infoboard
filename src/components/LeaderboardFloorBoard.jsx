@@ -12,8 +12,9 @@ import {
 // — reuses the same PodiumColumn/table markup as the Layouts 1-3 sidebar
 // version, just with its own banner header instead of that panel's
 // compact title.
-function LocalLeaderboardPanel({ showPodium }) {
-  const tableRows = showPodium ? leaderboardFloorLocalRows.filter((row) => !row.medal) : leaderboardFloorLocalRows
+function LocalLeaderboardPanel({ showPodium, rowCount }) {
+  const visibleRows = leaderboardFloorLocalRows.slice(0, rowCount)
+  const tableRows = showPodium ? visibleRows.filter((row) => !row.medal) : visibleRows
   return (
     <section className="panel leaderboard-floor-panel">
       <div className="leaderboard-floor-banner leaderboard-floor-banner-local">Local Leaderboard</div>
@@ -139,6 +140,7 @@ export default function LeaderboardFloorBoard({
   globalCount,
   fontScale,
   globalRowCount,
+  localRowCount,
   slidePairIndex,
 }) {
   // Slide (only meaningful at globalCount === 2): instead of always
@@ -162,7 +164,7 @@ export default function LeaderboardFloorBoard({
       className="layout layout-leaderboard-floor"
       style={{ gridTemplateColumns, '--lb-font-scale': fontScale }}
     >
-      <LocalLeaderboardPanel showPodium={showPodium} />
+      <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} />
       {visibleCoursewares.map((entry) => (
         <GlobalCoursewarePanel key={entry.courseware} {...entry} rowCount={globalRowCount} />
       ))}
