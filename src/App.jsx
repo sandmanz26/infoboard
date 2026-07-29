@@ -28,6 +28,7 @@ import LeaderboardTicker from './components/LeaderboardTicker.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
 import StationsOverview from './components/StationsOverview.jsx'
 import LobbyBoard from './components/LobbyBoard.jsx'
+import LeaderboardFloorBoard from './components/LeaderboardFloorBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import PageDots from './components/PageDots.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
@@ -1529,7 +1530,8 @@ export default function App() {
     return () => clearInterval(id)
   }, [slideInterval])
 
-  const isTrainingLevel = level !== 'level-1'
+  const isTrainingLevel = level !== 'level-1' && level !== 'leaderboard'
+  const isLeaderboardFloor = level === 'leaderboard'
 
   // Toggles one component in/out of the right column. Unchecking all
   // three is allowed on purpose — the table then takes the full row
@@ -1560,7 +1562,7 @@ export default function App() {
     },
     // Level 1 (Lobby) only — how often the booking table rotates to the
     // next training level's data.
-    ...(!isTrainingLevel
+    ...(level === 'level-1'
       ? [
           {
             id: 'lobby-interval',
@@ -1811,7 +1813,7 @@ export default function App() {
     <div className="app" style={{ fontFamily: activeFont.stack }}>
       <Header
         station={currentLevelLabel}
-        detailLabel={isTrainingLevel ? 'Detail 2' : 'Lobby'}
+        detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
         title={
           level === 'level-4'
             ? 'Specialized Weapon Trainer\nTraining Information Board'
@@ -1821,7 +1823,9 @@ export default function App() {
                 ? 'Command Team Trainer\nTraining Information Board'
                 : level === 'level-1'
                   ? 'Today Bookings'
-                  : 'Infoboard'
+                  : isLeaderboardFloor
+                    ? 'Leaderboard'
+                    : 'Infoboard'
         }
       />
       {isTrainingLevel && layout === 'layout-5' && (
@@ -1852,6 +1856,8 @@ export default function App() {
           detailFontSize={detailFontSize}
           stationFontSize={stationFontSize}
         />
+      ) : isLeaderboardFloor ? (
+        <LeaderboardFloorBoard />
       ) : (
         <>
           <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />

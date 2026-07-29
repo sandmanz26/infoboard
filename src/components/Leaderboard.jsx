@@ -1,6 +1,6 @@
 import LeaderboardHead from './LeaderboardHead.jsx'
 
-function Medal({ medal, label }) {
+export function Medal({ medal, label }) {
   return (
     <span className={`medal medal-${medal}`}>
       <span className="medal-label">{label}</span>

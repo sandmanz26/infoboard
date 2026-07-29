@@ -44,6 +44,14 @@
   --bronze-deep: #8f6640;
   --bronze-soft: #ecd9c4;
 
+  /* Leaderboard floor's two panel banners — pink for the unit's own
+     ("Local") board, lavender for the cross-unit ("Global") one, so the
+     two read as distinct at a glance. */
+  --leaderboard-local-bg: #f6dcd7;
+  --leaderboard-local-text: #8a3a30;
+  --leaderboard-global-bg: #e3daf4;
+  --leaderboard-global-text: #4c3a80;
+
   --shadow-1: 0 1px 2px rgba(31, 24, 20, 0.05);
   --shadow-2: 0 10px 30px rgba(31, 24, 20, 0.16);
   --shadow-float: 0 6px 18px rgba(138, 31, 31, 0.3);
@@ -580,6 +588,87 @@ body {
 }
 .mpi-bronze {
   background: var(--bronze-deep);
+}
+
+/* ---------- Leaderboard floor (Local + Global side by side) ---------- */
+
+.layout-leaderboard-floor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 24px 24px;
+  align-items: start;
+}
+
+.leaderboard-floor-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaderboard-floor-banner {
+  padding: 10px 20px;
+  font-weight: 800;
+  font-size: 15px;
+  text-align: center;
+}
+
+.leaderboard-floor-banner-local {
+  background: var(--leaderboard-local-bg);
+  color: var(--leaderboard-local-text);
+}
+
+.leaderboard-floor-banner-global {
+  background: var(--leaderboard-global-bg);
+  color: var(--leaderboard-global-text);
+}
+
+.leaderboard-floor-body {
+  padding: 16px 20px 20px;
+}
+
+.leaderboard-floor-info {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12.5px;
+  flex-wrap: wrap;
+}
+
+.leaderboard-floor-info-title {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.leaderboard-floor-info-sub {
+  margin-top: 2px;
+  color: var(--text-sub);
+}
+
+.leaderboard-floor-info-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.leaderboard-floor-info-compact {
+  justify-content: flex-end;
+  gap: 40px;
+}
+
+/* Every finisher tied at a medal position gets a soft tint of that
+   medal's tone (matching the podium/MPI-pill colors already used
+   elsewhere), instead of plain alternating zebra stripes. */
+.leaderboard-row-gold {
+  background: color-mix(in srgb, var(--gold-soft) 55%, white);
+}
+.leaderboard-row-silver {
+  background: color-mix(in srgb, var(--silver-soft) 55%, white);
+}
+.leaderboard-row-bronze {
+  background: color-mix(in srgb, var(--bronze-soft) 55%, white);
 }
 
 /* ---------- Directory ---------- */

@@ -24,7 +24,7 @@ function Wreath({ label, tone }) {
   )
 }
 
-function PodiumColumn({ place, tone, entry, tall }) {
+export function PodiumColumn({ place, tone, entry, tall }) {
   return (
     <div className={`podium-col podium-${tone}${tall ? ' podium-tall' : ''}`}>
       <Wreath label={place} tone={tone} />

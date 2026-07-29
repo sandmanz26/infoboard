@@ -32,6 +32,13 @@ export const LEVELS = [
     context: 'SWT',
     description: 'SWT training range infoboard',
   },
+  {
+    id: 'leaderboard',
+    label: 'Leaderboard',
+    shortCode: null,
+    context: 'LEADERBOARD',
+    description: 'Local + Global weapon training leaderboards',
+  },
 ]
 
 export const LEVEL_ORDER = LEVELS.map((level) => level.id)

@@ -37,6 +37,73 @@ export const leaderboard = [
   { ranking: '9', medal: null, rank: 'REC', name: 'Ong Wei Jie', score: '1 / 20', mpi: '6.00' },
 ]
 
+// The "Leaderboard" floor — its own booking/podium/table content, kept
+// separate from `podium`/`leaderboard` above (which stay in use for the
+// existing Layouts 1-3 sidebar panel) so tweaking one doesn't affect
+// the other.
+export const leaderboardFloorInfo = {
+  title: 'IMT Training For Unit 1SIR',
+  bookingId: '260722-PLC001',
+  unitName: '1SIR',
+  courseware: 'Day Test For SAR21/M16 BTP',
+  weaponType: 'SAR21',
+}
+
+export const leaderboardFloorPodium = {
+  first: { names: ['3SG Danyial Lizam Bin Mustafa'], score: '20', total: '20', mpi: 'MPI: 1.00 mm' },
+  second: { names: ['3SG Mohamad Anuar Bin Kassim'], score: '20', total: '20', mpi: 'MPI: 2.00 mm' },
+  third: {
+    names: ['3SG Huang Cheng Hao', '3SG Yang Zheng Min', 'REC Guo Guo Qiang'],
+    score: '20',
+    total: '20',
+    mpi: 'MPI: 3.00 mm',
+  },
+}
+
+// Local panel's table picks up from rank 4 — 1st/2nd/3rd already show in
+// the podium above it.
+export const leaderboardFloorLocalRows = [
+  { ranking: '4', medal: null, rank: 'REC', name: 'Khairul Azmi Bin Izhar Iskandar', score: '20 / 20', mpi: '5.00' },
+  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', score: '19 / 20', mpi: '1.00' },
+  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', score: '19 / 20', mpi: '2.00' },
+  { ranking: '6', medal: null, rank: '3SG', name: 'Kishan Kumar s/o P. Ravindran', score: '19 / 20', mpi: '2.00' },
+  { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', score: '18 / 20', mpi: '2.00' },
+  { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', score: '18 / 20', mpi: '4.00' },
+  { ranking: '9', medal: null, rank: 'REC', name: 'Rajesh Gunalan a/l Thanabalan', score: '17 / 20', mpi: '2.00' },
+]
+
+// Global panel aggregates across units — no podium, ties are common at
+// the top so 1st/2nd/3rd each list every trainee who hit that MPI, not
+// just one per medal.
+export const leaderboardFloorGlobalRows = [
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Isabella White', unitName: '1SIR', score: '20 / 20', mpi: '1.00' },
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Elijah Lewis', unitName: '1SIR', score: '20 / 20', mpi: '1.00' },
+  {
+    ranking: '1st',
+    medal: 'gold',
+    rank: '3SG',
+    name: 'Danyial Lizam Bin Mustafa',
+    unitName: '1SIR',
+    score: '20 / 20',
+    mpi: '1.00',
+  },
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Amelia Adams', unitName: '1SIR', score: '20 / 20', mpi: '1.00' },
+  { ranking: '2nd', medal: 'silver', rank: 'REC', name: 'Balaji Sadasivan', unitName: '1SIR', score: '20 / 20', mpi: '2.00' },
+  {
+    ranking: '2nd',
+    medal: 'silver',
+    rank: '3SG',
+    name: 'Mohamad Anuar Bin Kassim',
+    unitName: '1SIR',
+    score: '20 / 20',
+    mpi: '2.00',
+  },
+  { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Alex Adams', unitName: '1SIR', score: '20 / 20', mpi: '2.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Ibrahim Abdul Halim', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
+]
+
 // The four physical base stations this infoboard can be deployed to,
 // matching the bays drawn on the Directory map.
 export const stations = [
