@@ -1226,7 +1226,16 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
     >
       <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
       {showLeaderboard ? (
-        <CmtDetailTable rows={station.leaderboardRows} title="Session Leaderboard" hideNo={hideNoColumn} leaderboard />
+        <>
+          <CmtStationInfo station={station} />
+          <CmtDetailTable
+            rows={station.leaderboardRows}
+            title={`Detail ${activeStep.detailIndex + 1}`}
+            status="Session Leaderboard"
+            hideNo={hideNoColumn}
+            leaderboard
+          />
+        </>
       ) : (
         <>
           <CmtStationInfo station={station} />
