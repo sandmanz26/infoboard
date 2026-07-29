@@ -132,7 +132,7 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
   )
 }
 
-export default function LeaderboardFloorBoard({ columnRatios, showPodium, globalCount }) {
+export default function LeaderboardFloorBoard({ columnRatios, showPodium, globalCount, fontScale }) {
   const visibleCoursewares = leaderboardFloorGlobalCoursewares.slice(0, globalCount)
   // Only take as many ratio weights as there are panels on screen (Local
   // + however many Global courseware panels are showing) — CSS grid's fr
@@ -143,7 +143,10 @@ export default function LeaderboardFloorBoard({ columnRatios, showPodium, global
     .map((ratio) => `${ratio}fr`)
     .join(' ')
   return (
-    <main className="layout layout-leaderboard-floor" style={{ gridTemplateColumns }}>
+    <main
+      className="layout layout-leaderboard-floor"
+      style={{ gridTemplateColumns, '--lb-font-scale': fontScale }}
+    >
       <LocalLeaderboardPanel showPodium={showPodium} />
       {visibleCoursewares.map((entry) => (
         <GlobalCoursewarePanel key={entry.courseware} {...entry} />

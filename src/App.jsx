@@ -173,6 +173,16 @@ const LEADERBOARD_GLOBAL_COUNT_OPTIONS = [
   { id: '4', label: '4', description: 'Show all 4 Global courseware panels' },
 ]
 
+// Leaderboard floor only — one scale factor multiplies every panel's
+// banner/info/podium/table text sizes via calc() (see the .layout-
+// leaderboard-floor rules in index.css), keeping their relative
+// proportions instead of needing a separate absolute size per element.
+const LEADERBOARD_FONT_SIZE_OPTIONS = [
+  { id: 'small', label: 'Small', description: 'Shrink all text on this floor', scale: 0.85 },
+  { id: 'medium', label: 'Medium', description: 'Default text size', scale: 1 },
+  { id: 'large', label: 'Large', description: 'Enlarge all text on this floor', scale: 1.2 },
+]
+
 // The blue info strip under the header (Levels 2-4 only).
 const INFO_BANNER_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
@@ -376,6 +386,7 @@ const LOBBY_INTERVAL_STORAGE_KEY = 'infoboard-lobby-interval'
 const LEADERBOARD_PROPORTION_STORAGE_KEY = 'infoboard-leaderboard-proportion'
 const LEADERBOARD_PODIUM_STORAGE_KEY = 'infoboard-leaderboard-podium'
 const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count'
+const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1368,6 +1379,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY)
     return LEADERBOARD_GLOBAL_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '4'
   })
+  const [leaderboardFontSize, setLeaderboardFontSize] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_FONT_SIZE_STORAGE_KEY)
+    return LEADERBOARD_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1566,6 +1581,10 @@ export default function App() {
   }, [leaderboardGlobalCount])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_FONT_SIZE_STORAGE_KEY, leaderboardFontSize)
+  }, [leaderboardFontSize])
+
+  useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
 
@@ -1665,6 +1684,14 @@ export default function App() {
             options: LEADERBOARD_PODIUM_OPTIONS,
             active: leaderboardPodium,
             onChange: setLeaderboardPodium,
+          },
+          {
+            id: 'leaderboard-font-size',
+            label: 'Font Size',
+            icon: <FontSizeIcon />,
+            options: LEADERBOARD_FONT_SIZE_OPTIONS,
+            active: leaderboardFontSize,
+            onChange: setLeaderboardFontSize,
           },
         ]
       : []),
@@ -1955,6 +1982,7 @@ export default function App() {
           columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
           showPodium={leaderboardPodium === 'visible'}
           globalCount={Number(leaderboardGlobalCount)}
+          fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
         />
       ) : (
         <>
