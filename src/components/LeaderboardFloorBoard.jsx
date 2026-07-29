@@ -27,10 +27,10 @@ function LocalLeaderboardPanel({ showPodium }) {
           </div>
           <div className="leaderboard-floor-info-right">
             <span>
-              Courseware: <strong>{leaderboardFloorInfo.courseware}</strong>
+              <strong>{leaderboardFloorInfo.courseware}</strong>
             </span>
             <span>
-              Weapon Type: <strong>{leaderboardFloorInfo.weaponType}</strong>
+              <strong>{leaderboardFloorInfo.weaponType}</strong>
             </span>
           </div>
         </div>
@@ -82,17 +82,18 @@ function LocalLeaderboardPanel({ showPodium }) {
 // row per medal), and no Unit Name column here — at 4-across width
 // there's no room for it, and the courseware name in the banner already
 // says which cross-unit board this is.
-function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
+function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
+  const visibleRows = rows.slice(0, rowCount)
   return (
     <section className="panel leaderboard-floor-panel">
       <div className="leaderboard-floor-banner leaderboard-floor-banner-global">Global Leaderboard</div>
       <div className="leaderboard-floor-body leaderboard-floor-body-narrow">
         <div className="leaderboard-floor-info leaderboard-floor-info-narrow">
           <span>
-            Courseware: <strong>{courseware}</strong>
+            <strong>{courseware}</strong>
           </span>
           <span>
-            Weapon Type: <strong>{weaponType}</strong>
+            <strong>{weaponType}</strong>
           </span>
         </div>
         <table className="table leaderboard-table leaderboard-table-narrow">
@@ -109,7 +110,7 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {visibleRows.map((row, index) => (
               <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
                 <td>
                   {row.medal ? (
@@ -132,8 +133,22 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
   )
 }
 
-export default function LeaderboardFloorBoard({ columnRatios, showPodium, globalCount, fontScale }) {
-  const visibleCoursewares = leaderboardFloorGlobalCoursewares.slice(0, globalCount)
+export default function LeaderboardFloorBoard({
+  columnRatios,
+  showPodium,
+  globalCount,
+  fontScale,
+  globalRowCount,
+  slidePairIndex,
+}) {
+  // Slide (only meaningful at globalCount === 2): instead of always
+  // showing the first 2 courseware, page through the 4 in pairs — pair 0
+  // = courseware 1&2, pair 1 = courseware 3&4, wrapping back to pair 0.
+  // At any other Global Panels count, slidePairIndex is always 0 (see
+  // App.jsx), so this is just .slice(0, globalCount), same as before.
+  const pairCount = Math.max(1, Math.ceil(leaderboardFloorGlobalCoursewares.length / globalCount))
+  const pairStart = (slidePairIndex % pairCount) * globalCount
+  const visibleCoursewares = leaderboardFloorGlobalCoursewares.slice(pairStart, pairStart + globalCount)
   // Only take as many ratio weights as there are panels on screen (Local
   // + however many Global courseware panels are showing) — CSS grid's fr
   // units then re-normalize against that smaller total on their own, so
@@ -149,7 +164,7 @@ export default function LeaderboardFloorBoard({ columnRatios, showPodium, global
     >
       <LocalLeaderboardPanel showPodium={showPodium} />
       {visibleCoursewares.map((entry) => (
-        <GlobalCoursewarePanel key={entry.courseware} {...entry} />
+        <GlobalCoursewarePanel key={entry.courseware} {...entry} rowCount={globalRowCount} />
       ))}
     </main>
   )

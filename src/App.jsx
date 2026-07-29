@@ -183,6 +183,27 @@ const LEADERBOARD_FONT_SIZE_OPTIONS = [
   { id: 'large', label: 'Large', description: 'Enlarge all text on this floor', scale: 1.2 },
 ]
 
+// Leaderboard floor only — how many winners each Global courseware panel
+// shows. Every courseware now carries 10 rows of data, so picking one
+// count here shows that many rows on every panel at once — keeping
+// their heights equal instead of each panel sizing to its own row count.
+const LEADERBOARD_GLOBAL_ROWS_OPTIONS = [
+  { id: '3', label: 'Top 3', description: 'Show only the medal positions (1st-3rd) on every Global panel' },
+  { id: '5', label: 'Top 5', description: 'Show the top 5 winners on every Global panel' },
+  { id: '10', label: 'Top 10', description: 'Show the top 10 winners on every Global panel' },
+]
+
+// Leaderboard floor only — only meaningful when Global Panels is set to
+// 2 (so there are 4 courseware split into 2 pairs). When on, the 2
+// visible panels swap to the other pair of courseware every
+// LEADERBOARD_SLIDE_INTERVAL_MS, cycling pair 1/2 -> pair 3/4 -> repeat,
+// instead of always showing the same first 2 courseware.
+const LEADERBOARD_SLIDE_OPTIONS = [
+  { id: 'off', label: 'Off', description: 'Always show the same 2 courseware panels' },
+  { id: 'on', label: 'On', description: 'Swap to the other 2 courseware panels every 8 seconds' },
+]
+const LEADERBOARD_SLIDE_INTERVAL_MS = 8000
+
 // The blue info strip under the header (Levels 2-4 only).
 const INFO_BANNER_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
@@ -387,6 +408,8 @@ const LEADERBOARD_PROPORTION_STORAGE_KEY = 'infoboard-leaderboard-proportion'
 const LEADERBOARD_PODIUM_STORAGE_KEY = 'infoboard-leaderboard-podium'
 const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count'
 const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
+const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
+const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1383,6 +1406,14 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_FONT_SIZE_STORAGE_KEY)
     return LEADERBOARD_FONT_SIZE_OPTIONS.some((o) => o.id === saved) ? saved : 'medium'
   })
+  const [leaderboardGlobalRows, setLeaderboardGlobalRows] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY)
+    return LEADERBOARD_GLOBAL_ROWS_OPTIONS.some((o) => o.id === saved) ? saved : '5'
+  })
+  const [leaderboardSlide, setLeaderboardSlide] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
+    return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1496,6 +1527,17 @@ export default function App() {
     return () => clearInterval(id)
   }, [level, layout])
 
+  // Leaderboard floor only — advances which pair of courseware the 2
+  // Global panels show, only when the Slide switcher is on (and only
+  // meaningful with Global Panels set to 2 — see leaderboardSlidePairIndex
+  // below, computed in LeaderboardFloorBoard's caller).
+  const [leaderboardSlideTick, setLeaderboardSlideTick] = useState(0)
+  useEffect(() => {
+    if (level !== 'leaderboard' || leaderboardSlide !== 'on' || leaderboardGlobalCount !== '2') return
+    const id = setInterval(() => setLeaderboardSlideTick((t) => t + 1), LEADERBOARD_SLIDE_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [level, leaderboardSlide, leaderboardGlobalCount])
+
   useEffect(() => {
     localStorage.setItem(RIGHT_PANEL_STORAGE_KEY, JSON.stringify(rightPanelComponents))
   }, [rightPanelComponents])
@@ -1583,6 +1625,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(LEADERBOARD_FONT_SIZE_STORAGE_KEY, leaderboardFontSize)
   }, [leaderboardFontSize])
+
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY, leaderboardGlobalRows)
+  }, [leaderboardGlobalRows])
+
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_SLIDE_STORAGE_KEY, leaderboardSlide)
+  }, [leaderboardSlide])
 
   useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
@@ -1693,6 +1743,29 @@ export default function App() {
             active: leaderboardFontSize,
             onChange: setLeaderboardFontSize,
           },
+          {
+            id: 'leaderboard-global-rows',
+            label: 'Global Winners Shown',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_GLOBAL_ROWS_OPTIONS,
+            active: leaderboardGlobalRows,
+            onChange: setLeaderboardGlobalRows,
+          },
+          // Only meaningful with exactly 2 Global panels showing (4
+          // courseware split into 2 pairs to slide between) — hidden
+          // otherwise instead of shown as a dead control.
+          ...(leaderboardGlobalCount === '2'
+            ? [
+                {
+                  id: 'leaderboard-slide',
+                  label: 'Slide',
+                  icon: <SlideshowIcon />,
+                  options: LEADERBOARD_SLIDE_OPTIONS,
+                  active: leaderboardSlide,
+                  onChange: setLeaderboardSlide,
+                },
+              ]
+            : []),
         ]
       : []),
     ...(isTrainingLevel
@@ -1983,6 +2056,8 @@ export default function App() {
           showPodium={leaderboardPodium === 'visible'}
           globalCount={Number(leaderboardGlobalCount)}
           fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
+          globalRowCount={Number(leaderboardGlobalRows)}
+          slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
         />
       ) : (
         <>

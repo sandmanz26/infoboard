@@ -661,6 +661,14 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  /* Reserves room for the Courseware line wrapping to 2 lines (long
+     names like "Day Test For SAR21/M16 BTP" do, shorter ones like "Day
+     Test For P30/HP BTP" don't) so every Global panel's info block is
+     the same height regardless of its own courseware name length —
+     otherwise, with row counts now equalized by the Global Winners
+     Shown switcher, this was the last remaining source of uneven panel
+     heights. em-based so it also scales with the Font Size switcher. */
+  min-height: 2.8em;
 }
 
 .leaderboard-floor-body-narrow {
