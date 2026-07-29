@@ -94,7 +94,7 @@ function StatIcon() {
   )
 }
 
-export default function BookingList({ rows, levels, activeLevelId, pageIndex, stats }) {
+export default function BookingList({ rows, levels, activeLevelId, pageIndex, stats, intervalMs = BOOKING_PAGE_INTERVAL_MS }) {
   const columns = LEVEL_TABLE_COLUMNS[activeLevelId] ?? CMT_CTT_COLUMNS
   return (
     <>
@@ -113,7 +113,7 @@ export default function BookingList({ rows, levels, activeLevelId, pageIndex, st
       </div>
       <div className="booking-panel-head">
         <LevelIndicator levels={levels} active={activeLevelId} />
-        <PageLoadingBar pageIndex={pageIndex} intervalMs={BOOKING_PAGE_INTERVAL_MS} />
+        <PageLoadingBar pageIndex={pageIndex} intervalMs={intervalMs} />
       </div>
       <table className="table booking-table">
         <colgroup>

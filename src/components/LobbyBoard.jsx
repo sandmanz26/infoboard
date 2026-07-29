@@ -13,10 +13,10 @@ const BOOKINGS_BY_LEVEL = Object.fromEntries(
   TRAINING_LEVELS.map((level) => [level.id, bookings.filter((b) => b.level === level.shortCode)])
 )
 
-export default function LobbyBoard() {
+export default function LobbyBoard({ intervalMs = BOOKING_PAGE_INTERVAL_MS }) {
   // Reuses the paging hook as a 3-step rotation: one "page" per level, the
   // full dataset each time, cycling on the same interval as everything else.
-  const { pageIndex: levelIndex } = usePagedRows(TRAINING_LEVELS, 1, BOOKING_PAGE_INTERVAL_MS)
+  const { pageIndex: levelIndex } = usePagedRows(TRAINING_LEVELS, 1, intervalMs)
   const activeLevel = TRAINING_LEVELS[levelIndex]
   const rows = BOOKINGS_BY_LEVEL[activeLevel.id]
 
@@ -42,6 +42,7 @@ export default function LobbyBoard() {
           activeLevelId={activeLevel.id}
           pageIndex={levelIndex}
           stats={stats}
+          intervalMs={intervalMs}
         />
       </section>
       <section className="panel announcement-panel">

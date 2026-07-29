@@ -125,6 +125,17 @@ const SLIDESHOW_INTERVALS = [
   { id: '30', label: '30s', description: 'Advance to the next station every 30 seconds' },
 ]
 
+// Level 1 (Lobby) only — how often the booking table rotates to the next
+// training level (Level 2 -> 3 -> 4 -> repeat).
+const LOBBY_INTERVAL_OPTIONS = [
+  { id: '5', label: '5s', description: 'Rotate to the next level every 5 seconds' },
+  { id: '8', label: '8s', description: 'Rotate to the next level every 8 seconds' },
+  { id: '10', label: '10s', description: 'Rotate to the next level every 10 seconds' },
+  { id: '15', label: '15s', description: 'Rotate to the next level every 15 seconds' },
+  { id: '30', label: '30s', description: 'Rotate to the next level every 30 seconds' },
+  { id: '45', label: '45s', description: 'Rotate to the next level every 45 seconds' },
+]
+
 // The blue info strip under the header (Levels 2-4 only).
 const INFO_BANNER_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
@@ -324,6 +335,7 @@ const LAYOUT_STORAGE_KEY = 'infoboard-layout'
 const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
 const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
+const LOBBY_INTERVAL_STORAGE_KEY = 'infoboard-lobby-interval'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1288,6 +1300,10 @@ export default function App() {
     const saved = localStorage.getItem(SLIDESHOW_STORAGE_KEY)
     return SLIDESHOW_INTERVALS.some((s) => s.id === saved) ? saved : '0'
   })
+  const [lobbyInterval, setLobbyInterval] = useState(() => {
+    const saved = localStorage.getItem(LOBBY_INTERVAL_STORAGE_KEY)
+    return LOBBY_INTERVAL_OPTIONS.some((o) => o.id === saved) ? saved : '5'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1470,6 +1486,10 @@ export default function App() {
   }, [slideInterval])
 
   useEffect(() => {
+    localStorage.setItem(LOBBY_INTERVAL_STORAGE_KEY, lobbyInterval)
+  }, [lobbyInterval])
+
+  useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
 
@@ -1526,6 +1546,20 @@ export default function App() {
       active: font,
       onChange: setFont,
     },
+    // Level 1 (Lobby) only — how often the booking table rotates to the
+    // next training level's data.
+    ...(!isTrainingLevel
+      ? [
+          {
+            id: 'lobby-interval',
+            label: 'Interval',
+            icon: <SlideshowIcon />,
+            options: LOBBY_INTERVAL_OPTIONS,
+            active: lobbyInterval,
+            onChange: setLobbyInterval,
+          },
+        ]
+      : []),
     ...(isTrainingLevel
       ? [
           {
@@ -1809,7 +1843,7 @@ export default function App() {
       ) : (
         <>
           <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
-          <LobbyBoard />
+          <LobbyBoard intervalMs={Number(lobbyInterval) * 1000} />
         </>
       )}
       <LayoutSwitcher groups={switcherGroups} />
