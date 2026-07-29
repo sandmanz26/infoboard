@@ -1203,9 +1203,19 @@ function LayoutFive({
       )}
       {/* Level 3's Layout 5 always shows the Directory (its own Zone map
           just replaced the old generic map) — Level 2/4 (real per-station
-          data) each offer a toggle to hide it. */}
+          data) each offer a toggle to hide it. When a Zone's cabins don't
+          fill all 5 grid columns (e.g. Zone A's 3), the source sheet tucks
+          the floor plan into the leftover columns of that same row instead
+          of pushing it below — grid auto-placement does that for free once
+          the panel isn't forced to span the full row. Zones that do fill
+          every column (e.g. Zone D1's 5) fall back to the full-width row
+          below, same as before. */}
       {(isLevelThree || !(isLevelFour || isLevelTwo) || !hideDirectory) && (
-        <section className="panel directory-panel layout-five-directory">
+        <section
+          className={`panel directory-panel${
+            isLevelThree && cttStationColumns.length <= 3 ? ' layout-five-directory-corner' : ' layout-five-directory'
+          }`}
+        >
           {isLevelTwo ? (
             <CmtDirectory />
           ) : isLevelThree ? (
