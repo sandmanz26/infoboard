@@ -844,6 +844,14 @@ function SwtStationColumn({
 }) {
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
   const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
+  // The Global Leaderboard is a flat ranked list, not Detail groups, but
+  // it still follows the same Data Count switcher — "10 - 5"/"5 - 5 - 5"
+  // page it just like a normal station's rows instead of dumping all 15
+  // at once regardless of what's selected.
+  const leaderboardSteps = useMemo(
+    () => (station.leaderboardRows ? chunkStationRows(formatStationRows(station.leaderboardRows), stationDataCount) : []),
+    [station, stationDataCount]
+  )
   // "Start Detail" picks which Detail group this station's rotation opens
   // on — find that group's first step in the combined sequence. Falls
   // back to step 0 if the station doesn't actually have that many Detail
@@ -855,13 +863,17 @@ function SwtStationColumn({
   }, [steps, startDetailIndex])
   const pageIndex = (initialStepIndex + flipTick) % steps.length
   const activeStep = steps[pageIndex]
+  const leaderboardPageIndex = leaderboardSteps.length > 0 ? flipTick % leaderboardSteps.length : 0
+  const activeLeaderboardRows = leaderboardSteps[leaderboardPageIndex] ?? []
   // "10 - 5" produces two pages of different sizes for a station with
   // more than 10 rows (and a multi-Detail station repeats that per
   // group) — without a height floor, the panel would shrink whenever it
   // flips to a shorter page. "15" and "5 - 5 - 5" don't need this:
   // either there's no flip at all, or every page is already the same
   // size.
-  const hasUnevenPages = steps.length > 1 && steps.some((s) => s.rows.length !== steps[0].rows.length)
+  const hasUnevenPages = showLeaderboard
+    ? leaderboardSteps.length > 1 && leaderboardSteps.some((s) => s.length !== leaderboardSteps[0].length)
+    : steps.length > 1 && steps.some((s) => s.rows.length !== steps[0].rows.length)
 
   // A flat px floor can't track every font-size combination the
   // switchers allow, so measure instead and floor future renders at the
@@ -891,7 +903,7 @@ function SwtStationColumn({
       <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
       {showLeaderboard ? (
         <StationGlobalLeaderboard
-          rows={formatStationRows(station.leaderboardRows)}
+          rows={activeLeaderboardRows}
           courseware={station.courseware}
           timeRange={`${station.startTime} - ${station.endTime}`}
           hideNo={hideNoColumn}
