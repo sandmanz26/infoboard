@@ -37,6 +37,16 @@ import CmtBoard from './levels/CmtBoard.jsx'
 import CttBoard from './levels/CttBoard.jsx'
 import SwtBoard from './levels/SwtBoard.jsx'
 
+// Global (every level) — this board runs on both a 65" TV (fixed
+// resolution, no keyboard/mouse, must never scroll — any overflow just
+// gets cut off on a real signage screen) and a laptop browser (fine to
+// scroll like a normal page). "TV" scales the whole board down to fit
+// the viewport exactly instead of overflowing — see FitToScreen below.
+const DISPLAY_OPTIONS = [
+  { id: 'laptop', label: 'Laptop', description: 'Normal browser window — scrolls if content is taller than the viewport' },
+  { id: 'tv', label: 'TV (65")', description: 'Scales the whole board down to fit the screen exactly — never scrolls' },
+]
+
 const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 const DETAIL_GROUPS_PER_PAGE = 3
@@ -410,6 +420,7 @@ const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count
 const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
 const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
+const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -427,6 +438,15 @@ const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
 const DETAIL_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-detail-font-size'
 const STATION_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-station-font-size'
 const CTT_ZONE_STORAGE_KEY = 'infoboard-ctt-zone'
+
+function DisplayIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
+      <rect x="1.5" y="3" width="17" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7 17h6M10 14v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 function LayoutIcon() {
   return (
@@ -879,6 +899,52 @@ function FlipProgressBar({ tick, intervalMs }) {
   return (
     <div className="flip-progress-track" aria-hidden="true">
       <div key={tick} className="flip-progress-fill" style={{ animationDuration: `${intervalMs}ms` }} />
+    </div>
+  )
+}
+
+// TV mode only — scales its children down (uniformly, preserving
+// aspect ratio, never up past their natural size) so the board's actual
+// rendered height always fits inside the viewport, no matter how tall a
+// given level/switcher combination naturally renders. scrollHeight is
+// read from the *unscaled* child (CSS transform doesn't change layout
+// or scrollHeight), so recomputing after every resize/content change is
+// stable — it never measures its own previous scale back into itself.
+// Laptop mode renders children directly, completely unaffected — same
+// scroll-if-needed behavior as before this existed.
+function FitToScreen({ active, children }) {
+  const innerRef = useRef(null)
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    if (!active) {
+      setScale(1)
+      return
+    }
+    const el = innerRef.current
+    if (!el) return
+    const recompute = () => {
+      const naturalHeight = el.scrollHeight
+      const available = window.innerHeight
+      setScale(naturalHeight > available && naturalHeight > 0 ? available / naturalHeight : 1)
+    }
+    recompute()
+    const observer = new ResizeObserver(recompute)
+    observer.observe(el)
+    window.addEventListener('resize', recompute)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', recompute)
+    }
+  }, [active])
+
+  if (!active) return children
+
+  return (
+    <div className="fit-to-screen-outer">
+      <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale})` }}>
+        {children}
+      </div>
     </div>
   )
 }
@@ -1414,6 +1480,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
     return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
   })
+  const [display, setDisplay] = useState(() => {
+    const saved = localStorage.getItem(DISPLAY_STORAGE_KEY)
+    return DISPLAY_OPTIONS.some((o) => o.id === saved) ? saved : 'laptop'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1635,6 +1705,21 @@ export default function App() {
   }, [leaderboardSlide])
 
   useEffect(() => {
+    localStorage.setItem(DISPLAY_STORAGE_KEY, display)
+  }, [display])
+
+  // Backstop for TV mode — FitToScreen's own scaling should already keep
+  // everything inside the viewport, but this guarantees no page-level
+  // scrollbar can appear regardless (e.g. before the first scale
+  // measurement lands on mount).
+  useEffect(() => {
+    document.body.style.overflow = display === 'tv' ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [display])
+
+  useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
 
@@ -1683,6 +1768,16 @@ export default function App() {
       options: LEVELS,
       active: level,
       onChange: setLevel,
+    },
+    // Global, every level — which physical screen this board is running
+    // on right now.
+    {
+      id: 'display',
+      label: 'Display',
+      icon: <DisplayIcon />,
+      options: DISPLAY_OPTIONS,
+      active: display,
+      onChange: setDisplay,
     },
     {
       id: 'font',
@@ -2004,68 +2099,72 @@ export default function App() {
   const currentLevelLabel = LEVELS.find((l) => l.id === level)?.label ?? 'Level 1'
 
   return (
-    <div className="app" style={{ fontFamily: activeFont.stack }}>
-      <Header
-        station={currentLevelLabel}
-        detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
-        title={
-          level === 'level-4'
-            ? 'Specialized Weapon Trainer\nTraining Information Board'
-            : level === 'level-2'
-              ? 'Company Tactical Mission Trainer\nTraining Information Board'
-              : level === 'level-3'
-                ? 'Command Team Trainer\nTraining Information Board'
-                : level === 'level-1'
-                  ? 'Today Bookings'
-                  : isLeaderboardFloor
-                    ? 'Leaderboard'
-                    : 'Infoboard'
-        }
-      />
-      {isTrainingLevel && layout === 'layout-5' && (
-        <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
-      )}
-      {isTrainingLevel ? (
-        <TrainingBoard
-          ActiveLayout={ActiveLayout}
-          tableModel={tableModel}
-          leaderboardModel={leaderboardModel}
-          activeStation={activeStation}
-          panelRatio={panelRatio}
-          detailCount={detailCount}
-          rightPanelComponents={rightPanelComponents}
-          showInfoBanner={infoBanner === 'visible'}
-          level={level}
-          hideNoColumn={noColumn === 'hidden'}
-          hideDirectory={directoryVisibility === 'hidden'}
-          swt03Session={swt03Session}
-          cmtLeaderboardSessionByStation={cmtLeaderboardSessionByStation}
-          detailTitleMode={detailTitleMode}
-          stationDataCount={stationDataCount}
-          startDetailByStation={startDetailByStation}
-          activeZone={activeZone}
-          zoneTick={zoneTick}
-          flipTick={flipTick}
-          tableFontSize={tableFontSize}
-          detailFontSize={detailFontSize}
-          stationFontSize={stationFontSize}
-        />
-      ) : isLeaderboardFloor ? (
-        <LeaderboardFloorBoard
-          columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
-          showPodium={leaderboardPodium === 'visible'}
-          globalCount={Number(leaderboardGlobalCount)}
-          fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
-          globalRowCount={Number(leaderboardGlobalRows)}
-          slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
-        />
-      ) : (
-        <>
-          <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
-          <LobbyBoard intervalMs={Number(lobbyInterval) * 1000} />
-        </>
-      )}
+    <>
+      <FitToScreen active={display === 'tv'}>
+        <div className="app" style={{ fontFamily: activeFont.stack }}>
+          <Header
+            station={currentLevelLabel}
+            detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
+            title={
+              level === 'level-4'
+                ? 'Specialized Weapon Trainer\nTraining Information Board'
+                : level === 'level-2'
+                  ? 'Company Tactical Mission Trainer\nTraining Information Board'
+                  : level === 'level-3'
+                    ? 'Command Team Trainer\nTraining Information Board'
+                    : level === 'level-1'
+                      ? 'Today Bookings'
+                      : isLeaderboardFloor
+                        ? 'Leaderboard'
+                        : 'Infoboard'
+            }
+          />
+          {isTrainingLevel && layout === 'layout-5' && (
+            <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
+          )}
+          {isTrainingLevel ? (
+            <TrainingBoard
+              ActiveLayout={ActiveLayout}
+              tableModel={tableModel}
+              leaderboardModel={leaderboardModel}
+              activeStation={activeStation}
+              panelRatio={panelRatio}
+              detailCount={detailCount}
+              rightPanelComponents={rightPanelComponents}
+              showInfoBanner={infoBanner === 'visible'}
+              level={level}
+              hideNoColumn={noColumn === 'hidden'}
+              hideDirectory={directoryVisibility === 'hidden'}
+              swt03Session={swt03Session}
+              cmtLeaderboardSessionByStation={cmtLeaderboardSessionByStation}
+              detailTitleMode={detailTitleMode}
+              stationDataCount={stationDataCount}
+              startDetailByStation={startDetailByStation}
+              activeZone={activeZone}
+              zoneTick={zoneTick}
+              flipTick={flipTick}
+              tableFontSize={tableFontSize}
+              detailFontSize={detailFontSize}
+              stationFontSize={stationFontSize}
+            />
+          ) : isLeaderboardFloor ? (
+            <LeaderboardFloorBoard
+              columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
+              showPodium={leaderboardPodium === 'visible'}
+              globalCount={Number(leaderboardGlobalCount)}
+              fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
+              globalRowCount={Number(leaderboardGlobalRows)}
+              slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
+            />
+          ) : (
+            <>
+              <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
+              <LobbyBoard intervalMs={Number(lobbyInterval) * 1000} />
+            </>
+          )}
+        </div>
+      </FitToScreen>
       <LayoutSwitcher groups={switcherGroups} />
-    </div>
+    </>
   )
 }

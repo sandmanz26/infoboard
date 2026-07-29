@@ -96,6 +96,29 @@ body {
   flex-direction: column;
 }
 
+/* TV display mode — see FitToScreen in App.jsx. Clips to exactly the
+   viewport height (no page-level scrollbar can appear) and centers the
+   scaled-down board horizontally, since shrinking preserves aspect
+   ratio (both width and height shrink together). */
+.fit-to-screen-outer {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.fit-to-screen-inner {
+  /* Without an explicit width, being a flex item would let this shrink
+     to its content's fit-content width instead of the full viewport
+     width .app expects to size its own children (grids, percentage
+     widths) against — width: 100% restores that, and since it matches
+     the outer flex container's width, scaling from a centered
+     transform-origin keeps the result visually centered too. */
+  width: 100%;
+  transform-origin: top center;
+  flex-shrink: 0;
+}
+
 /* ---------- Header ---------- */
 
 /* 3-column grid instead of flex space-between so the center title sits
