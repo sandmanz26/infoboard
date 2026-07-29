@@ -1286,16 +1286,23 @@ body {
   border-bottom-color: var(--gold-deep);
 }
 
-/* A cabin with no booking today reads as a disabled/inactive card —
-   muted instead of the same crisp white/black as a real booked one —
-   with "Not Available" standing in for its (otherwise blank) roster. */
-.station-column-unavailable {
+/* A cabin with no booking today reads as a disabled/inactive card, with
+   "Not Available" standing in for its (otherwise blank) roster — the
+   Not Available Style switcher (Level 2 only) picks between a muted grey
+   card (default) or a plain white one, same background as a booked
+   card's. Both keep the same darker header underline + italic grey
+   message text; only the card background/opacity differs. */
+.station-column-unavailable .station-column-head {
+  border-bottom-color: var(--border);
+}
+
+.station-column-unavailable-muted {
   background: var(--panel-muted, #f3f1ec);
   opacity: 0.7;
 }
 
-.station-column-unavailable .station-column-head {
-  border-bottom-color: var(--border);
+.station-column-unavailable-white {
+  background: var(--panel-bg, #fff);
 }
 
 .table-not-available-cell {

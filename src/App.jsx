@@ -229,6 +229,12 @@ const INFO_BANNER_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the info banner below the header' },
 ]
 
+// Level 2 (CMT) only — how a "No Booking" cabin's disabled card looks.
+const CMT_NOT_AVAILABLE_STYLE_OPTIONS = [
+  { id: 'muted', label: 'Muted', description: 'Grey, slightly faded card background (default)' },
+  { id: 'white', label: 'White', description: 'Plain white card background, same as a booked card' },
+]
+
 // Level 4 + Layout 5 only — hide the row-number column in each station's
 // detail table.
 const NO_COLUMN_OPTIONS = [
@@ -442,6 +448,7 @@ const DIRECTORY_STORAGE_KEY = 'infoboard-layout5-directory'
 const START_DETAIL_STORAGE_KEY = 'infoboard-layout5-start-detail'
 const SWT03_SESSION_STORAGE_KEY = 'infoboard-swt03-session'
 const CMT_LEADERBOARD_SESSION_STORAGE_KEY = 'infoboard-cmt-leaderboard-session'
+const CMT_NOT_AVAILABLE_STYLE_STORAGE_KEY = 'infoboard-cmt-not-available-style'
 const DETAIL_LABEL_STORAGE_KEY = 'infoboard-detail-label'
 const STATION_DATA_COUNT_STORAGE_KEY = 'infoboard-station-data-count'
 const TABLE_FONT_SIZE_STORAGE_KEY = 'infoboard-layout5-table-font-size'
@@ -1107,22 +1114,24 @@ function CmtStationInfo({ station }) {
 // Role (VC/VO/PC/SC/SO) per trainee — so its own dedicated table instead
 // of reusing DetailPanel's Weapon/Lane-shaped table models. `leaderboard`
 // swaps the last column from Role to Score for a Session Leaderboard.
+// Status pill tones mirror Level 1's BookingList STATUS_CLASS mapping
+// (Ongoing = amber, base/untoned = blue, done = green) so the same
+// status reads as the same color everywhere in the app — "In Queue"
+// reads like L1's "Upcoming" (hasn't started, base blue), "Session
+// Leaderboard" reads like L1's "Completed" (the session's over, green).
+const CMT_STATUS_CLASS = {
+  Ongoing: 'status-pill-queue',
+  Queue: 'status-pill-queue',
+  'In Queue': '',
+  '(Ready)': '',
+  'Session Leaderboard': 'status-pill-done',
+}
 function CmtDetailTable({ rows, title, status, hideNo, leaderboard }) {
   return (
     <>
       <div className="detail-panel-head">
         <h2 className="panel-title">{title}</h2>
-        {status && (
-          <span
-            className={`status-pill${
-              status === 'Queue' || status === 'Ongoing' || status === 'In Queue' || status === 'Session Leaderboard'
-                ? ' status-pill-queue'
-                : ''
-            }`}
-          >
-            {status}
-          </span>
-        )}
+        {status && <span className={`status-pill${CMT_STATUS_CLASS[status] ? ` ${CMT_STATUS_CLASS[status]}` : ''}`}>{status}</span>}
       </div>
       <table className="table table-two">
         <thead>
@@ -1154,7 +1163,15 @@ function CmtDetailTable({ rows, title, status, hideNo, leaderboard }) {
 // (steps/height-lock/flipTick) but with CMT's own info/table components.
 // A cabin with no booking today (station.noBooking) just shows its
 // header, a "No Booking" line, and a blank 5-row table.
-function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail, leaderboardSession, flipTick }) {
+function CmtStationColumn({
+  station,
+  hideNoColumn,
+  stationDataCount,
+  startDetail,
+  leaderboardSession,
+  notAvailableStyle = 'muted',
+  flipTick,
+}) {
   const showLeaderboard = station.isLeaderboardCapable && leaderboardSession === 'ended'
   const steps = useMemo(
     () => (station.noBooking ? [] : buildStationSteps(station, stationDataCount)),
@@ -1184,7 +1201,9 @@ function CmtStationColumn({ station, hideNoColumn, stationDataCount, startDetail
 
   if (station.noBooking) {
     return (
-      <section className="panel detail-panel-compact station-column station-column-unavailable">
+      <section
+        className={`panel detail-panel-compact station-column station-column-unavailable station-column-unavailable-${notAvailableStyle}`}
+      >
         <StationColumnHead name={station.code} />
         {/* Mirrors a booked card's structure exactly (blank info line +
             a detail-panel-head row) instead of omitting them, so the
@@ -1298,6 +1317,7 @@ function LayoutFive({
   stationFontSize,
   swt03Session,
   cmtLeaderboardSessionByStation,
+  cmtNotAvailableStyle,
   detailTitleMode,
   stationDataCount,
   startDetailByStation,
@@ -1426,6 +1446,7 @@ function LayoutFive({
                   stationDataCount={stationDataCount}
                   startDetail={startDetailByStation?.[code] ?? '1'}
                   leaderboardSession={cmtLeaderboardSessionByStation?.[code] ?? 'ongoing'}
+                  notAvailableStyle={cmtNotAvailableStyle}
                   flipTick={flipTick}
                 />
               )
@@ -1652,6 +1673,10 @@ export default function App() {
     }
     return {}
   })
+  const [cmtNotAvailableStyle, setCmtNotAvailableStyle] = useState(() => {
+    const saved = localStorage.getItem(CMT_NOT_AVAILABLE_STYLE_STORAGE_KEY)
+    return CMT_NOT_AVAILABLE_STYLE_OPTIONS.some((o) => o.id === saved) ? saved : 'muted'
+  })
   const [detailTitleMode, setDetailTitleMode] = useState(() => {
     const saved = localStorage.getItem(DETAIL_LABEL_STORAGE_KEY)
     return DETAIL_LABEL_OPTIONS.some((o) => o.id === saved) ? saved : 'detail'
@@ -1732,6 +1757,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(CMT_LEADERBOARD_SESSION_STORAGE_KEY, JSON.stringify(cmtLeaderboardSessionByStation))
   }, [cmtLeaderboardSessionByStation])
+
+  useEffect(() => {
+    localStorage.setItem(CMT_NOT_AVAILABLE_STYLE_STORAGE_KEY, cmtNotAvailableStyle)
+  }, [cmtNotAvailableStyle])
 
   useEffect(() => {
     localStorage.setItem(DETAIL_LABEL_STORAGE_KEY, detailTitleMode)
@@ -2153,6 +2182,18 @@ export default function App() {
                     setCmtLeaderboardSessionByStation((prev) => ({ ...prev, [station.code]: value })),
                 }))
             : []),
+          ...(level === 'level-2'
+            ? [
+                {
+                  id: 'cmt-not-available-style',
+                  label: 'Not Available Style',
+                  icon: <TableModelIcon />,
+                  options: CMT_NOT_AVAILABLE_STYLE_OPTIONS,
+                  active: cmtNotAvailableStyle,
+                  onChange: setCmtNotAvailableStyle,
+                },
+              ]
+            : []),
           {
             id: 'station-data-count',
             label: 'Data Count',
@@ -2259,6 +2300,7 @@ export default function App() {
               hideDirectory={directoryVisibility === 'hidden'}
               swt03Session={swt03Session}
               cmtLeaderboardSessionByStation={cmtLeaderboardSessionByStation}
+              cmtNotAvailableStyle={cmtNotAvailableStyle}
               detailTitleMode={detailTitleMode}
               stationDataCount={stationDataCount}
               startDetailByStation={startDetailByStation}
