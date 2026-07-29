@@ -1294,21 +1294,52 @@ function LayoutFive({
   const displayedZone = cttZones[(cttStartZoneIndex + zoneTick) % cttZones.length]?.id ?? activeZone
   const cttStationColumns = cttStationColumnsByZone[displayedZone] ?? []
   const activeCttZoneLabel = cttZones.find((z) => z.id === displayedZone)?.label ?? ''
-  // Bento layout: when a Zone's cabins don't fill every physical column
-  // (e.g. Zone A's 3 of 5), each cabin card is placed as its own grid
-  // cell (column = its physical column, row = its position within that
-  // column) instead of being stacked in a flex column. That leaves the
-  // next column free as real grid rows/columns the Directory ("pathfinder")
-  // can be precisely placed into — bottom half only (rows past the
-  // midpoint), per the source floor sheet, not the full column height.
+  // Bento layout: each cabin card is placed as its own grid cell (column =
+  // its physical column, row = its position within that column) instead
+  // of being stacked in a flex column, so the Directory ("pathfinder")
+  // can be precisely placed into whatever grid space is actually free —
+  // there are two distinct shapes of "free space" on the source floor
+  // sheet:
+  //  - Zone A: only 3 of the 5 base columns hold real cabins, leaving 2
+  //    *entirely* free columns. The Directory only takes the bottom half
+  //    of those (rows past the midpoint), not their full height.
+  //  - Zone D1: all 5 base columns hold cabins, but the last 2 (D13/D14)
+  //    are single-cabin columns — 1 occupied row, then 3 *empty* rows
+  //    below them within those same columns. The Directory fills that
+  //    leftover space directly (starting right after D13/D14's own row),
+  //    not a bottom-half split.
   // Row 1 is reserved for the full-width Zone banner (see below) — cabin
   // cards start at row 2, so every row index used for placement carries a
   // +2 offset (rowIndex 0 -> grid row 2, etc).
   const cttMaxRows = Math.max(0, ...cttStationColumns.map((c) => c.length))
-  const cttUseCornerDirectory = isLevelThree && cttStationColumns.length > 0 && cttStationColumns.length <= 3
-  const cttDirectoryStyle = cttUseCornerDirectory
-    ? { gridColumn: cttStationColumns.length + 1, gridRow: `${Math.floor(cttMaxRows / 2) + 2} / -1` }
-    : undefined
+  // Negative grid line numbers ("-1" for "the last line") only resolve
+  // against the *explicit* grid — .layout-five never declares
+  // grid-template-rows (its rows are all implicit, sized to content), so
+  // there's no explicit row grid for "-1" to count from. Using it for
+  // grid-row silently produces an invalid (start-after-end) span, which
+  // falls back to auto-placement instead of the position we want. A
+  // concrete final line number (cttMaxRows + 2, matching the +2 banner
+  // offset) sidesteps that entirely. grid-column's "-1" is fine as-is —
+  // grid-template-columns *is* explicit (repeat(5, 1fr)).
+  const cttLastRowLine = cttMaxRows + 2
+  const cttShortColumnIndex = cttStationColumns.findIndex((c) => c.length < cttMaxRows)
+  let cttDirectoryStyle
+  if (cttShortColumnIndex !== -1) {
+    // Zone D1 shape — short column(s) already occupy part of the grid;
+    // the Directory starts right where they leave off.
+    const shortColumnsMaxLength = Math.max(...cttStationColumns.slice(cttShortColumnIndex).map((c) => c.length))
+    cttDirectoryStyle = {
+      gridColumn: `${cttShortColumnIndex + 1} / -1`,
+      gridRow: `${shortColumnsMaxLength + 2} / ${cttLastRowLine}`,
+    }
+  } else if (cttStationColumns.length > 0 && cttStationColumns.length <= 3) {
+    // Zone A shape — the next columns over are entirely unused by cabins.
+    cttDirectoryStyle = {
+      gridColumn: cttStationColumns.length + 1,
+      gridRow: `${Math.floor(cttMaxRows / 2) + 2} / ${cttLastRowLine}`,
+    }
+  }
+  const cttUseCornerDirectory = isLevelThree && Boolean(cttDirectoryStyle)
   return (
     <main className={`layout layout-five${isLevelTwo ? ' layout-five-cmt' : ''}`} style={fontSizeVars}>
       {isLevelThree && (
@@ -1409,13 +1440,14 @@ function LayoutFive({
       )}
       {/* Level 3's Layout 5 always shows the Directory (its own Zone map
           just replaced the old generic map) — Level 2/4 (real per-station
-          data) each offer a toggle to hide it. When a Zone's cabins don't
-          fill all 5 grid columns (e.g. Zone A's 3), the source sheet places
-          the floor plan in the next column over, spanning only the bottom
-          half of the cabin rows (see cttDirectoryStyle) instead of the
-          full column height or a full-width row below. Zones that do fill
-          every column (e.g. Zone D1's 5) fall back to the full-width row
-          below, same as before. */}
+          data) each offer a toggle to hide it. Whenever a Zone has *any*
+          leftover grid space (entirely unused columns like Zone A's, or
+          empty rows below short columns like Zone D1's D13/D14), the
+          Directory sits in that corner instead of a full-width row below
+          — see cttDirectoryStyle above for exactly where. Only a Zone
+          with zero leftover space anywhere would fall back to the plain
+          full-width row (no such zone exists yet, but the fallback stays
+          as a safety net). */}
       {(isLevelThree || !(isLevelFour || isLevelTwo) || !hideDirectory) && (
         <section
           className={`panel directory-panel${cttUseCornerDirectory ? ' layout-five-directory-corner' : ' layout-five-directory'}`}
