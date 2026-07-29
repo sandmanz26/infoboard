@@ -4,14 +4,16 @@ import {
   leaderboardFloorInfo,
   leaderboardFloorPodium,
   leaderboardFloorLocalRows,
-  leaderboardFloorGlobalRows,
+  leaderboardFloorGlobalCoursewares,
 } from '../data.js'
 
-// Local panel: this unit's own booking, a Top 3 podium, then rank 4+ in
-// a plain table — reuses the same PodiumColumn/table markup as the
-// Layouts 1-3 sidebar version, just with its own banner header instead
-// of that panel's compact title.
-function LocalLeaderboardPanel() {
+// Local panel: this unit's own booking, an optional Top 3 podium, then
+// rank 4+ (or the full table when the podium's hidden) in a plain table
+// — reuses the same PodiumColumn/table markup as the Layouts 1-3 sidebar
+// version, just with its own banner header instead of that panel's
+// compact title.
+function LocalLeaderboardPanel({ showPodium }) {
+  const tableRows = showPodium ? leaderboardFloorLocalRows.filter((row) => !row.medal) : leaderboardFloorLocalRows
   return (
     <section className="panel leaderboard-floor-panel">
       <div className="leaderboard-floor-banner leaderboard-floor-banner-local">Local Leaderboard</div>
@@ -32,11 +34,13 @@ function LocalLeaderboardPanel() {
             </span>
           </div>
         </div>
-        <div className="podium">
-          <PodiumColumn place="2nd" tone="silver" entry={leaderboardFloorPodium.second} />
-          <PodiumColumn place="1st" tone="gold" entry={leaderboardFloorPodium.first} tall />
-          <PodiumColumn place="3rd" tone="bronze" entry={leaderboardFloorPodium.third} />
-        </div>
+        {showPodium && (
+          <div className="podium">
+            <PodiumColumn place="2nd" tone="silver" entry={leaderboardFloorPodium.second} />
+            <PodiumColumn place="1st" tone="gold" entry={leaderboardFloorPodium.first} tall />
+            <PodiumColumn place="3rd" tone="bronze" entry={leaderboardFloorPodium.third} />
+          </div>
+        )}
         <table className="table leaderboard-table">
           <thead>
             <tr>
@@ -48,55 +52,7 @@ function LocalLeaderboardPanel() {
             </tr>
           </thead>
           <tbody>
-            {leaderboardFloorLocalRows.map((row) => (
-              <tr key={row.name}>
-                <td>
-                  <span className="ranking-number">{row.ranking}</span>
-                </td>
-                <td>{row.rank}</td>
-                <td className="name-cell" title={row.name}>
-                  {row.name}
-                </td>
-                <td>{row.score}</td>
-                <td>{row.mpi}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
-}
-
-// Global panel: no podium — with trainees from multiple units, ties at
-// the top are common, so every 1st/2nd/3rd finisher gets its own row
-// with a medal instead of only the single top scorer.
-function GlobalLeaderboardPanel() {
-  return (
-    <section className="panel leaderboard-floor-panel">
-      <div className="leaderboard-floor-banner leaderboard-floor-banner-global">Global Leaderboard</div>
-      <div className="leaderboard-floor-body">
-        <div className="leaderboard-floor-info leaderboard-floor-info-compact">
-          <span>
-            Courseware: <strong>{leaderboardFloorInfo.courseware}</strong>
-          </span>
-          <span>
-            Weapon Type: <strong>{leaderboardFloorInfo.weaponType}</strong>
-          </span>
-        </div>
-        <table className="table leaderboard-table">
-          <thead>
-            <tr>
-              <th>Ranking</th>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Unit Name</th>
-              <th>Score</th>
-              <th>MPI (mm)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboardFloorGlobalRows.map((row, index) => (
+            {tableRows.map((row, index) => (
               <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
                 <td>
                   {row.medal ? (
@@ -109,7 +65,6 @@ function GlobalLeaderboardPanel() {
                 <td className="name-cell" title={row.name}>
                   {row.name}
                 </td>
-                <td>{row.unitName}</td>
                 <td>{row.score}</td>
                 <td>{row.mpi}</td>
               </tr>
@@ -121,11 +76,70 @@ function GlobalLeaderboardPanel() {
   )
 }
 
-export default function LeaderboardFloorBoard() {
+// One courseware's slice of the Global panel — no podium (with trainees
+// from multiple units, ties at the top are common, so every 1st/2nd/3rd
+// finisher gets its own row with a medal instead of collapsing to one
+// row per medal), and no Unit Name column here — at 4-across width
+// there's no room for it, and the courseware name in the banner already
+// says which cross-unit board this is.
+function GlobalCoursewarePanel({ courseware, weaponType, rows }) {
   return (
-    <main className="layout layout-leaderboard-floor">
-      <LocalLeaderboardPanel />
-      <GlobalLeaderboardPanel />
+    <section className="panel leaderboard-floor-panel">
+      <div className="leaderboard-floor-banner leaderboard-floor-banner-global">Global Leaderboard</div>
+      <div className="leaderboard-floor-body leaderboard-floor-body-narrow">
+        <div className="leaderboard-floor-info leaderboard-floor-info-narrow">
+          <span>
+            Courseware: <strong>{courseware}</strong>
+          </span>
+          <span>
+            Weapon Type: <strong>{weaponType}</strong>
+          </span>
+        </div>
+        <table className="table leaderboard-table leaderboard-table-narrow">
+          <thead>
+            <tr>
+              {/* "Rank" instead of "Ranking" — there's no separate
+                  trainee-rank column here (dropped for space), so it's
+                  unambiguous, and short enough not to collide with Name
+                  at this column width. */}
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+              <th>MPI</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
+                <td>
+                  {row.medal ? (
+                    <Medal medal={row.medal} label={row.ranking} />
+                  ) : (
+                    <span className="ranking-number">{row.ranking}</span>
+                  )}
+                </td>
+                <td className="name-cell" title={row.name}>
+                  {row.name}
+                </td>
+                <td>{row.score}</td>
+                <td>{row.mpi}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+export default function LeaderboardFloorBoard({ columnRatios, showPodium }) {
+  const gridTemplateColumns = columnRatios.map((ratio) => `${ratio}fr`).join(' ')
+  return (
+    <main className="layout layout-leaderboard-floor" style={{ gridTemplateColumns }}>
+      <LocalLeaderboardPanel showPodium={showPodium} />
+      {leaderboardFloorGlobalCoursewares.map((entry) => (
+        <GlobalCoursewarePanel key={entry.courseware} {...entry} />
+      ))}
     </main>
   )
 }

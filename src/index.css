@@ -653,9 +653,55 @@ body {
   text-align: right;
 }
 
-.leaderboard-floor-info-compact {
-  justify-content: flex-end;
-  gap: 40px;
+/* One of 4 narrow Global courseware panels instead of a single wide
+   one — the info line stacks instead of sitting side by side, and the
+   table drops the Unit Name column + shrinks font/padding so 4 columns
+   fit across the row without wrapping into an unreadable mess. */
+.leaderboard-floor-info-narrow {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.leaderboard-floor-body-narrow {
+  padding: 12px 12px 16px;
+}
+
+.leaderboard-table-narrow {
+  table-layout: fixed;
+}
+
+.leaderboard-table-narrow th,
+.leaderboard-table-narrow td {
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.leaderboard-table-narrow th:nth-child(1),
+.leaderboard-table-narrow td:nth-child(1) {
+  width: 17%;
+}
+
+.leaderboard-table-narrow th:nth-child(2),
+.leaderboard-table-narrow td:nth-child(2) {
+  width: 43%;
+}
+
+.leaderboard-table-narrow th:nth-child(3),
+.leaderboard-table-narrow td:nth-child(3) {
+  width: 22%;
+}
+
+.leaderboard-table-narrow th:nth-child(4),
+.leaderboard-table-narrow td:nth-child(4) {
+  width: 18%;
+}
+
+.leaderboard-table-narrow .name-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Every finisher tied at a medal position gets a soft tint of that
@@ -927,6 +973,7 @@ body {
 .leaderboard-table td:nth-child(4),
 .leaderboard-table td:nth-child(5) {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ---------- Leaderboard: Compact List ---------- */

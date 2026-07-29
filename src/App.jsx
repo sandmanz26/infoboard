@@ -137,6 +137,30 @@ const LOBBY_INTERVAL_OPTIONS = [
   { id: '45', label: '45s', description: 'Rotate to the next level every 45 seconds' },
 ]
 
+// Leaderboard floor only — 5-way column width ratio: Local Leaderboard,
+// then each of the 4 Global courseware panels. Values are plain fr-unit
+// weights (they don't need to sum to 100 — CSS grid normalizes them),
+// entered as given: (a) doesn't need adjusting, (b) and (c) are used
+// exactly as specified even though (b)'s 4 remainder shares (17 each)
+// don't add back up to a clean 100 with the 30 share.
+const LEADERBOARD_PROPORTION_OPTIONS = [
+  { id: 'a', label: '40 : 15 : 15 : 15 : 15', description: 'Local 40%, each Global courseware panel 15%', ratios: [40, 15, 15, 15, 15] },
+  { id: 'b', label: '30 : 17 : 17 : 17 : 17', description: 'Local 30%, each Global courseware panel 17%', ratios: [30, 17, 17, 17, 17] },
+  {
+    id: 'c',
+    label: '25 : 18.75 : 18.75 : 18.75 : 18.75',
+    description: 'Local 25%, each Global courseware panel 18.75%',
+    ratios: [25, 18.75, 18.75, 18.75, 18.75],
+  },
+]
+
+// Leaderboard floor only — hide the Local panel's Top 3 podium and show
+// its table starting from rank 1 instead.
+const LEADERBOARD_PODIUM_OPTIONS = [
+  { id: 'visible', label: 'Visible', description: 'Show the Top 3 podium above the Local table' },
+  { id: 'hidden', label: 'Hidden', description: 'Hide the podium — the Local table covers every rank' },
+]
+
 // The blue info strip under the header (Levels 2-4 only).
 const INFO_BANNER_OPTIONS = [
   { id: 'visible', label: 'Visible', description: 'Show the info banner below the header' },
@@ -337,6 +361,8 @@ const TABLE_MODEL_STORAGE_KEY = 'infoboard-table-model'
 const LEADERBOARD_MODEL_STORAGE_KEY = 'infoboard-leaderboard-model'
 const SLIDESHOW_STORAGE_KEY = 'infoboard-slideshow-interval'
 const LOBBY_INTERVAL_STORAGE_KEY = 'infoboard-lobby-interval'
+const LEADERBOARD_PROPORTION_STORAGE_KEY = 'infoboard-leaderboard-proportion'
+const LEADERBOARD_PODIUM_STORAGE_KEY = 'infoboard-leaderboard-podium'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1317,6 +1343,14 @@ export default function App() {
     const saved = localStorage.getItem(LOBBY_INTERVAL_STORAGE_KEY)
     return LOBBY_INTERVAL_OPTIONS.some((o) => o.id === saved) ? saved : '5'
   })
+  const [leaderboardProportion, setLeaderboardProportion] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_PROPORTION_STORAGE_KEY)
+    return LEADERBOARD_PROPORTION_OPTIONS.some((o) => o.id === saved) ? saved : 'a'
+  })
+  const [leaderboardPodium, setLeaderboardPodium] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_PODIUM_STORAGE_KEY)
+    return LEADERBOARD_PODIUM_OPTIONS.some((o) => o.id === saved) ? saved : 'visible'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1503,6 +1537,14 @@ export default function App() {
   }, [lobbyInterval])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_PROPORTION_STORAGE_KEY, leaderboardProportion)
+  }, [leaderboardProportion])
+
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_PODIUM_STORAGE_KEY, leaderboardPodium)
+  }, [leaderboardPodium])
+
+  useEffect(() => {
     localStorage.setItem(PANEL_RATIO_STORAGE_KEY, panelRatio)
   }, [panelRatio])
 
@@ -1571,6 +1613,28 @@ export default function App() {
             options: LOBBY_INTERVAL_OPTIONS,
             active: lobbyInterval,
             onChange: setLobbyInterval,
+          },
+        ]
+      : []),
+    // Leaderboard floor only — column-width ratio across the 5 panels
+    // (Local + 4 Global courseware) and whether the Local podium shows.
+    ...(isLeaderboardFloor
+      ? [
+          {
+            id: 'leaderboard-proportion',
+            label: 'Panel Proportions',
+            icon: <RatioIcon />,
+            options: LEADERBOARD_PROPORTION_OPTIONS,
+            active: leaderboardProportion,
+            onChange: setLeaderboardProportion,
+          },
+          {
+            id: 'leaderboard-podium',
+            label: 'Top 3 Podium',
+            icon: <LeaderboardIcon />,
+            options: LEADERBOARD_PODIUM_OPTIONS,
+            active: leaderboardPodium,
+            onChange: setLeaderboardPodium,
           },
         ]
       : []),
@@ -1857,7 +1921,10 @@ export default function App() {
           stationFontSize={stationFontSize}
         />
       ) : isLeaderboardFloor ? (
-        <LeaderboardFloorBoard />
+        <LeaderboardFloorBoard
+          columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
+          showPodium={leaderboardPodium === 'visible'}
+        />
       ) : (
         <>
           <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />

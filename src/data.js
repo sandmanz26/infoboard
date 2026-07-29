@@ -60,9 +60,16 @@ export const leaderboardFloorPodium = {
   },
 }
 
-// Local panel's table picks up from rank 4 — 1st/2nd/3rd already show in
-// the podium above it.
+// The full local ranking, 1st through 9 — when the podium switcher is on
+// (the default), LocalLeaderboardPanel filters the medal (1st-3rd) rows
+// back out since the podium above already covers them; with the podium
+// hidden, the table shows every rank instead.
 export const leaderboardFloorLocalRows = [
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Danyial Lizam Bin Mustafa', score: '20 / 20', mpi: '1.00' },
+  { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Mohamad Anuar Bin Kassim', score: '20 / 20', mpi: '2.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', score: '20 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', score: '20 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Guo Guo Qiang', score: '20 / 20', mpi: '3.00' },
   { ranking: '4', medal: null, rank: 'REC', name: 'Khairul Azmi Bin Izhar Iskandar', score: '20 / 20', mpi: '5.00' },
   { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', score: '19 / 20', mpi: '1.00' },
   { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', score: '19 / 20', mpi: '2.00' },
@@ -75,6 +82,9 @@ export const leaderboardFloorLocalRows = [
 // Global panel aggregates across units — no podium, ties are common at
 // the top so 1st/2nd/3rd each list every trainee who hit that MPI, not
 // just one per medal.
+// Kept for the single-courseware sidebar version elsewhere — the
+// Leaderboard floor's Global panel now covers 4 courseware at once (see
+// leaderboardFloorGlobalCoursewares below) instead of just this one.
 export const leaderboardFloorGlobalRows = [
   { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Isabella White', unitName: '1SIR', score: '20 / 20', mpi: '1.00' },
   { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Elijah Lewis', unitName: '1SIR', score: '20 / 20', mpi: '1.00' },
@@ -102,6 +112,49 @@ export const leaderboardFloorGlobalRows = [
   { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
   { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
   { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Ibrahim Abdul Halim', unitName: '1SIR', score: '20 / 20', mpi: '3.00' },
+]
+
+// The Leaderboard floor's Global panel splits into 4 narrower sub-panels,
+// one per courseware, instead of one wide table for a single courseware.
+export const leaderboardFloorGlobalCoursewares = [
+  {
+    courseware: 'Day Test For SAR21/M16 BTP',
+    weaponType: 'SAR21',
+    rows: leaderboardFloorGlobalRows,
+  },
+  {
+    courseware: 'Night Test For SAR21/M16 BTP',
+    weaponType: 'SAR21',
+    rows: [
+      { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Nurul Huda Binte Rashid', unitName: '3SIR', score: '20 / 20', mpi: '1.50' },
+      { ranking: '1st', medal: 'gold', rank: 'REC', name: 'Wong Zhi Kai', unitName: '3SIR', score: '20 / 20', mpi: '1.50' },
+      { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Faizal Bin Osman', unitName: '9SIR', score: '19 / 20', mpi: '2.50' },
+      { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Priya Ramasamy', unitName: '9SIR', score: '18 / 20', mpi: '3.50' },
+      { ranking: '4', medal: null, rank: '3SG', name: 'Teo Jia Ming', unitName: '3SIR', score: '17 / 20', mpi: '4.00' },
+    ],
+  },
+  {
+    courseware: 'Day Test For P30/HP BTP',
+    weaponType: 'P30',
+    rows: [
+      { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Marcus Lim Wei Jie', unitName: '2SIR', score: '20 / 20', mpi: '1.00' },
+      { ranking: '2nd', medal: 'silver', rank: 'REC', name: 'Hafiz Bin Rahman', unitName: '2SIR', score: '20 / 20', mpi: '2.00' },
+      { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Grace Tan Xin Yi', unitName: '1SIR', score: '20 / 20', mpi: '2.00' },
+      { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Suresh Kumar', unitName: '1SIR', score: '19 / 20', mpi: '3.00' },
+      { ranking: '4', medal: null, rank: 'REC', name: 'Aishah Binte Yusof', unitName: '2SIR', score: '18 / 20', mpi: '3.50' },
+    ],
+  },
+  {
+    courseware: 'Snap Shooting For SAR21',
+    weaponType: 'SAR21',
+    rows: [
+      { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Ryan Chua Kok Wei', unitName: '9SIR', score: '20 / 20', mpi: '1.25' },
+      { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Nadia Zulkifli', unitName: '3SIR', score: '19 / 20', mpi: '2.25' },
+      { ranking: '2nd', medal: 'silver', rank: 'REC', name: 'Dinesh Prakash', unitName: '9SIR', score: '19 / 20', mpi: '2.25' },
+      { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Faridah Binte Salim', unitName: '3SIR', score: '18 / 20', mpi: '3.25' },
+      { ranking: '4', medal: null, rank: 'REC', name: 'Jonathan Goh Wei Ming', unitName: '9SIR', score: '17 / 20', mpi: '4.25' },
+    ],
+  },
 ]
 
 // The four physical base stations this infoboard can be deployed to,
