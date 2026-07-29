@@ -903,15 +903,19 @@ function FlipProgressBar({ tick, intervalMs }) {
   )
 }
 
-// TV mode only — scales its children down (uniformly, preserving
-// aspect ratio, never up past their natural size) so the board's actual
-// rendered height always fits inside the viewport, no matter how tall a
-// given level/switcher combination naturally renders. scrollHeight is
-// read from the *unscaled* child (CSS transform doesn't change layout
-// or scrollHeight), so recomputing after every resize/content change is
-// stable — it never measures its own previous scale back into itself.
-// Laptop mode renders children directly, completely unaffected — same
-// scroll-if-needed behavior as before this existed.
+// TV mode only — scales its children to fill the viewport exactly
+// (uniformly, preserving aspect ratio, whichever of width/height is the
+// tighter constraint), instead of only ever shrinking. A real 65" TV's
+// resolution (e.g. 3180x2160) is much bigger than the ~1920x1080 this
+// board was designed against, so its natural content is actually
+// *shorter* than the viewport there — capping scale at 1 (shrink-only)
+// left a large blank gap below the content instead of filling the
+// screen. scrollWidth/scrollHeight are read from the *unscaled* child
+// (CSS transform doesn't change layout or scroll size), so recomputing
+// after every resize/content change is stable — it never measures its
+// own previous scale back into itself. Laptop mode renders children
+// directly, completely unaffected — same scroll-if-needed behavior as
+// before this existed.
 function FitToScreen({ active, children }) {
   const innerRef = useRef(null)
   const [scale, setScale] = useState(1)
@@ -924,9 +928,12 @@ function FitToScreen({ active, children }) {
     const el = innerRef.current
     if (!el) return
     const recompute = () => {
+      const naturalWidth = el.scrollWidth
       const naturalHeight = el.scrollHeight
-      const available = window.innerHeight
-      setScale(naturalHeight > available && naturalHeight > 0 ? available / naturalHeight : 1)
+      if (naturalWidth === 0 || naturalHeight === 0) return
+      const widthScale = window.innerWidth / naturalWidth
+      const heightScale = window.innerHeight / naturalHeight
+      setScale(Math.min(widthScale, heightScale))
     }
     recompute()
     const observer = new ResizeObserver(recompute)

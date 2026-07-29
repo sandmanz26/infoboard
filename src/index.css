@@ -97,13 +97,17 @@ body {
 }
 
 /* TV display mode — see FitToScreen in App.jsx. Clips to exactly the
-   viewport height (no page-level scrollbar can appear) and centers the
-   scaled-down board horizontally, since shrinking preserves aspect
-   ratio (both width and height shrink together). */
+   viewport (no page-level scrollbar can appear) and centers the scaled
+   board both ways — the scale factor is capped by whichever of
+   width/height is the tighter fit, so there can be letterboxing space
+   left over in the *other* dimension (e.g. a 65" TV's real resolution
+   is much wider/shorter than the ~1920x1080 this board was designed
+   against, leaving a height gap once scaled to fit the width). */
 .fit-to-screen-outer {
   height: 100vh;
   overflow: hidden;
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
@@ -111,11 +115,12 @@ body {
   /* Without an explicit width, being a flex item would let this shrink
      to its content's fit-content width instead of the full viewport
      width .app expects to size its own children (grids, percentage
-     widths) against — width: 100% restores that, and since it matches
-     the outer flex container's width, scaling from a centered
-     transform-origin keeps the result visually centered too. */
+     widths) against — width: 100% restores that. transform-origin:
+     center (the default, stated explicitly here) scales around the
+     middle of that already-centered box, so the visual result stays
+     centered in both directions instead of drifting toward one edge. */
   width: 100%;
-  transform-origin: top center;
+  transform-origin: center center;
   flex-shrink: 0;
 }
 
