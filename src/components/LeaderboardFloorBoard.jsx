@@ -60,42 +60,49 @@ function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
             <PodiumColumn place="3rd" tone="bronze" entry={leaderboardFloorPodium.third} />
           </div>
         )}
-        <table className="table leaderboard-table leaderboard-table-local">
-          <thead>
-            <tr>
-              <th>{labels.ranking}</th>
-              <th>{labels.rank}</th>
-              <th>{labels.name}</th>
-              <th>{labels.unitName}</th>
-              <th>{labels.scoreA}</th>
-              <th>{labels.scoreB}</th>
-              <th>{labels.scoreC}</th>
-              <th>{labels.mpi}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableRows.map((row, index) => (
-              <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
-                <td>
-                  {row.medal ? (
-                    <Medal medal={row.medal} label={row.ranking} />
-                  ) : (
-                    <span className="ranking-number">{row.ranking}</span>
-                  )}
-                </td>
-                <td>{row.rank}</td>
-                <td className="name-cell" title={row.name}>
-                  {row.name}
-                </td>
-                <td>{row.unitName}</td>
-                <td>{row.scoreA}</td>
-                <td>{row.scoreB}</td>
-                <td>{row.scoreC}</td>
-                <td>{row.mpi}</td>
+        {/* When the podium is showing and the row count selected is small
+            enough that every one of those rows is already a podium medal
+            (e.g. Top 5 with a 3-way tie for bronze), there's nothing left
+            for the table — rendering it anyway would leave its header
+            floating over an empty body. Skip it instead. */}
+        {tableRows.length > 0 && (
+          <table className="table leaderboard-table leaderboard-table-local">
+            <thead>
+              <tr>
+                <th>{labels.ranking}</th>
+                <th>{labels.rank}</th>
+                <th>{labels.name}</th>
+                <th>{labels.unitName}</th>
+                <th>{labels.scoreA}</th>
+                <th>{labels.scoreB}</th>
+                <th>{labels.scoreC}</th>
+                <th>{labels.mpi}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {tableRows.map((row, index) => (
+                <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
+                  <td>
+                    {row.medal ? (
+                      <Medal medal={row.medal} label={row.ranking} />
+                    ) : (
+                      <span className="ranking-number">{row.ranking}</span>
+                    )}
+                  </td>
+                  <td>{row.rank}</td>
+                  <td className="name-cell" title={row.name}>
+                    {row.name}
+                  </td>
+                  <td>{row.unitName}</td>
+                  <td>{row.scoreA}</td>
+                  <td>{row.scoreB}</td>
+                  <td>{row.scoreC}</td>
+                  <td>{row.mpi}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </section>
   )
@@ -104,9 +111,7 @@ function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
 // One courseware's slice of the Global panel — no podium (with trainees
 // from multiple units, ties at the top are common, so every 1st/2nd/3rd
 // finisher gets its own row with a medal instead of collapsing to one
-// row per medal), and no Unit Name column here — at 4-across width
-// there's no room for it, and the courseware name in the banner already
-// says which cross-unit board this is.
+// row per medal).
 function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
   const visibleRows = rows.slice(0, rowCount)
   return (
@@ -124,13 +129,11 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
         <table className="table leaderboard-table leaderboard-table-narrow">
           <thead>
             <tr>
-              {/* "Rank" instead of "Ranking" — there's no separate
-                  trainee-rank column here (dropped for space), so it's
-                  unambiguous, and short enough not to collide with Name
-                  at this column width. */}
+              <th>Ranking</th>
               <th>Rank</th>
               <th>Name</th>
-              <th>Score</th>
+              <th>Unit Name</th>
+              <th>Total</th>
               <th>MPI</th>
             </tr>
           </thead>
@@ -144,9 +147,11 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
                     <span className="ranking-number">{row.ranking}</span>
                   )}
                 </td>
+                <td>{row.rank}</td>
                 <td className="name-cell" title={row.name}>
                   {row.name}
                 </td>
+                <td>{row.unitName}</td>
                 <td>{row.score}</td>
                 <td>{row.mpi}</td>
               </tr>

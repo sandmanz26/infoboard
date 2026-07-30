@@ -542,11 +542,11 @@ export const cmtStations = [
     // Detail rotation.
     isLeaderboardCapable: true,
     leaderboardRows: [
-      { no: 1, rank: '2LT', name: 'Tan Wei Ming', score: '80' },
-      { no: 2, rank: 'LCP', name: 'Divya Menon', score: '90' },
-      { no: 3, rank: 'MAJ', name: 'Ong Jun Hao', score: '100' },
-      { no: 4, rank: '1SG', name: 'Lee Kai Wen', score: '50' },
-      { no: 5, rank: '3SG', name: 'Siti Nur Afiqah Binte Omar', score: '44' },
+      { no: 1, rank: '2LT', name: 'Tan Wei Ming', score: '80/100' },
+      { no: 2, rank: 'LCP', name: 'Divya Menon', score: '90/100' },
+      { no: 3, rank: 'MAJ', name: 'Ong Jun Hao', score: '100/100' },
+      { no: 4, rank: '1SG', name: 'Lee Kai Wen', score: '50/100' },
+      { no: 5, rank: '3SG', name: 'Siti Nur Afiqah Binte Omar', score: '44/100' },
     ],
     details: [
       {
@@ -628,11 +628,11 @@ export const cmtStations = [
     endTime: '03:00 PM',
     isLeaderboardCapable: true,
     leaderboardRows: [
-      { no: 1, rank: '2LT', name: 'Kavitha Devi', score: '80' },
-      { no: 2, rank: 'LCP', name: 'Chloe Martin', score: '90' },
-      { no: 3, rank: 'MAJ', name: 'Lee Kai Wen', score: '100' },
-      { no: 4, rank: '1SG', name: 'Danish Bin Zulkifli', score: '50' },
-      { no: 5, rank: '3SG', name: 'Vikram Menon', score: '44' },
+      { no: 1, rank: '2LT', name: 'Kavitha Devi', score: '80/100' },
+      { no: 2, rank: 'LCP', name: 'Chloe Martin', score: '90/100' },
+      { no: 3, rank: 'MAJ', name: 'Lee Kai Wen', score: '100/100' },
+      { no: 4, rank: '1SG', name: 'Danish Bin Zulkifli', score: '50/100' },
+      { no: 5, rank: '3SG', name: 'Vikram Menon', score: '44/100' },
     ],
     details: [
       {

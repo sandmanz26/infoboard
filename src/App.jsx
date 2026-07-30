@@ -980,27 +980,18 @@ function FlipProgressBar({ tick, intervalMs }) {
 // letterbox (blank bars) when the content's natural aspect ratio doesn't
 // match the viewport's. 'cover' instead scales up to the smallest size
 // that fills the viewport completely, same aspect-ratio-preserving
-// uniform scale either way (never stretches X/Y independently) — any
-// mismatch shows up as a small crop past the edge instead of a gap,
-// which fit-to-screen-outer's overflow:hidden then just clips silently.
-// 'stretch' never touches X at all — .fit-to-screen-inner is already
-// width: 100% via plain CSS, so width fills the screen on its own with
-// no transform and no distortion (matching how Level 1-4's own CSS grid
-// naturally fills the screen width in Laptop mode). Only Y gets scaled,
-// and only down as much as needed to avoid a vertical scroll.
-// topOffsetPx reserves space for a fixed header rendered *outside* this
-// component (see the Leaderboard floor's own usage in App below) — the
-// header then never gets swept into the scale transform along with the
-// rest of the page, so it stays exactly the same size Level 1-4 render
-// it at instead of shrinking/growing with however many rows the
-// Leaderboard's row-count switchers currently show.
-function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
+// uniform scale either way (never stretches X/Y independently — an
+// independent-axis scale distorts text, squashing or stretching glyphs
+// whenever only one axis needs to shrink) — any mismatch shows up as a
+// small crop past the edge instead of a gap, which fit-to-screen-outer's
+// overflow:hidden then just clips silently.
+function FitToScreen({ active, fit = 'contain', children }) {
   const innerRef = useRef(null)
-  const [scale, setScale] = useState({ x: 1, y: 1 })
+  const [scale, setScale] = useState(1)
 
   useEffect(() => {
     if (!active) {
-      setScale({ x: 1, y: 1 })
+      setScale(1)
       return
     }
     const el = innerRef.current
@@ -1010,17 +1001,8 @@ function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
       const naturalHeight = el.scrollHeight
       if (naturalWidth === 0 || naturalHeight === 0) return
       const widthScale = window.innerWidth / naturalWidth
-      const heightScale = (window.innerHeight - topOffsetPx) / naturalHeight
-      if (fit === 'stretch') {
-        // Width is never transformed — .fit-to-screen-inner is already
-        // width: 100% via plain CSS, so it fills the screen on its own
-        // with no distortion. Only height gets scaled, and only to
-        // whatever's needed to avoid a scroll.
-        setScale({ x: 1, y: heightScale })
-      } else {
-        const uniform = fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale)
-        setScale({ x: uniform, y: uniform })
-      }
+      const heightScale = window.innerHeight / naturalHeight
+      setScale(fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale))
     }
     recompute()
     const observer = new ResizeObserver(recompute)
@@ -1030,16 +1012,13 @@ function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
       observer.disconnect()
       window.removeEventListener('resize', recompute)
     }
-  }, [active, fit, topOffsetPx])
+  }, [active, fit])
 
   if (!active) return children
 
   return (
-    <div
-      className="fit-to-screen-outer"
-      style={topOffsetPx ? { height: `calc(100vh - ${topOffsetPx}px)` } : undefined}
-    >
-      <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale.x}, ${scale.y})` }}>
+    <div className="fit-to-screen-outer">
+      <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale})` }}>
         {children}
       </div>
     </div>
@@ -1647,7 +1626,7 @@ export default function App() {
   })
   const [leaderboardGlobalCount, setLeaderboardGlobalCount] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY)
-    return LEADERBOARD_GLOBAL_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '4'
+    return LEADERBOARD_GLOBAL_COUNT_OPTIONS.some((o) => o.id === saved) ? saved : '1'
   })
   const [leaderboardFontSize, setLeaderboardFontSize] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_FONT_SIZE_STORAGE_KEY)
@@ -1690,22 +1669,6 @@ export default function App() {
     const saved = localStorage.getItem(DISPLAY_STORAGE_KEY)
     return DISPLAY_OPTIONS.some((o) => o.id === saved) ? saved : 'laptop'
   })
-  // Measures the header's real rendered height so the Leaderboard floor's
-  // own fit-to-remaining-space wrapper (Laptop mode only — see the return
-  // below) knows exactly how much vertical space to reserve above it,
-  // instead of guessing a fixed px value that'd drift if the header's
-  // own font size or content ever changes.
-  const headerRef = useRef(null)
-  const [headerHeight, setHeaderHeight] = useState(0)
-  useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const recompute = () => setHeaderHeight(el.getBoundingClientRect().height)
-    recompute()
-    const observer = new ResizeObserver(recompute)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -2440,38 +2403,36 @@ export default function App() {
   return (
     <>
       {/* TV/TV2 uniformly scale the entire screen (header included) to
-          match a real fixed-resolution display — see FitToScreen. The
-          Leaderboard floor's own no-scroll fit (below, Laptop mode only)
-          is a separate, narrower mechanism: it only wraps the floor's own
-          body so the header stays exactly the same size Level 1-4 render
-          it at, instead of shrinking/growing with the row-count
-          switchers. */}
+          match a real fixed-resolution display — see FitToScreen. Laptop
+          mode renders everything at its natural size and lets normal
+          responsive CSS (grid/flex, fluid widths) handle the viewport,
+          same as every other floor — no transform-based scaling, which
+          would otherwise distort text (squashing it vertically) whenever
+          only one axis needed to shrink to avoid a scroll. */}
       <FitToScreen active={display === 'tv' || display === 'tv2'} fit={display === 'tv2' ? 'cover' : 'contain'}>
         <div
           className={`app${display === 'tv2' ? ' app-tv2' : ''}`}
           style={{ fontFamily: activeFont.stack }}
         >
-          <div ref={headerRef}>
-            <Header
-              station={currentLevelLabel}
-              detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
-              title={
-                level === 'level-4'
-                  ? 'Specialized Weapon Trainer\nTraining Information Board'
-                  : level === 'level-2'
-                    ? 'Company Tactical Mission Trainer\nTraining Information Board'
-                    : level === 'level-3'
-                      ? 'Command Team Trainer\nTraining Information Board'
-                      : level === 'level-1'
-                        ? 'Today Bookings'
-                        : isLeaderboardFloor
-                          ? 'Leaderboard'
-                          : 'Infoboard'
-              }
-              showBadge={!isLeaderboardFloor}
-              emphasizeTitle={isLeaderboardFloor}
-            />
-          </div>
+          <Header
+            station={currentLevelLabel}
+            detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
+            title={
+              level === 'level-4'
+                ? 'Specialized Weapon Trainer\nTraining Information Board'
+                : level === 'level-2'
+                  ? 'Company Tactical Mission Trainer\nTraining Information Board'
+                  : level === 'level-3'
+                    ? 'Command Team Trainer\nTraining Information Board'
+                    : level === 'level-1'
+                      ? 'Today Bookings'
+                      : isLeaderboardFloor
+                        ? 'Leaderboard'
+                        : 'Infoboard'
+            }
+            showBadge={!isLeaderboardFloor}
+            emphasizeTitle={isLeaderboardFloor}
+          />
           {isTrainingLevel && layout === 'layout-5' && (
             <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
           )}
@@ -2502,20 +2463,18 @@ export default function App() {
               stationFontSize={stationFontSize}
             />
           ) : isLeaderboardFloor ? (
-            <FitToScreen active={display === 'laptop'} fit="stretch" topOffsetPx={headerHeight}>
-              <LeaderboardFloorBoard
-                columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
-                showPodium={leaderboardPodium === 'visible'}
-                globalCount={Number(leaderboardGlobalCount)}
-                fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
-                rowScale={LEADERBOARD_ROW_HEIGHT_OPTIONS.find((o) => o.id === leaderboardRowHeight)?.scale ?? 1}
-                globalRowCount={Number(leaderboardGlobalRows)}
-                localRowCount={Number(leaderboardLocalRows)}
-                slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
-                styleVariant={leaderboardStyle}
-                localColumnLabels={localColumnLabels}
-              />
-            </FitToScreen>
+            <LeaderboardFloorBoard
+              columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
+              showPodium={leaderboardPodium === 'visible'}
+              globalCount={Number(leaderboardGlobalCount)}
+              fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
+              rowScale={LEADERBOARD_ROW_HEIGHT_OPTIONS.find((o) => o.id === leaderboardRowHeight)?.scale ?? 1}
+              globalRowCount={Number(leaderboardGlobalRows)}
+              localRowCount={Number(leaderboardLocalRows)}
+              slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
+              styleVariant={leaderboardStyle}
+              localColumnLabels={localColumnLabels}
+            />
           ) : (
             <>
               <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
