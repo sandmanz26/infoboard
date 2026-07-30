@@ -1152,15 +1152,13 @@ function CmtStationInfo({ station }) {
 // Role (VC/VO/PC/SC/SO) per trainee — so its own dedicated table instead
 // of reusing DetailPanel's Weapon/Lane-shaped table models. `leaderboard`
 // swaps the last column from Role to Score for a Session Leaderboard.
-// Status pill tones mirror Level 1's BookingList STATUS_CLASS mapping
-// (Ongoing = amber, base/untoned = blue, done = green) so the same
-// status reads as the same color everywhere in the app — "In Queue"
-// reads like L1's "Upcoming" (hasn't started, base blue), "Session
-// Leaderboard" reads like L1's "Completed" (the session's over, green).
+// Status pill tones: Session Leaderboard = green, (Ready) = blue,
+// Ongoing = orange, Queue/In Queue = grey — a fixed color per status so
+// the same status reads as the same color everywhere in the app.
 const CMT_STATUS_CLASS = {
   Ongoing: 'status-pill-queue',
-  Queue: 'status-pill-queue',
-  'In Queue': '',
+  Queue: 'status-pill-grey',
+  'In Queue': 'status-pill-grey',
   '(Ready)': '',
   'Session Leaderboard': 'status-pill-done',
 }
@@ -1304,10 +1302,16 @@ function CmtStationColumn({
     )
   }
 
+  // CMT's "session ended" toggle (showLeaderboard) is one way a card ends
+  // up showing a Session Leaderboard; CTT's own per-Detail status is
+  // another (its Score-vs-Role table flips straight off activeStep.status
+  // — see below), so either one gets the same gold highlight instead of
+  // only the CMT-specific toggle triggering it.
+  const isSessionLeaderboard = showLeaderboard || activeStep?.status === 'Session Leaderboard'
   return (
     <section
       ref={columnRef}
-      className={`panel detail-panel-compact station-column${showLeaderboard ? ' station-column-leaderboard' : ''}`}
+      className={`panel detail-panel-compact station-column${isSessionLeaderboard ? ' station-column-leaderboard' : ''}`}
       style={hasUnevenPages ? { minHeight } : undefined}
     >
       <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
