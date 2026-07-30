@@ -983,6 +983,12 @@ function FlipProgressBar({ tick, intervalMs }) {
 // uniform scale either way (never stretches X/Y independently) — any
 // mismatch shows up as a small crop past the edge instead of a gap,
 // which fit-to-screen-outer's overflow:hidden then just clips silently.
+// 'stretch' scales X and Y *independently* instead — width always fills
+// exactly 100% (matching how Level 1-4's own CSS grid naturally fills
+// the screen width in Laptop mode, with no letterboxing), height scales
+// down only as much as needed to avoid a scroll. Rows/text may look
+// slightly non-uniform if the natural aspect ratio doesn't match, but
+// nothing is ever left unfilled or cropped.
 // topOffsetPx reserves space for a fixed header rendered *outside* this
 // component (see the Leaderboard floor's own usage in App below) — the
 // header then never gets swept into the scale transform along with the
@@ -991,11 +997,11 @@ function FlipProgressBar({ tick, intervalMs }) {
 // Leaderboard's row-count switchers currently show.
 function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
   const innerRef = useRef(null)
-  const [scale, setScale] = useState(1)
+  const [scale, setScale] = useState({ x: 1, y: 1 })
 
   useEffect(() => {
     if (!active) {
-      setScale(1)
+      setScale({ x: 1, y: 1 })
       return
     }
     const el = innerRef.current
@@ -1006,7 +1012,12 @@ function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
       if (naturalWidth === 0 || naturalHeight === 0) return
       const widthScale = window.innerWidth / naturalWidth
       const heightScale = (window.innerHeight - topOffsetPx) / naturalHeight
-      setScale(fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale))
+      if (fit === 'stretch') {
+        setScale({ x: widthScale, y: heightScale })
+      } else {
+        const uniform = fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale)
+        setScale({ x: uniform, y: uniform })
+      }
     }
     recompute()
     const observer = new ResizeObserver(recompute)
@@ -1025,7 +1036,7 @@ function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
       className="fit-to-screen-outer"
       style={topOffsetPx ? { height: `calc(100vh - ${topOffsetPx}px)` } : undefined}
     >
-      <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale})` }}>
+      <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale.x}, ${scale.y})` }}>
         {children}
       </div>
     </div>
@@ -2454,6 +2465,8 @@ export default function App() {
                           ? 'Leaderboard'
                           : 'Infoboard'
               }
+              showBadge={!isLeaderboardFloor}
+              emphasizeTitle={isLeaderboardFloor}
             />
           </div>
           {isTrainingLevel && layout === 'layout-5' && (
@@ -2486,7 +2499,7 @@ export default function App() {
               stationFontSize={stationFontSize}
             />
           ) : isLeaderboardFloor ? (
-            <FitToScreen active={display === 'laptop'} topOffsetPx={headerHeight}>
+            <FitToScreen active={display === 'laptop'} fit="stretch" topOffsetPx={headerHeight}>
               <LeaderboardFloorBoard
                 columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
                 showPodium={leaderboardPodium === 'visible'}

@@ -1,6 +1,12 @@
 import Clock from './Clock.jsx'
 
-export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', title = 'Infoboard' }) {
+export default function Header({
+  station = 'IMT-01',
+  detailLabel = 'Detail 2',
+  title = 'Infoboard',
+  showBadge = true,
+  emphasizeTitle = false,
+}) {
   const titleLines = title.split('\n')
   return (
     <header className="header">
@@ -20,17 +26,19 @@ export default function Header({ station = 'IMT-01', detailLabel = 'Detail 2', t
           </div>
         </div>
       </div>
-      <div className="header-tab">
+      <div className={`header-tab${emphasizeTitle ? ' header-tab-emphasize' : ''}`}>
         {titleLines.map((line, i) => (
           <div key={i}>{line}</div>
         ))}
       </div>
       <div className="header-right">
         <Clock />
-        <div className="station-badge">
-          <span className="station-badge-label">{detailLabel}</span>
-          <span className="station-badge-code">{station}</span>
-        </div>
+        {showBadge && (
+          <div className="station-badge">
+            <span className="station-badge-label">{detailLabel}</span>
+            <span className="station-badge-code">{station}</span>
+          </div>
+        )}
       </div>
     </header>
   )

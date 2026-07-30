@@ -203,6 +203,18 @@ body {
   justify-self: center;
 }
 
+/* Leaderboard floor only — no 2-line "<Board> \n Training Information
+   Board" subtitle to balance against here, just the single word
+   "Leaderboard", so it gets its own bigger, accent-colored treatment
+   instead of looking undersized next to the header's other floors'
+   two-line titles. */
+.header-tab-emphasize {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
 .header-right {
   display: flex;
   align-items: center;
