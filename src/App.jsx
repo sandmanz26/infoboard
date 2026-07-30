@@ -1414,11 +1414,10 @@ function LayoutFive({
   // the explicit grid-template-columns.
   const cttLastRowLine = cttMaxRows + 2
   const cttShortColumnIndex = cttStationColumns.findIndex((c) => c.length < cttMaxRows)
-  // Most zones only need as many grid columns as they have real station
-  // columns (the short trailing column(s) already provide the Directory's
-  // full width). Zone D1 has just 1 short column (D13) but the Directory
-  // still needs 2 columns of width, so it gets 1 extra unoccupied buffer
-  // column beyond its real data.
+  // Every zone has 2 short trailing columns, so the grid only ever needs
+  // as many columns as there are real station columns — the short
+  // trailing pair already provides the Directory's full 2-column width
+  // with no extra unoccupied buffer column needed.
   const cttGridColumnCount =
     (cttShortColumnIndex !== -1
       ? Math.max(cttStationColumns.length, cttShortColumnIndex + 2)
@@ -1545,14 +1544,13 @@ function LayoutFive({
       )}
       {/* Level 3's Layout 5 always shows the Directory (its own Zone map
           just replaced the old generic map) — Level 2/4 (real per-station
-          data) each offer a toggle to hide it. Whenever a Zone has *any*
-          leftover grid space (entirely unused columns like Zone A's, or
-          empty rows below short columns like Zone D1's D13), the
-          Directory sits in that corner instead of a full-width row below
-          — see cttDirectoryStyle above for exactly where. Only a Zone
-          with zero leftover space anywhere would fall back to the plain
-          full-width row (no such zone exists yet, but the fallback stays
-          as a safety net). */}
+          data) each offer a toggle to hide it. Every zone's short
+          trailing columns (D13/D14, A17/A18, etc.) leave empty rows
+          below them, which is where the Directory sits instead of a
+          full-width row below everything — see cttDirectoryStyle above
+          for exactly where. Only a Zone with zero leftover space
+          anywhere would fall back to the plain full-width row (no such
+          zone exists today, but the fallback stays as a safety net). */}
       {(isLevelThree || !(isLevelFour || isLevelTwo) || !hideDirectory) && (
         <section
           className={`panel directory-panel${cttUseCornerDirectory ? ' layout-five-directory-corner' : ' layout-five-directory'}`}

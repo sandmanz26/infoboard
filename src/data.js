@@ -967,9 +967,7 @@ export const cttZones = [
 // Same idea as cmtStationColumns — each zone's cabins grouped into the
 // physical columns they actually sit in on the floor. Zone A, B and C
 // share the same shape: 4 full-height columns (4 cabins each) plus 2
-// short trailing columns (1 cabin each) — Zone D1 is the odd one out
-// with only 1 short trailing column (see cttGridColumnCount in App.jsx
-// for how the Directory still gets a full 2-column-wide corner there).
+// short trailing columns (1 cabin each).
 export const cttStationColumnsByZone = {
   'zone-a': [
     ['A01', 'A02', 'A03', 'A04'],
@@ -1000,6 +998,7 @@ export const cttStationColumnsByZone = {
     ['D05', 'D06', 'D07', 'D08'],
     ['D09', 'D10', 'D11', 'D12'],
     ['D13'],
+    ['D14'],
   ],
   // Zone D2's cabins use an "E" prefix (not "D2xx") purely to keep every
   // code a consistent 3 characters like the other zones' — D01-D13 are
@@ -1086,6 +1085,7 @@ export const cttStations = [
   cttStation('D11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   cttStation('D12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   cttStation('D13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('D14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   // Zone D2
   cttStation('E01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('E02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
