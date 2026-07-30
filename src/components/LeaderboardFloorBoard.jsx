@@ -22,6 +22,31 @@ export const LOCAL_COLUMN_LABEL_DEFAULTS = {
   mpi: 'MPI',
 }
 
+// Score Format switcher (App.jsx) — every score on this floor is stored
+// as an "X / 20" string (or, for the podium, separate score/total
+// fields). Rescaling proportionally to a different max instead of
+// storing a second copy of the data at a different scale keeps a single
+// source of truth; MPI isn't a score-out-of-something, so it's left
+// untouched everywhere it's used.
+function rescaleFraction(numerator, denominator, targetMax) {
+  const num = Number(numerator)
+  const den = Number(denominator)
+  if (!targetMax || !den || den === targetMax) return { numerator, denominator }
+  return { numerator: String(Math.round((num / den) * targetMax)), denominator: String(targetMax) }
+}
+
+function rescaleScoreString(raw, targetMax) {
+  const [num, den] = String(raw).split('/').map((part) => part.trim())
+  if (!den) return raw
+  const { numerator, denominator } = rescaleFraction(num, den, targetMax)
+  return `${numerator} / ${denominator}`
+}
+
+function rescalePodiumEntry(entry, targetMax) {
+  const { numerator, denominator } = rescaleFraction(entry.score, entry.total, targetMax)
+  return { ...entry, score: numerator, total: denominator }
+}
+
 // Local panel: this unit's own booking, an optional Top 3 podium, then
 // rank 4+ (or the full table when the podium's hidden) in a plain table
 // — reuses the same PodiumColumn markup as the Layouts 1-3 sidebar
@@ -29,7 +54,7 @@ export const LOCAL_COLUMN_LABEL_DEFAULTS = {
 // compact title. Unlike the Global panels (cross-unit, narrow), this is
 // one unit's own roster, so it has room for Unit Name plus 3 separate
 // score components instead of a single Score column.
-function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
+function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels, scoreMax }) {
   const labels = { ...LOCAL_COLUMN_LABEL_DEFAULTS, ...columnLabels }
   const visibleRows = leaderboardFloorLocalRows.slice(0, rowCount)
   const tableRows = showPodium ? visibleRows.filter((row) => !row.medal) : visibleRows
@@ -55,9 +80,9 @@ function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
         </div>
         {showPodium && (
           <div className="podium">
-            <PodiumColumn place="2nd" tone="silver" entry={leaderboardFloorPodium.second} />
-            <PodiumColumn place="1st" tone="gold" entry={leaderboardFloorPodium.first} tall />
-            <PodiumColumn place="3rd" tone="bronze" entry={leaderboardFloorPodium.third} />
+            <PodiumColumn place="2nd" tone="silver" entry={rescalePodiumEntry(leaderboardFloorPodium.second, scoreMax)} />
+            <PodiumColumn place="1st" tone="gold" entry={rescalePodiumEntry(leaderboardFloorPodium.first, scoreMax)} tall />
+            <PodiumColumn place="3rd" tone="bronze" entry={rescalePodiumEntry(leaderboardFloorPodium.third, scoreMax)} />
           </div>
         )}
         {/* When the podium is showing and the row count selected is small
@@ -94,9 +119,9 @@ function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
                     {row.name}
                   </td>
                   <td>{row.unitName}</td>
-                  <td>{row.scoreA}</td>
-                  <td>{row.scoreB}</td>
-                  <td>{row.scoreC}</td>
+                  <td>{rescaleScoreString(row.scoreA, scoreMax)}</td>
+                  <td>{rescaleScoreString(row.scoreB, scoreMax)}</td>
+                  <td>{rescaleScoreString(row.scoreC, scoreMax)}</td>
                   <td>{row.mpi}</td>
                 </tr>
               ))}
@@ -112,7 +137,7 @@ function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
 // from multiple units, ties at the top are common, so every 1st/2nd/3rd
 // finisher gets its own row with a medal instead of collapsing to one
 // row per medal).
-function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
+function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount, scoreMax }) {
   const visibleRows = rows.slice(0, rowCount)
   return (
     <section className="panel leaderboard-floor-panel">
@@ -152,7 +177,7 @@ function GlobalCoursewarePanel({ courseware, weaponType, rows, rowCount }) {
                   {row.name}
                 </td>
                 <td>{row.unitName}</td>
-                <td>{row.score}</td>
+                <td>{rescaleScoreString(row.score, scoreMax)}</td>
                 <td>{row.mpi}</td>
               </tr>
             ))}
@@ -174,6 +199,8 @@ export default function LeaderboardFloorBoard({
   slidePairIndex,
   styleVariant = 'classic',
   localColumnLabels,
+  fillScreen = true,
+  scoreMax = 20,
 }) {
   // Slide (only meaningful at globalCount === 2): instead of always
   // showing the first 2 courseware, page through the 4 in pairs — pair 0
@@ -193,12 +220,12 @@ export default function LeaderboardFloorBoard({
     .join(' ')
   return (
     <main
-      className={`layout layout-leaderboard-floor${styleVariant === 'v2' ? ' layout-leaderboard-floor-v2' : ''}`}
+      className={`layout layout-leaderboard-floor${styleVariant === 'v2' ? ' layout-leaderboard-floor-v2' : ''}${!fillScreen ? ' layout-leaderboard-floor-auto' : ''}`}
       style={{ gridTemplateColumns, '--lb-font-scale': fontScale, '--lb-row-scale': rowScale }}
     >
-      <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} columnLabels={localColumnLabels} />
+      <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} columnLabels={localColumnLabels} scoreMax={scoreMax} />
       {visibleCoursewares.map((entry) => (
-        <GlobalCoursewarePanel key={entry.courseware} {...entry} rowCount={globalRowCount} />
+        <GlobalCoursewarePanel key={entry.courseware} {...entry} rowCount={globalRowCount} scoreMax={scoreMax} />
       ))}
     </main>
   )

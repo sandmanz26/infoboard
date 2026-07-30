@@ -243,6 +243,29 @@ const LEADERBOARD_ROW_HEIGHT_OPTIONS = [
   { id: 'comfortable', label: 'Comfortable', description: 'Taller, easier-to-read rows', scale: 1.3 },
 ]
 
+// Leaderboard floor only — how tall the Local/Global panels stand. "Fill
+// Screen" (the default, matching every other floor) stretches the panel
+// row down to consume the rest of the viewport below the header; "Auto"
+// instead sizes that row to its own content, so a low row count doesn't
+// leave the panels stretched much taller than what they actually need to
+// show. Either way the two panels still match each other's height (see
+// .layout-leaderboard-floor's align-items: stretch in index.css) — this
+// only changes whether the row as a whole is forced to fill the screen.
+const LEADERBOARD_COLUMN_HEIGHT_OPTIONS = [
+  { id: 'fill', label: 'Fill Screen', description: 'Panels stretch to fill the rest of the screen height' },
+  { id: 'auto', label: 'Auto', description: 'Panels size to their own content' },
+]
+
+// Leaderboard floor only — the max score shown across the podium, Local
+// table (Score A/B/C) and Global table (Total). "As Provided" shows the
+// underlying data's own out-of-20 scores unchanged; "Max 100" rescales
+// every score proportionally (e.g. 18 / 20 -> 90 / 100) instead of
+// needing a second copy of the data at a different scale.
+const LEADERBOARD_SCORE_MAX_OPTIONS = [
+  { id: '20', label: '/ 20', description: 'Show scores out of 20, as provided' },
+  { id: '100', label: '/ 100', description: 'Rescale every score to out of 100' },
+]
+
 // Leaderboard floor only — only meaningful when Global Panels is set to
 // 2 (so there are 4 courseware split into 2 pairs). When on, the 2
 // visible panels swap to the other pair of courseware every
@@ -476,6 +499,8 @@ const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
 const LEADERBOARD_LOCAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-local-rows'
 const LEADERBOARD_STYLE_STORAGE_KEY = 'infoboard-leaderboard-style'
 const LEADERBOARD_ROW_HEIGHT_STORAGE_KEY = 'infoboard-leaderboard-row-height'
+const LEADERBOARD_COLUMN_HEIGHT_STORAGE_KEY = 'infoboard-leaderboard-column-height'
+const LEADERBOARD_SCORE_MAX_STORAGE_KEY = 'infoboard-leaderboard-score-max'
 const LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY = 'infoboard-leaderboard-local-column-labels'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
@@ -1618,6 +1643,14 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_ROW_HEIGHT_STORAGE_KEY)
     return LEADERBOARD_ROW_HEIGHT_OPTIONS.some((o) => o.id === saved) ? saved : 'normal'
   })
+  const [leaderboardColumnHeight, setLeaderboardColumnHeight] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_COLUMN_HEIGHT_STORAGE_KEY)
+    return LEADERBOARD_COLUMN_HEIGHT_OPTIONS.some((o) => o.id === saved) ? saved : 'fill'
+  })
+  const [leaderboardScoreMax, setLeaderboardScoreMax] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_SCORE_MAX_STORAGE_KEY)
+    return LEADERBOARD_SCORE_MAX_OPTIONS.some((o) => o.id === saved) ? saved : '20'
+  })
   // Local panel's 8 column headers (Ranking/Rank/Name/Unit Name/Score
   // A/B/C/MPI) — each independently renamable via its own text-input
   // switcher instead of a fixed label, since a different range/courseware
@@ -1890,6 +1923,14 @@ export default function App() {
   }, [leaderboardRowHeight])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_COLUMN_HEIGHT_STORAGE_KEY, leaderboardColumnHeight)
+  }, [leaderboardColumnHeight])
+
+  useEffect(() => {
+    localStorage.setItem(LEADERBOARD_SCORE_MAX_STORAGE_KEY, leaderboardScoreMax)
+  }, [leaderboardScoreMax])
+
+  useEffect(() => {
     localStorage.setItem(LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY, JSON.stringify(localColumnLabels))
   }, [localColumnLabels])
 
@@ -2046,6 +2087,22 @@ export default function App() {
             options: LEADERBOARD_ROW_HEIGHT_OPTIONS,
             active: leaderboardRowHeight,
             onChange: setLeaderboardRowHeight,
+          },
+          {
+            id: 'leaderboard-column-height',
+            label: 'Column Height',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_COLUMN_HEIGHT_OPTIONS,
+            active: leaderboardColumnHeight,
+            onChange: setLeaderboardColumnHeight,
+          },
+          {
+            id: 'leaderboard-score-max',
+            label: 'Score Format',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_SCORE_MAX_OPTIONS,
+            active: leaderboardScoreMax,
+            onChange: setLeaderboardScoreMax,
           },
           // Local panel's 8 column headers — one text-input switcher per
           // column, so each can be renamed independently instead of being
@@ -2444,6 +2501,8 @@ export default function App() {
               slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
               styleVariant={leaderboardStyle}
               localColumnLabels={localColumnLabels}
+              fillScreen={leaderboardColumnHeight === 'fill'}
+              scoreMax={Number(leaderboardScoreMax)}
             />
           ) : (
             <>

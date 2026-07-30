@@ -647,6 +647,22 @@ body {
   align-items: stretch;
 }
 
+/* Column Height switcher's "Auto" option (Fill Screen is the default —
+   every .layout already has flex: 1, filling the rest of the screen
+   below the header, same as every other floor). Auto opts back out of
+   that: flex: 0 1 auto stops this main from claiming leftover vertical
+   space from .app's flex column, and align-content: start stops the
+   grid's own single row from stretching to fill whatever height this
+   main ends up with anyway — together, the panel row sizes to its own
+   content instead of stretching down to the bottom of the screen. The
+   two panels still match each other's height either way (align-items:
+   stretch, above) — only whether the *row* is forced to fill the full
+   remaining screen height changes. */
+.layout-leaderboard-floor-auto {
+  flex: 0 1 auto;
+  align-content: start;
+}
+
 .leaderboard-floor-panel {
   padding: 0;
   overflow: hidden;
