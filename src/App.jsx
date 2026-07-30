@@ -1255,63 +1255,15 @@ function CmtStationColumn({
         className={`panel detail-panel-compact station-column station-column-unavailable station-column-unavailable-${notAvailableStyle}`}
       >
         <StationColumnHead name={station.code} />
-        {/* Mirrors a booked card's structure exactly (blank info line +
-            a detail-panel-head row) instead of omitting them, so the
-            card's natural height matches a booked card's at any font
-            size — no JS height measurement needed for a card that never
-            changes. */}
+        {/* Mirrors a booked card's blank info line so the header block
+            lines up the same way, but drops the Rank/Trainee/Role table
+            entirely — an empty cabin has no roster to show, so a plain
+            "No Booking" message replaces both the table and its old
+            "Not Available" placeholder row. */}
         <p className="station-column-info">
           <span>&nbsp;</span>
         </p>
-        <div className="detail-panel-head">
-          <h2 className="panel-title">No Booking</h2>
-          {/* Invisible but same-sized as a real status pill — the pill's
-              own box height (padding + its own font-size) can exceed the
-              title text's line-height, so without this the row is a few
-              px shorter than a booked card's at some font sizes. */}
-          <span className="status-pill" style={{ visibility: 'hidden' }}>
-            Ready
-          </span>
-        </div>
-        <table className="table table-two">
-          <thead>
-            <tr>
-              {!hideNoColumn && <th className="no-cell">No</th>}
-              <th className="rank-cell">Rank</th>
-              <th className="name-cell">Trainee</th>
-              <th className="role-cell">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Same 5-row count as a booked card (2 blank + the "Not
-                Available" message row + 2 more blank) so this card's
-                height still matches a booked card's exactly — only the
-                middle row's look changes, not the row count. Blank cells
-                need a non-breaking space (not truly empty) or the row
-                collapses shorter than a real content row's line-height. */}
-            {[1, 2].map((no) => (
-              <tr key={no}>
-                {!hideNoColumn && <td className="no-cell">&nbsp;</td>}
-                <td className="rank-cell">&nbsp;</td>
-                <td className="name-cell">&nbsp;</td>
-                <td className="role-cell">&nbsp;</td>
-              </tr>
-            ))}
-            <tr>
-              <td colSpan={hideNoColumn ? 3 : 4} className="table-not-available-cell">
-                Not Available
-              </td>
-            </tr>
-            {[4, 5].map((no) => (
-              <tr key={no}>
-                {!hideNoColumn && <td className="no-cell">&nbsp;</td>}
-                <td className="rank-cell">&nbsp;</td>
-                <td className="name-cell">&nbsp;</td>
-                <td className="role-cell">&nbsp;</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="station-column-no-booking">No Booking</div>
       </section>
     )
   }

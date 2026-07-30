@@ -1527,7 +1527,8 @@ body {
   background: var(--panel-bg, #fff);
 }
 
-.table-not-available-cell {
+.station-column-no-booking {
+  padding: 32px 0;
   text-align: center;
   font-style: italic;
   color: var(--text-sub);
