@@ -965,33 +965,30 @@ export const cttZones = [
 ]
 
 // Same idea as cmtStationColumns — each zone's cabins grouped into the
-// physical columns they actually sit in on the floor. Zone A, B and C
-// share the same shape: 4 full-height columns (4 cabins each) plus 2
-// short trailing columns (1 cabin each).
+// physical columns they actually sit in on the floor. Every zone shares
+// the same shape: 3 full-height columns (4 cabins each) plus 2 short
+// trailing columns (1 cabin each) — row 1 has 5 cabins, rows 2-4 have 3.
 export const cttStationColumnsByZone = {
   'zone-a': [
     ['A01', 'A02', 'A03', 'A04'],
     ['A05', 'A06', 'A07', 'A08'],
     ['A09', 'A10', 'A11', 'A12'],
-    ['A13', 'A14', 'A15', 'A16'],
-    ['A17'],
-    ['A18'],
+    ['A13'],
+    ['A14'],
   ],
   'zone-b': [
     ['B01', 'B02', 'B03', 'B04'],
     ['B05', 'B06', 'B07', 'B08'],
     ['B09', 'B10', 'B11', 'B12'],
-    ['B13', 'B14', 'B15', 'B16'],
-    ['B17'],
-    ['B18'],
+    ['B13'],
+    ['B14'],
   ],
   'zone-c': [
     ['C01', 'C02', 'C03', 'C04'],
     ['C05', 'C06', 'C07', 'C08'],
     ['C09', 'C10', 'C11', 'C12'],
-    ['C13', 'C14', 'C15', 'C16'],
-    ['C17'],
-    ['C18'],
+    ['C13'],
+    ['C14'],
   ],
   'zone-d1': [
     ['D01', 'D02', 'D03', 'D04'],
@@ -1001,15 +998,14 @@ export const cttStationColumnsByZone = {
     ['D14'],
   ],
   // Zone D2's cabins use an "E" prefix (not "D2xx") purely to keep every
-  // code a consistent 3 characters like the other zones' — D01-D13 are
+  // code a consistent 3 characters like the other zones' — D01-D14 are
   // already taken by Zone D1.
   'zone-d2': [
     ['E01', 'E02', 'E03', 'E04'],
     ['E05', 'E06', 'E07', 'E08'],
     ['E09', 'E10', 'E11', 'E12'],
-    ['E13', 'E14', 'E15', 'E16'],
-    ['E17'],
-    ['E18'],
+    ['E13'],
+    ['E14'],
   ],
 }
 
@@ -1029,10 +1025,6 @@ export const cttStations = [
   cttStation('A12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   cttStation('A13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('A14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('A15', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('A16', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('A17', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('A18', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
   // Zone B
   cttStation('B01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('B02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
@@ -1046,12 +1038,8 @@ export const cttStations = [
   cttStation('B10', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('B11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('B12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('B13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('B14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('B15', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('B16', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('B17', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('B18', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('B13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('B14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   // Zone C
   cttStation('C01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('C02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
@@ -1065,12 +1053,8 @@ export const cttStations = [
   cttStation('C10', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('C11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('C12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('C13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('C14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('C15', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('C16', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('C17', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('C18', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('C13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('C14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   // Zone D1
   cttStation('D01', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('D02', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
@@ -1099,12 +1083,8 @@ export const cttStations = [
   cttStation('E10', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('E11', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
   cttStation('E12', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('E13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('E14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('E15', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('E16', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
-  cttStation('E17', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_LEADERBOARD_C),
-  cttStation('E18', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('E13', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
+  cttStation('E14', CTT_DETAIL_LEADERBOARD_A, CTT_DETAIL_READY_B),
 ]
 
 // Level 1 lobby — today's booking list for the training floors, sourced

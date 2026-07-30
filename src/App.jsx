@@ -293,16 +293,16 @@ const CTT_ZONES_WITH_DATA = cttZones.filter((z) => cttStationColumnsByZone[z.id]
 // Detail (still fully overridable via the per-station switcher) makes the
 // board match that reference on first load instead of needing manual setup.
 // Every zone follows the same column pattern: the first full-height
-// column starts at Detail 1, every other full-height column starts at
-// Detail 2, and the short trailing column(s) (D13, A17/A18, etc.) stay
-// at Detail 1 (the default, no entry needed here).
+// column starts at Detail 1, the other two full-height columns start at
+// Detail 2, and the 2 short trailing columns (D13/D14, A13/A14, etc.)
+// stay at Detail 1 (the default, no entry needed here).
 const CTT_DEFAULT_START_DETAIL = Object.fromEntries(
   [
-    'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'A13', 'A14', 'A15', 'A16',
-    'B05', 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16',
-    'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16',
+    'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12',
+    'B05', 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12',
+    'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12',
     'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12',
-    'E05', 'E06', 'E07', 'E08', 'E09', 'E10', 'E11', 'E12', 'E13', 'E14', 'E15', 'E16',
+    'E05', 'E06', 'E07', 'E08', 'E09', 'E10', 'E11', 'E12',
   ].map((code) => [code, '2'])
 )
 
