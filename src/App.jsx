@@ -292,10 +292,18 @@ const CTT_ZONES_WITH_DATA = cttZones.filter((z) => cttStationColumnsByZone[z.id]
 // starting from Detail 1 in lockstep. Seeding these as the default Start
 // Detail (still fully overridable via the per-station switcher) makes the
 // board match that reference on first load instead of needing manual setup.
+// Every zone follows the same column pattern: the first full-height
+// column starts at Detail 1, every other full-height column starts at
+// Detail 2, and the short trailing column(s) (D13, A17/A18, etc.) stay
+// at Detail 1 (the default, no entry needed here).
 const CTT_DEFAULT_START_DETAIL = Object.fromEntries(
-  ['A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12'].map(
-    (code) => [code, '2']
-  )
+  [
+    'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'A13', 'A14', 'A15', 'A16',
+    'B05', 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16',
+    'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16',
+    'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12',
+    'E05', 'E06', 'E07', 'E08', 'E09', 'E10', 'E11', 'E12', 'E13', 'E14', 'E15', 'E16',
+  ].map((code) => [code, '2'])
 )
 
 // Level 4 + Layout 5 only — which Detail group a station's rotation
@@ -1677,15 +1685,21 @@ export default function App() {
     return DIRECTORY_OPTIONS.some((o) => o.id === saved) ? saved : 'hidden'
   })
   // Level 3 (CTT) only — which physical Zone's cabins are currently shown.
-  // Only Zone A and Zone D1 have real station data so far.
   const [activeZone, setActiveZone] = useState(() => {
     const saved = localStorage.getItem(CTT_ZONE_STORAGE_KEY)
     return CTT_ZONES_WITH_DATA.some((z) => z.id === saved) ? saved : 'zone-a'
   })
   const [startDetailByStation, setStartDetailByStation] = useState(() => {
+    // Merge (not replace) — a saved blob from before a station code existed
+    // (e.g. before Zone B/C/D2 or A13-18 had any data) would otherwise
+    // permanently shadow CTT_DEFAULT_START_DETAIL's entry for it forever,
+    // since a saved value always used to win outright. Defaults go first
+    // so any code the saved blob doesn't already have an opinion on still
+    // gets seeded correctly; codes the user did explicitly change via the
+    // switcher still override, since those come from the spread after.
     try {
       const saved = JSON.parse(localStorage.getItem(START_DETAIL_STORAGE_KEY))
-      if (saved && typeof saved === 'object') return saved
+      if (saved && typeof saved === 'object') return { ...CTT_DEFAULT_START_DETAIL, ...saved }
     } catch {
       /* ignore malformed saved value */
     }
@@ -2330,7 +2344,10 @@ export default function App() {
           rows per panel, and a leaderboard is meant to be read as a
           single static screen rather than scrolled. */}
       <FitToScreen active={display === 'tv' || display === 'tv2' || isLeaderboardFloor} fit={display === 'tv2' ? 'cover' : 'contain'}>
-        <div className="app" style={{ fontFamily: activeFont.stack }}>
+        <div
+          className={`app${display === 'tv2' ? ' app-tv2' : ''}`}
+          style={{ fontFamily: activeFont.stack }}
+        >
           <Header
             station={currentLevelLabel}
             detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}

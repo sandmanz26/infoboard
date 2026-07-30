@@ -1354,6 +1354,23 @@ body {
   min-height: 590px;
 }
 
+/* 65" 2.0 (Display switcher) only — align-items: stretch (above) already
+   makes a shorter card match its row's tallest sibling, but a plain
+   block-flow card just leaves that extra height as blank space below its
+   table instead of using it. Making the card a flex column and its table
+   the flexible child lets the table's own rows absorb that leftover
+   height instead, so cards actually fill their slot rather than floating
+   in it — most visible in this "fill the screen" display mode, where a
+   uniform CSS-transform zoom would otherwise scale that blank space up
+   right along with everything else instead of eliminating it. */
+.app-tv2 .station-column {
+  display: flex;
+  flex-direction: column;
+}
+.app-tv2 .station-column > table {
+  flex: 1;
+}
+
 /* SWT-03's leaderboard variant has no status pill next to its title, so
    without a floor here its "Detail"-row is a few px shorter than every
    other station's and throws off the table alignment across the row. */
