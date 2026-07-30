@@ -136,26 +136,36 @@ export default function LayoutSwitcher({ groups }) {
                 {group.icon}
                 {group.label}
               </div>
-              <div className="switcher-chip-row">
-                {group.options.map((opt) => {
-                  const isActive = group.multiSelect
-                    ? group.active.includes(opt.id)
-                    : group.active === opt.id
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      role={group.multiSelect ? 'menuitemcheckbox' : 'menuitemradio'}
-                      aria-checked={isActive}
-                      title={opt.description}
-                      className={`switcher-chip${isActive ? ' active' : ''}`}
-                      onClick={() => (group.multiSelect ? group.onToggle(opt.id) : group.onChange(opt.id))}
-                    >
-                      {opt.label}
-                    </button>
-                  )
-                })}
-              </div>
+              {group.type === 'text' ? (
+                <input
+                  type="text"
+                  className="switcher-text-input"
+                  value={group.value}
+                  placeholder={group.placeholder}
+                  onChange={(e) => group.onChange(e.target.value)}
+                />
+              ) : (
+                <div className="switcher-chip-row">
+                  {group.options.map((opt) => {
+                    const isActive = group.multiSelect
+                      ? group.active.includes(opt.id)
+                      : group.active === opt.id
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        role={group.multiSelect ? 'menuitemcheckbox' : 'menuitemradio'}
+                        aria-checked={isActive}
+                        title={opt.description}
+                        className={`switcher-chip${isActive ? ' active' : ''}`}
+                        onClick={() => (group.multiSelect ? group.onToggle(opt.id) : group.onChange(opt.id))}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>

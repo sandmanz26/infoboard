@@ -28,7 +28,7 @@ import LeaderboardTicker from './components/LeaderboardTicker.jsx'
 import CombinedDetailList from './components/CombinedDetailList.jsx'
 import StationsOverview from './components/StationsOverview.jsx'
 import LobbyBoard from './components/LobbyBoard.jsx'
-import LeaderboardFloorBoard from './components/LeaderboardFloorBoard.jsx'
+import LeaderboardFloorBoard, { LOCAL_COLUMN_LABEL_DEFAULTS } from './components/LeaderboardFloorBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import PageDots from './components/PageDots.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
@@ -476,6 +476,7 @@ const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
 const LEADERBOARD_LOCAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-local-rows'
 const LEADERBOARD_STYLE_STORAGE_KEY = 'infoboard-leaderboard-style'
 const LEADERBOARD_ROW_HEIGHT_STORAGE_KEY = 'infoboard-leaderboard-row-height'
+const LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY = 'infoboard-leaderboard-local-column-labels'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
@@ -1654,6 +1655,19 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_ROW_HEIGHT_STORAGE_KEY)
     return LEADERBOARD_ROW_HEIGHT_OPTIONS.some((o) => o.id === saved) ? saved : 'normal'
   })
+  // Local panel's 8 column headers (Ranking/Rank/Name/Unit Name/Score
+  // A/B/C/MPI) — each independently renamable via its own text-input
+  // switcher instead of a fixed label, since a different range/courseware
+  // may score on different named components than "Score A/B/C".
+  const [localColumnLabels, setLocalColumnLabels] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY))
+      if (saved && typeof saved === 'object') return { ...LOCAL_COLUMN_LABEL_DEFAULTS, ...saved }
+    } catch {
+      /* ignore malformed saved value */
+    }
+    return LOCAL_COLUMN_LABEL_DEFAULTS
+  })
   const [leaderboardSlide, setLeaderboardSlide] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
     return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
@@ -1929,6 +1943,10 @@ export default function App() {
   }, [leaderboardRowHeight])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY, JSON.stringify(localColumnLabels))
+  }, [localColumnLabels])
+
+  useEffect(() => {
     localStorage.setItem(LEADERBOARD_SLIDE_STORAGE_KEY, leaderboardSlide)
   }, [leaderboardSlide])
 
@@ -2082,6 +2100,18 @@ export default function App() {
             active: leaderboardRowHeight,
             onChange: setLeaderboardRowHeight,
           },
+          // Local panel's 8 column headers — one text-input switcher per
+          // column, so each can be renamed independently instead of being
+          // stuck with "Score A/B/C" etc.
+          ...Object.entries(LOCAL_COLUMN_LABEL_DEFAULTS).map(([key, defaultLabel]) => ({
+            id: `leaderboard-local-column-${key}`,
+            label: `Local Column: ${defaultLabel}`,
+            icon: <TableModelIcon />,
+            type: 'text',
+            value: localColumnLabels[key] ?? defaultLabel,
+            placeholder: defaultLabel,
+            onChange: (value) => setLocalColumnLabels((prev) => ({ ...prev, [key]: value })),
+          })),
           {
             id: 'leaderboard-local-rows',
             label: 'Local Rows',
@@ -2467,6 +2497,7 @@ export default function App() {
                 localRowCount={Number(leaderboardLocalRows)}
                 slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
                 styleVariant={leaderboardStyle}
+                localColumnLabels={localColumnLabels}
               />
             </FitToScreen>
           ) : (

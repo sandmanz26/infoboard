@@ -760,6 +760,54 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Local panel: Ranking/Rank/Name/Unit Name/Score A/B/C/MPI — 8 columns,
+   so table-layout: fixed + explicit widths keep it from looking
+   lopsided the way an auto-layout table would with this many columns. */
+.leaderboard-table-local {
+  table-layout: fixed;
+}
+
+.leaderboard-table-local th,
+.leaderboard-table-local td {
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+.leaderboard-table-local .name-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-table-local th:nth-child(1),
+.leaderboard-table-local td:nth-child(1) {
+  width: 10%;
+}
+.leaderboard-table-local th:nth-child(2),
+.leaderboard-table-local td:nth-child(2) {
+  width: 8%;
+}
+.leaderboard-table-local th:nth-child(3),
+.leaderboard-table-local td:nth-child(3) {
+  width: 26%;
+}
+.leaderboard-table-local th:nth-child(4),
+.leaderboard-table-local td:nth-child(4) {
+  width: 12%;
+}
+.leaderboard-table-local th:nth-child(5),
+.leaderboard-table-local td:nth-child(5),
+.leaderboard-table-local th:nth-child(6),
+.leaderboard-table-local td:nth-child(6),
+.leaderboard-table-local th:nth-child(7),
+.leaderboard-table-local td:nth-child(7) {
+  width: 12%;
+}
+.leaderboard-table-local th:nth-child(8),
+.leaderboard-table-local td:nth-child(8) {
+  width: 8%;
+}
+
 /* Every finisher tied at a medal position gets a soft tint of that
    medal's tone (matching the podium/MPI-pill colors already used
    elsewhere), instead of plain alternating zebra stripes. */
@@ -2105,6 +2153,24 @@ body {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+
+.switcher-text-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+}
+
+.switcher-text-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 /* ---------- Layout 4: all-stations overview ---------- */

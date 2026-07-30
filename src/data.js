@@ -64,23 +64,27 @@ export const leaderboardFloorPodium = {
 // this down to 5/10/15; when the podium switcher is on (the default),
 // LocalLeaderboardPanel filters the medal (1st-3rd) rows back out since
 // the podium above already covers them; with the podium hidden, the
-// table shows every rank instead.
+// table shows every rank instead. unitName is the same for every row
+// (it's one unit's own booking) but still a real column, not a constant,
+// since the column's label/visibility is switcher-driven like the rest.
+// scoreA/B/C are 3 separate components of the trainee's score (e.g. 3
+// separate courses/attempts) shown as 3 columns instead of one.
 export const leaderboardFloorLocalRows = [
-  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Danyial Lizam Bin Mustafa', score: '20 / 20', mpi: '1.00' },
-  { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Mohamad Anuar Bin Kassim', score: '20 / 20', mpi: '2.00' },
-  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', score: '20 / 20', mpi: '3.00' },
-  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', score: '20 / 20', mpi: '3.00' },
-  { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Guo Guo Qiang', score: '20 / 20', mpi: '3.00' },
-  { ranking: '4', medal: null, rank: 'REC', name: 'Khairul Azmi Bin Izhar Iskandar', score: '20 / 20', mpi: '5.00' },
-  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', score: '19 / 20', mpi: '1.00' },
-  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', score: '19 / 20', mpi: '2.00' },
-  { ranking: '6', medal: null, rank: '3SG', name: 'Kishan Kumar s/o P. Ravindran', score: '19 / 20', mpi: '2.00' },
-  { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', score: '18 / 20', mpi: '2.00' },
-  { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', score: '18 / 20', mpi: '4.00' },
-  { ranking: '9', medal: null, rank: 'REC', name: 'Rajesh Gunalan a/l Thanabalan', score: '17 / 20', mpi: '2.00' },
-  { ranking: '10', medal: null, rank: '3SG', name: 'Farid Bin Osman', score: '17 / 20', mpi: '3.00' },
-  { ranking: '11', medal: null, rank: 'REC', name: 'Vellaisamy Muthu', score: '16 / 20', mpi: '3.00' },
-  { ranking: '12', medal: null, rank: '3SG', name: 'Teo Wei Jian', score: '16 / 20', mpi: '4.00' },
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Danyial Lizam Bin Mustafa', unitName: '1SIR', scoreA: '20 / 20', scoreB: '19 / 20', scoreC: '20 / 20', mpi: '1.00' },
+  { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Mohamad Anuar Bin Kassim', unitName: '1SIR', scoreA: '20 / 20', scoreB: '20 / 20', scoreC: '18 / 20', mpi: '2.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', unitName: '1SIR', scoreA: '20 / 20', scoreB: '18 / 20', scoreC: '19 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', unitName: '1SIR', scoreA: '19 / 20', scoreB: '20 / 20', scoreC: '19 / 20', mpi: '3.00' },
+  { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Guo Guo Qiang', unitName: '1SIR', scoreA: '20 / 20', scoreB: '19 / 20', scoreC: '18 / 20', mpi: '3.00' },
+  { ranking: '4', medal: null, rank: 'REC', name: 'Khairul Azmi Bin Izhar Iskandar', unitName: '1SIR', scoreA: '20 / 20', scoreB: '17 / 20', scoreC: '18 / 20', mpi: '5.00' },
+  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', unitName: '1SIR', scoreA: '19 / 20', scoreB: '18 / 20', scoreC: '17 / 20', mpi: '1.00' },
+  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', unitName: '1SIR', scoreA: '19 / 20', scoreB: '17 / 20', scoreC: '18 / 20', mpi: '2.00' },
+  { ranking: '6', medal: null, rank: '3SG', name: 'Kishan Kumar s/o P. Ravindran', unitName: '1SIR', scoreA: '19 / 20', scoreB: '18 / 20', scoreC: '19 / 20', mpi: '2.00' },
+  { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', unitName: '1SIR', scoreA: '18 / 20', scoreB: '17 / 20', scoreC: '18 / 20', mpi: '2.00' },
+  { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', unitName: '1SIR', scoreA: '18 / 20', scoreB: '16 / 20', scoreC: '17 / 20', mpi: '4.00' },
+  { ranking: '9', medal: null, rank: 'REC', name: 'Rajesh Gunalan a/l Thanabalan', unitName: '1SIR', scoreA: '17 / 20', scoreB: '17 / 20', scoreC: '16 / 20', mpi: '2.00' },
+  { ranking: '10', medal: null, rank: '3SG', name: 'Farid Bin Osman', unitName: '1SIR', scoreA: '17 / 20', scoreB: '16 / 20', scoreC: '17 / 20', mpi: '3.00' },
+  { ranking: '11', medal: null, rank: 'REC', name: 'Vellaisamy Muthu', unitName: '1SIR', scoreA: '16 / 20', scoreB: '16 / 20', scoreC: '17 / 20', mpi: '3.00' },
+  { ranking: '12', medal: null, rank: '3SG', name: 'Teo Wei Jian', unitName: '1SIR', scoreA: '16 / 20', scoreB: '15 / 20', scoreC: '16 / 20', mpi: '4.00' },
 ]
 
 // Global panel aggregates across units — no podium, ties are common at

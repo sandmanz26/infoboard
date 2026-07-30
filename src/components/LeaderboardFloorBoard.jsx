@@ -7,12 +7,30 @@ import {
   leaderboardFloorGlobalCoursewares,
 } from '../data.js'
 
+// Local panel column headers — all customizable via the Leaderboard
+// floor's own text-input switchers (App.jsx), so a range that scores
+// differently (e.g. only 2 components, or different component names)
+// isn't stuck with these exact labels.
+export const LOCAL_COLUMN_LABEL_DEFAULTS = {
+  ranking: 'Ranking',
+  rank: 'Rank',
+  name: 'Name',
+  unitName: 'Unit Name',
+  scoreA: 'Score A',
+  scoreB: 'Score B',
+  scoreC: 'Score C',
+  mpi: 'MPI',
+}
+
 // Local panel: this unit's own booking, an optional Top 3 podium, then
 // rank 4+ (or the full table when the podium's hidden) in a plain table
-// — reuses the same PodiumColumn/table markup as the Layouts 1-3 sidebar
+// — reuses the same PodiumColumn markup as the Layouts 1-3 sidebar
 // version, just with its own banner header instead of that panel's
-// compact title.
-function LocalLeaderboardPanel({ showPodium, rowCount }) {
+// compact title. Unlike the Global panels (cross-unit, narrow), this is
+// one unit's own roster, so it has room for Unit Name plus 3 separate
+// score components instead of a single Score column.
+function LocalLeaderboardPanel({ showPodium, rowCount, columnLabels }) {
+  const labels = { ...LOCAL_COLUMN_LABEL_DEFAULTS, ...columnLabels }
   const visibleRows = leaderboardFloorLocalRows.slice(0, rowCount)
   const tableRows = showPodium ? visibleRows.filter((row) => !row.medal) : visibleRows
   return (
@@ -42,14 +60,17 @@ function LocalLeaderboardPanel({ showPodium, rowCount }) {
             <PodiumColumn place="3rd" tone="bronze" entry={leaderboardFloorPodium.third} />
           </div>
         )}
-        <table className="table leaderboard-table">
+        <table className="table leaderboard-table leaderboard-table-local">
           <thead>
             <tr>
-              <th>Ranking</th>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Score</th>
-              <th>MPI (mm)</th>
+              <th>{labels.ranking}</th>
+              <th>{labels.rank}</th>
+              <th>{labels.name}</th>
+              <th>{labels.unitName}</th>
+              <th>{labels.scoreA}</th>
+              <th>{labels.scoreB}</th>
+              <th>{labels.scoreC}</th>
+              <th>{labels.mpi}</th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +87,10 @@ function LocalLeaderboardPanel({ showPodium, rowCount }) {
                 <td className="name-cell" title={row.name}>
                   {row.name}
                 </td>
-                <td>{row.score}</td>
+                <td>{row.unitName}</td>
+                <td>{row.scoreA}</td>
+                <td>{row.scoreB}</td>
+                <td>{row.scoreC}</td>
                 <td>{row.mpi}</td>
               </tr>
             ))}
@@ -144,6 +168,7 @@ export default function LeaderboardFloorBoard({
   localRowCount,
   slidePairIndex,
   styleVariant = 'classic',
+  localColumnLabels,
 }) {
   // Slide (only meaningful at globalCount === 2): instead of always
   // showing the first 2 courseware, page through the 4 in pairs — pair 0
@@ -166,7 +191,7 @@ export default function LeaderboardFloorBoard({
       className={`layout layout-leaderboard-floor${styleVariant === 'v2' ? ' layout-leaderboard-floor-v2' : ''}`}
       style={{ gridTemplateColumns, '--lb-font-scale': fontScale, '--lb-row-scale': rowScale }}
     >
-      <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} />
+      <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} columnLabels={localColumnLabels} />
       {visibleCoursewares.map((entry) => (
         <GlobalCoursewarePanel key={entry.courseware} {...entry} rowCount={globalRowCount} />
       ))}
