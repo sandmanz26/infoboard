@@ -809,6 +809,94 @@ body {
   font-size: calc(13px * var(--lb-font-scale, 1));
 }
 
+/* ---------- Leaderboard 2.0 (Leaderboard Style switcher) ----------
+   Same markup as Classic, purely a CSS variant: elevated panel cards,
+   gradient banners, circular rank badges (matching the medal badges'
+   own shape) instead of a plain number, medal rows as a left accent bar
+   over a lighter tint instead of a flat full-row tint, and a soft glow
+   behind the gold podium block. */
+.layout-leaderboard-floor-v2 {
+  gap: 20px;
+}
+
+.layout-leaderboard-floor-v2 .leaderboard-floor-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+  border: 1px solid rgba(31, 24, 20, 0.06);
+}
+
+.layout-leaderboard-floor-v2 .leaderboard-floor-banner {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 13px 20px;
+}
+
+.layout-leaderboard-floor-v2 .leaderboard-floor-banner-local {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--leaderboard-local-text) 18%, var(--leaderboard-local-bg)),
+    var(--leaderboard-local-bg)
+  );
+  border-bottom: 3px solid var(--leaderboard-local-text);
+}
+
+.layout-leaderboard-floor-v2 .leaderboard-floor-banner-global {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--leaderboard-global-text) 18%, var(--leaderboard-global-bg)),
+    var(--leaderboard-global-bg)
+  );
+  border-bottom: 3px solid var(--leaderboard-global-text);
+}
+
+.layout-leaderboard-floor-v2 .table thead th {
+  border-bottom: 2px solid rgba(31, 24, 20, 0.1);
+}
+
+/* Rank badge for non-medal rows — same circular shape/size as .medal so
+   every row (medal or not) reads as "a badge in the first column"
+   instead of the number floating with no visual weight. */
+.layout-leaderboard-floor-v2 .ranking-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-sub) 12%, white);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+/* Left accent bar instead of relying on the full-row tint alone — reads
+   as a "highlighted list item" rather than a plain colored stripe. */
+.layout-leaderboard-floor-v2 .leaderboard-row-gold {
+  background: color-mix(in srgb, var(--gold-soft) 35%, white);
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+.layout-leaderboard-floor-v2 .leaderboard-row-silver {
+  background: color-mix(in srgb, var(--silver-soft) 35%, white);
+  box-shadow: inset 4px 0 0 var(--silver);
+}
+.layout-leaderboard-floor-v2 .leaderboard-row-bronze {
+  background: color-mix(in srgb, var(--bronze-soft) 35%, white);
+  box-shadow: inset 4px 0 0 var(--bronze);
+}
+
+/* A soft glow behind the gold block plus a small crown above it — the
+   only podium change reserved for 2.0, since the podium's own 3D-block
+   styling is already fairly polished in Classic. */
+.layout-leaderboard-floor-v2 .podium-gold .podium-top {
+  box-shadow: 0 0 22px 6px var(--gold-soft), inset 0 0 0 1px var(--gold);
+}
+.layout-leaderboard-floor-v2 .podium-gold .wreath::before {
+  content: '\1F451';
+  position: absolute;
+  top: -22px;
+  font-size: 18px;
+}
+
 /* ---------- Directory ---------- */
 
 .directory-desc {

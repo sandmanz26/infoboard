@@ -142,6 +142,7 @@ export default function LeaderboardFloorBoard({
   globalRowCount,
   localRowCount,
   slidePairIndex,
+  styleVariant = 'classic',
 }) {
   // Slide (only meaningful at globalCount === 2): instead of always
   // showing the first 2 courseware, page through the 4 in pairs — pair 0
@@ -161,7 +162,7 @@ export default function LeaderboardFloorBoard({
     .join(' ')
   return (
     <main
-      className="layout layout-leaderboard-floor"
+      className={`layout layout-leaderboard-floor${styleVariant === 'v2' ? ' layout-leaderboard-floor-v2' : ''}`}
       style={{ gridTemplateColumns, '--lb-font-scale': fontScale }}
     >
       <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} />

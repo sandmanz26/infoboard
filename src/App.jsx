@@ -222,6 +222,17 @@ const LEADERBOARD_LOCAL_ROWS_OPTIONS = [
   { id: '15', label: 'Top 15', description: 'Show the top 15 local trainees' },
 ]
 
+// Leaderboard floor only — Classic is the original flat-panel look;
+// 2.0 is a more polished dashboard treatment (gradient banners, elevated
+// panel cards with an accent top stripe, medal rows as a left accent bar
+// + circular rank badge instead of a flat tint, a glow behind the gold
+// podium block) — purely a CSS variant (layout-leaderboard-floor-v2),
+// same markup either way.
+const LEADERBOARD_STYLE_OPTIONS = [
+  { id: 'classic', label: 'Classic', description: 'Original flat panel look' },
+  { id: 'v2', label: '2.0', description: 'Elevated cards, gradient banners, accent rank badges' },
+]
+
 // Leaderboard floor only — only meaningful when Global Panels is set to
 // 2 (so there are 4 courseware split into 2 pairs). When on, the 2
 // visible panels swap to the other pair of courseware every
@@ -445,6 +456,7 @@ const LEADERBOARD_GLOBAL_COUNT_STORAGE_KEY = 'infoboard-leaderboard-global-count
 const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
 const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
 const LEADERBOARD_LOCAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-local-rows'
+const LEADERBOARD_STYLE_STORAGE_KEY = 'infoboard-leaderboard-style'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
@@ -1604,6 +1616,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_LOCAL_ROWS_STORAGE_KEY)
     return LEADERBOARD_LOCAL_ROWS_OPTIONS.some((o) => o.id === saved) ? saved : '5'
   })
+  const [leaderboardStyle, setLeaderboardStyle] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_STYLE_STORAGE_KEY)
+    return LEADERBOARD_STYLE_OPTIONS.some((o) => o.id === saved) ? saved : 'classic'
+  })
   const [leaderboardSlide, setLeaderboardSlide] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
     return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
@@ -1849,6 +1865,10 @@ export default function App() {
   }, [leaderboardLocalRows])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_STYLE_STORAGE_KEY, leaderboardStyle)
+  }, [leaderboardStyle])
+
+  useEffect(() => {
     localStorage.setItem(LEADERBOARD_SLIDE_STORAGE_KEY, leaderboardSlide)
   }, [leaderboardSlide])
 
@@ -1985,6 +2005,14 @@ export default function App() {
             options: LEADERBOARD_FONT_SIZE_OPTIONS,
             active: leaderboardFontSize,
             onChange: setLeaderboardFontSize,
+          },
+          {
+            id: 'leaderboard-style',
+            label: 'Leaderboard Style',
+            icon: <LeaderboardIcon />,
+            options: LEADERBOARD_STYLE_OPTIONS,
+            active: leaderboardStyle,
+            onChange: setLeaderboardStyle,
           },
           {
             id: 'leaderboard-local-rows',
@@ -2358,6 +2386,7 @@ export default function App() {
               globalRowCount={Number(leaderboardGlobalRows)}
               localRowCount={Number(leaderboardLocalRows)}
               slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
+              styleVariant={leaderboardStyle}
             />
           ) : (
             <>
