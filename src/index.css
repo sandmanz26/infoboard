@@ -1111,7 +1111,7 @@ body {
 }
 
 /* The zone currently shown on screen gets the same gold ring treatment
-   used for SWT-03's Global Leaderboard state, so it reads at a glance
+   used for SWT-03's Session Leaderboard state, so it reads at a glance
    which part of the floor plan the board is currently displaying. */
 .ctt-directory-box-active {
   box-shadow: 0 0 0 2px var(--gold), var(--shadow-1);
@@ -1495,7 +1495,7 @@ body {
   min-height: 32px;
 }
 
-/* SWT-03 turning into the Global Leaderboard is a meaningfully different
+/* SWT-03 turning into the Session Leaderboard is a meaningfully different
    state from every other station column — a gold tint + ring (matching
    the podium/leaderboard accent used elsewhere) makes it read at a
    glance instead of blending in as a 6th plain white panel. */
@@ -1527,8 +1527,20 @@ body {
   background: var(--panel-bg, #fff);
 }
 
+/* Wraps the hidden (visibility: hidden) height-matching table — its
+   layout box still takes up space, so the wrapper's own height ends up
+   exactly matching a real booked card's table. The message is
+   positioned over that reserved space instead of after it. */
+.station-column-no-booking-wrap {
+  position: relative;
+}
+
 .station-column-no-booking {
-  padding: 32px 0;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-style: italic;
   color: var(--text-sub);

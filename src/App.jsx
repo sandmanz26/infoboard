@@ -273,12 +273,12 @@ const NO_COLUMN_OPTIONS = [
   { id: 'hidden', label: 'Hidden', description: 'Hide the No. column' },
 ]
 
-// Level 4 + Layout 5 only — SWT-03 doubles as a Global Leaderboard once
+// Level 4 + Layout 5 only — SWT-03 doubles as a Session Leaderboard once
 // its session ends; while a session is still running it looks like any
 // other station.
 const SWT03_SESSION_OPTIONS = [
   { id: 'ongoing', label: 'Ongoing', description: 'SWT-03 shows its trainee roster like every other station' },
-  { id: 'ended', label: 'Ended', description: 'SWT-03 shows the Global Leaderboard instead' },
+  { id: 'ended', label: 'Ended', description: 'SWT-03 shows the Session Leaderboard instead' },
 ]
 
 // Level 4 + Layout 5 only — the Directory map spans the full row below
@@ -858,19 +858,16 @@ function LayoutThree({ tableModel, leaderboardModel, activeStation, panelRatio, 
 
 // SWT-03's "session ended" variant — a ranked scoreboard instead of a
 // trainee detail table. Mirrors DetailListTable2's markup/classes so it
-// picks up the same font-size overrides and column styling for free.
-function StationGlobalLeaderboard({ rows, courseware, timeRange, hideNo }) {
+// picks up the same font-size overrides and column styling for free. The
+// booking info line (mode/courseware, time, unit) is rendered by the
+// caller exactly like a normal booked card's — only the title and table
+// content differ here.
+function StationGlobalLeaderboard({ rows, hideNo }) {
   return (
     <>
       <div className="detail-panel-head">
-        <h2 className="panel-title">Global Leaderboard</h2>
+        <h2 className="panel-title">Session Leaderboard</h2>
       </div>
-      <p className="station-column-info">
-        <span>
-          Courseware: <strong>{courseware}</strong>
-        </span>
-        <span>{timeRange}</span>
-      </p>
       <table className="table table-two">
         <thead>
           <tr>
@@ -1060,7 +1057,7 @@ function SwtStationColumn({
 }) {
   const showLeaderboard = station.isLeaderboardCapable && swt03Session === 'ended'
   const steps = useMemo(() => buildStationSteps(station, stationDataCount), [station, stationDataCount])
-  // The Global Leaderboard is a flat ranked list, not Detail groups, but
+  // The Session Leaderboard is a flat ranked list, not Detail groups, but
   // it still follows the same Data Count switcher — "10 - 5"/"5 - 5 - 5"
   // page it just like a normal station's rows instead of dumping all 15
   // at once regardless of what's selected.
@@ -1117,33 +1114,26 @@ function SwtStationColumn({
       style={hasUnevenPages ? { minHeight } : undefined}
     >
       <StationColumnHead name={station.code} bookingCode={station.bookingCode} />
+      <SwtStationInfo station={station} />
+      {/* When Unit is already the Detail title itself (detailTitleMode
+          === 'unit'), a separate line here would just repeat it. */}
+      {station.unit && detailTitleMode !== 'unit' && (
+        <p className="station-column-unit">
+          Unit: <strong>{station.unit}</strong>
+        </p>
+      )}
       {showLeaderboard ? (
-        <StationGlobalLeaderboard
-          rows={activeLeaderboardRows}
-          courseware={station.courseware}
-          timeRange={`${station.startTime} - ${station.endTime}`}
-          hideNo={hideNoColumn}
-        />
+        <StationGlobalLeaderboard rows={activeLeaderboardRows} hideNo={hideNoColumn} />
       ) : (
-        <>
-          <SwtStationInfo station={station} />
-          {/* When Unit is already the Detail title itself (detailTitleMode
-              === 'unit'), a separate line here would just repeat it. */}
-          {station.unit && detailTitleMode !== 'unit' && (
-            <p className="station-column-unit">
-              Unit: <strong>{station.unit}</strong>
-            </p>
-          )}
-          <DetailPanel
-            tableModel={tableModel}
-            rows={activeStep.rows}
-            title={detailTitleMode === 'unit' && station.unit ? station.unit : `Detail ${activeStep.detailIndex + 1}`}
-            status={activeStep.status}
-            fullRows
-            hideNo={hideNoColumn}
-            splitRank
-          />
-        </>
+        <DetailPanel
+          tableModel={tableModel}
+          rows={activeStep.rows}
+          title={detailTitleMode === 'unit' && station.unit ? station.unit : `Detail ${activeStep.detailIndex + 1}`}
+          status={activeStep.status}
+          fullRows
+          hideNo={hideNoColumn}
+          splitRank
+        />
       )}
     </section>
   )
@@ -1255,15 +1245,43 @@ function CmtStationColumn({
         className={`panel detail-panel-compact station-column station-column-unavailable station-column-unavailable-${notAvailableStyle}`}
       >
         <StationColumnHead name={station.code} />
-        {/* Mirrors a booked card's blank info line so the header block
-            lines up the same way, but drops the Rank/Trainee/Role table
-            entirely — an empty cabin has no roster to show, so a plain
-            "No Booking" message replaces both the table and its old
-            "Not Available" placeholder row. */}
+        {/* Mirrors a booked card's structure exactly (blank info line,
+            detail-panel-head row, 5-row table) so this card's height
+            always matches a booked card's at any font size — hidden via
+            CSS rather than left out, with the "No Booking" message
+            overlaid on top, so there's no visible table while the height
+            still tracks the real table markup instead of a guessed px
+            value that'd drift with the font-size switchers. */}
         <p className="station-column-info">
           <span>&nbsp;</span>
         </p>
-        <div className="station-column-no-booking">No Booking</div>
+        <div className="detail-panel-head" style={{ visibility: 'hidden' }}>
+          <h2 className="panel-title">No Booking</h2>
+          <span className="status-pill">Ready</span>
+        </div>
+        <div className="station-column-no-booking-wrap">
+          <table className="table table-two" style={{ visibility: 'hidden' }} aria-hidden="true">
+            <thead>
+              <tr>
+                {!hideNoColumn && <th className="no-cell">&nbsp;</th>}
+                <th className="rank-cell">&nbsp;</th>
+                <th className="name-cell">&nbsp;</th>
+                <th className="role-cell">&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4, 5].map((no) => (
+                <tr key={no}>
+                  {!hideNoColumn && <td className="no-cell">&nbsp;</td>}
+                  <td className="rank-cell">&nbsp;</td>
+                  <td className="name-cell">&nbsp;</td>
+                  <td className="role-cell">&nbsp;</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="station-column-no-booking">No Booking</div>
+        </div>
       </section>
     )
   }

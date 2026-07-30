@@ -213,7 +213,7 @@ export const stations = [
 // office's station board, one real booking per column instead of a
 // shared placeholder list. Sizes vary because that's how many trainees
 // are actually booked on each (5 or 15), not a display setting.
-// SWT-03 doubles as a Global Leaderboard once its session ends — see
+// SWT-03 doubles as a Session Leaderboard once its session ends — see
 // leaderboardRows/isLeaderboardCapable.
 export const swtStations = [
   {
@@ -363,7 +363,10 @@ export const swtStations = [
   },
   {
     code: 'SWT-03',
+    bookingCode: '20260715-SWT-03',
+    mode: 'Individual',
     courseware: 'M203',
+    unit: '41SAB',
     startTime: '08:00 AM',
     endTime: '04:00 PM',
     isLeaderboardCapable: true,
