@@ -2019,22 +2019,42 @@ export default function App() {
                 },
               ]
             : []),
-          {
-            id: 'table-model',
-            label: 'Table Model',
-            icon: <TableModelIcon />,
-            options: TABLE_MODELS,
-            active: tableModel,
-            onChange: setTableModel,
-          },
-          {
-            id: 'slideshow',
-            label: 'Slideshow',
-            icon: <SlideshowIcon />,
-            options: SLIDESHOW_INTERVALS,
-            active: slideInterval,
-            onChange: setSlideInterval,
-          },
+          // Level 2 is permanently pinned to Layout 5 (see the effect
+          // above), and CmtStationColumn's table there is a fixed,
+          // hardcoded layout that never reads tableModel — Table Model
+          // would just be a dead control on Level 2, unlike Level 3/4
+          // where it still drives Layouts 1-3's DetailPanel (and Level
+          // 4's own Layout 5 station columns).
+          ...(level !== 'level-2'
+            ? [
+                {
+                  id: 'table-model',
+                  label: 'Table Model',
+                  icon: <TableModelIcon />,
+                  options: TABLE_MODELS,
+                  active: tableModel,
+                  onChange: setTableModel,
+                },
+              ]
+            : []),
+          // Slideshow only drives which station the generic <Directory>
+          // sidebar highlights (Layouts 1-3's activeStation prop) — Level
+          // 2's Layout 5 always shows the static <CmtDirectory /> instead
+          // (it doesn't take an activeStation prop at all), so Slideshow
+          // is a dead control there too. Level 3/4 can still switch into
+          // Layouts 1-3 where it does matter.
+          ...(level !== 'level-2'
+            ? [
+                {
+                  id: 'slideshow',
+                  label: 'Slideshow',
+                  icon: <SlideshowIcon />,
+                  options: SLIDESHOW_INTERVALS,
+                  active: slideInterval,
+                  onChange: setSlideInterval,
+                },
+              ]
+            : []),
         ]
       : []),
     // Leaderboard model only drives LeaderboardPanel in Layouts 1-3's
