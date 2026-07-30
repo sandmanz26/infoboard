@@ -41,10 +41,20 @@ import SwtBoard from './levels/SwtBoard.jsx'
 // resolution, no keyboard/mouse, must never scroll — any overflow just
 // gets cut off on a real signage screen) and a laptop browser (fine to
 // scroll like a normal page). "TV" scales the whole board down to fit
-// the viewport exactly instead of overflowing — see FitToScreen below.
+// the viewport exactly (preserving aspect ratio, so it can letterbox —
+// see FitToScreen below) while "TV 65\" 2.0" fills the screen completely
+// edge-to-edge instead (may crop a sliver off one side rather than leave
+// blank bars), for content whose own aspect ratio doesn't naturally
+// match the real screen's and where any leftover empty space reads worse
+// than a small crop would.
 const DISPLAY_OPTIONS = [
   { id: 'laptop', label: 'Laptop', description: 'Normal browser window — scrolls if content is taller than the viewport' },
   { id: 'tv', label: 'TV (65")', description: 'Scales the whole board down to fit the screen exactly — never scrolls' },
+  {
+    id: 'tv2',
+    label: '65" 2.0',
+    description: 'Fills the screen edge-to-edge with no leftover space — may crop a sliver off one side instead of letterboxing',
+  },
 ]
 
 const LEADERBOARD_PAGE_SIZE = 5
@@ -933,7 +943,15 @@ function FlipProgressBar({ tick, intervalMs }) {
 // own previous scale back into itself. Laptop mode renders children
 // directly, completely unaffected — same scroll-if-needed behavior as
 // before this existed.
-function FitToScreen({ active, children }) {
+// fit: 'contain' (default) scales down to the largest size that still
+// fits entirely inside the viewport, preserving aspect ratio — can
+// letterbox (blank bars) when the content's natural aspect ratio doesn't
+// match the viewport's. 'cover' instead scales up to the smallest size
+// that fills the viewport completely, same aspect-ratio-preserving
+// uniform scale either way (never stretches X/Y independently) — any
+// mismatch shows up as a small crop past the edge instead of a gap,
+// which fit-to-screen-outer's overflow:hidden then just clips silently.
+function FitToScreen({ active, fit = 'contain', children }) {
   const innerRef = useRef(null)
   const [scale, setScale] = useState(1)
 
@@ -950,7 +968,7 @@ function FitToScreen({ active, children }) {
       if (naturalWidth === 0 || naturalHeight === 0) return
       const widthScale = window.innerWidth / naturalWidth
       const heightScale = window.innerHeight / naturalHeight
-      setScale(Math.min(widthScale, heightScale))
+      setScale(fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale))
     }
     recompute()
     const observer = new ResizeObserver(recompute)
@@ -960,7 +978,7 @@ function FitToScreen({ active, children }) {
       observer.disconnect()
       window.removeEventListener('resize', recompute)
     }
-  }, [active])
+  }, [active, fit])
 
   if (!active) return children
 
@@ -1843,7 +1861,7 @@ export default function App() {
   // scrollbar can appear regardless (e.g. before the first scale
   // measurement lands on mount).
   useEffect(() => {
-    document.body.style.overflow = display === 'tv' ? 'hidden' : ''
+    document.body.style.overflow = display === 'tv' || display === 'tv2' ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
     }
@@ -2283,7 +2301,7 @@ export default function App() {
           switchers (Local Rows / Global Winners Shown) can go up to 15
           rows per panel, and a leaderboard is meant to be read as a
           single static screen rather than scrolled. */}
-      <FitToScreen active={display === 'tv' || isLeaderboardFloor}>
+      <FitToScreen active={display === 'tv' || display === 'tv2' || isLeaderboardFloor} fit={display === 'tv2' ? 'cover' : 'contain'}>
         <div className="app" style={{ fontFamily: activeFont.stack }}>
           <Header
             station={currentLevelLabel}
