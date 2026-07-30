@@ -983,12 +983,11 @@ function FlipProgressBar({ tick, intervalMs }) {
 // uniform scale either way (never stretches X/Y independently) — any
 // mismatch shows up as a small crop past the edge instead of a gap,
 // which fit-to-screen-outer's overflow:hidden then just clips silently.
-// 'stretch' scales X and Y *independently* instead — width always fills
-// exactly 100% (matching how Level 1-4's own CSS grid naturally fills
-// the screen width in Laptop mode, with no letterboxing), height scales
-// down only as much as needed to avoid a scroll. Rows/text may look
-// slightly non-uniform if the natural aspect ratio doesn't match, but
-// nothing is ever left unfilled or cropped.
+// 'stretch' never touches X at all — .fit-to-screen-inner is already
+// width: 100% via plain CSS, so width fills the screen on its own with
+// no transform and no distortion (matching how Level 1-4's own CSS grid
+// naturally fills the screen width in Laptop mode). Only Y gets scaled,
+// and only down as much as needed to avoid a vertical scroll.
 // topOffsetPx reserves space for a fixed header rendered *outside* this
 // component (see the Leaderboard floor's own usage in App below) — the
 // header then never gets swept into the scale transform along with the
@@ -1013,7 +1012,11 @@ function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
       const widthScale = window.innerWidth / naturalWidth
       const heightScale = (window.innerHeight - topOffsetPx) / naturalHeight
       if (fit === 'stretch') {
-        setScale({ x: widthScale, y: heightScale })
+        // Width is never transformed — .fit-to-screen-inner is already
+        // width: 100% via plain CSS, so it fills the screen on its own
+        // with no distortion. Only height gets scaled, and only to
+        // whatever's needed to avoid a scroll.
+        setScale({ x: 1, y: heightScale })
       } else {
         const uniform = fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale)
         setScale({ x: uniform, y: uniform })
