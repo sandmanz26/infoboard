@@ -139,6 +139,7 @@ export default function LeaderboardFloorBoard({
   showPodium,
   globalCount,
   fontScale,
+  rowScale = 1,
   globalRowCount,
   localRowCount,
   slidePairIndex,
@@ -163,7 +164,7 @@ export default function LeaderboardFloorBoard({
   return (
     <main
       className={`layout layout-leaderboard-floor${styleVariant === 'v2' ? ' layout-leaderboard-floor-v2' : ''}`}
-      style={{ gridTemplateColumns, '--lb-font-scale': fontScale }}
+      style={{ gridTemplateColumns, '--lb-font-scale': fontScale, '--lb-row-scale': rowScale }}
     >
       <LocalLeaderboardPanel showPodium={showPodium} rowCount={localRowCount} />
       {visibleCoursewares.map((entry) => (

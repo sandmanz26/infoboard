@@ -233,6 +233,16 @@ const LEADERBOARD_STYLE_OPTIONS = [
   { id: 'v2', label: '2.0', description: 'Elevated cards, gradient banners, accent rank badges' },
 ]
 
+// Leaderboard floor only — scales every table row's own vertical padding
+// (independent of the Font Size switcher, which only scales text). Pick
+// Compact when a high row count (Top 15) needs to fit with less
+// shrinking from the floor's own fit-to-screen scaling.
+const LEADERBOARD_ROW_HEIGHT_OPTIONS = [
+  { id: 'compact', label: 'Compact', description: 'Shorter rows — fits more without scaling down as much', scale: 0.55 },
+  { id: 'normal', label: 'Normal', description: 'Default row height', scale: 1 },
+  { id: 'comfortable', label: 'Comfortable', description: 'Taller, easier-to-read rows', scale: 1.3 },
+]
+
 // Leaderboard floor only — only meaningful when Global Panels is set to
 // 2 (so there are 4 courseware split into 2 pairs). When on, the 2
 // visible panels swap to the other pair of courseware every
@@ -465,6 +475,7 @@ const LEADERBOARD_FONT_SIZE_STORAGE_KEY = 'infoboard-leaderboard-font-size'
 const LEADERBOARD_GLOBAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-global-rows'
 const LEADERBOARD_LOCAL_ROWS_STORAGE_KEY = 'infoboard-leaderboard-local-rows'
 const LEADERBOARD_STYLE_STORAGE_KEY = 'infoboard-leaderboard-style'
+const LEADERBOARD_ROW_HEIGHT_STORAGE_KEY = 'infoboard-leaderboard-row-height'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
@@ -971,7 +982,13 @@ function FlipProgressBar({ tick, intervalMs }) {
 // uniform scale either way (never stretches X/Y independently) — any
 // mismatch shows up as a small crop past the edge instead of a gap,
 // which fit-to-screen-outer's overflow:hidden then just clips silently.
-function FitToScreen({ active, fit = 'contain', children }) {
+// topOffsetPx reserves space for a fixed header rendered *outside* this
+// component (see the Leaderboard floor's own usage in App below) — the
+// header then never gets swept into the scale transform along with the
+// rest of the page, so it stays exactly the same size Level 1-4 render
+// it at instead of shrinking/growing with however many rows the
+// Leaderboard's row-count switchers currently show.
+function FitToScreen({ active, fit = 'contain', topOffsetPx = 0, children }) {
   const innerRef = useRef(null)
   const [scale, setScale] = useState(1)
 
@@ -987,7 +1004,7 @@ function FitToScreen({ active, fit = 'contain', children }) {
       const naturalHeight = el.scrollHeight
       if (naturalWidth === 0 || naturalHeight === 0) return
       const widthScale = window.innerWidth / naturalWidth
-      const heightScale = window.innerHeight / naturalHeight
+      const heightScale = (window.innerHeight - topOffsetPx) / naturalHeight
       setScale(fit === 'cover' ? Math.max(widthScale, heightScale) : Math.min(widthScale, heightScale))
     }
     recompute()
@@ -998,12 +1015,15 @@ function FitToScreen({ active, fit = 'contain', children }) {
       observer.disconnect()
       window.removeEventListener('resize', recompute)
     }
-  }, [active, fit])
+  }, [active, fit, topOffsetPx])
 
   if (!active) return children
 
   return (
-    <div className="fit-to-screen-outer">
+    <div
+      className="fit-to-screen-outer"
+      style={topOffsetPx ? { height: `calc(100vh - ${topOffsetPx}px)` } : undefined}
+    >
       <div ref={innerRef} className="fit-to-screen-inner" style={{ transform: `scale(${scale})` }}>
         {children}
       </div>
@@ -1630,6 +1650,10 @@ export default function App() {
     const saved = localStorage.getItem(LEADERBOARD_STYLE_STORAGE_KEY)
     return LEADERBOARD_STYLE_OPTIONS.some((o) => o.id === saved) ? saved : 'classic'
   })
+  const [leaderboardRowHeight, setLeaderboardRowHeight] = useState(() => {
+    const saved = localStorage.getItem(LEADERBOARD_ROW_HEIGHT_STORAGE_KEY)
+    return LEADERBOARD_ROW_HEIGHT_OPTIONS.some((o) => o.id === saved) ? saved : 'normal'
+  })
   const [leaderboardSlide, setLeaderboardSlide] = useState(() => {
     const saved = localStorage.getItem(LEADERBOARD_SLIDE_STORAGE_KEY)
     return LEADERBOARD_SLIDE_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
@@ -1638,6 +1662,22 @@ export default function App() {
     const saved = localStorage.getItem(DISPLAY_STORAGE_KEY)
     return DISPLAY_OPTIONS.some((o) => o.id === saved) ? saved : 'laptop'
   })
+  // Measures the header's real rendered height so the Leaderboard floor's
+  // own fit-to-remaining-space wrapper (Laptop mode only — see the return
+  // below) knows exactly how much vertical space to reserve above it,
+  // instead of guessing a fixed px value that'd drift if the header's
+  // own font size or content ever changes.
+  const headerRef = useRef(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const recompute = () => setHeaderHeight(el.getBoundingClientRect().height)
+    recompute()
+    const observer = new ResizeObserver(recompute)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1885,6 +1925,10 @@ export default function App() {
   }, [leaderboardStyle])
 
   useEffect(() => {
+    localStorage.setItem(LEADERBOARD_ROW_HEIGHT_STORAGE_KEY, leaderboardRowHeight)
+  }, [leaderboardRowHeight])
+
+  useEffect(() => {
     localStorage.setItem(LEADERBOARD_SLIDE_STORAGE_KEY, leaderboardSlide)
   }, [leaderboardSlide])
 
@@ -2029,6 +2073,14 @@ export default function App() {
             options: LEADERBOARD_STYLE_OPTIONS,
             active: leaderboardStyle,
             onChange: setLeaderboardStyle,
+          },
+          {
+            id: 'leaderboard-row-height',
+            label: 'Row Height',
+            icon: <DetailCountIcon />,
+            options: LEADERBOARD_ROW_HEIGHT_OPTIONS,
+            active: leaderboardRowHeight,
+            onChange: setLeaderboardRowHeight,
           },
           {
             id: 'leaderboard-local-rows',
@@ -2301,8 +2353,11 @@ export default function App() {
         ]
       : []),
     // Layout 5 only — independent font-size controls, available on any
-    // level since they're purely visual, not tied to Level 4's flip logic.
-    ...(layout === 'layout-5'
+    // training level since they're purely visual, not tied to Level 4's
+    // flip logic. The Leaderboard floor doesn't use Layout 5 at all (it
+    // has its own Font Size switcher instead), so it's excluded here —
+    // these would otherwise be 3 dead controls there.
+    ...(isTrainingLevel && layout === 'layout-5'
       ? [
           {
             id: 'table-font-size',
@@ -2340,33 +2395,37 @@ export default function App() {
 
   return (
     <>
-      {/* The Leaderboard floor always fits to the screen height (no
-          scroll), independent of the Display switcher — its row-count
-          switchers (Local Rows / Global Winners Shown) can go up to 15
-          rows per panel, and a leaderboard is meant to be read as a
-          single static screen rather than scrolled. */}
-      <FitToScreen active={display === 'tv' || display === 'tv2' || isLeaderboardFloor} fit={display === 'tv2' ? 'cover' : 'contain'}>
+      {/* TV/TV2 uniformly scale the entire screen (header included) to
+          match a real fixed-resolution display — see FitToScreen. The
+          Leaderboard floor's own no-scroll fit (below, Laptop mode only)
+          is a separate, narrower mechanism: it only wraps the floor's own
+          body so the header stays exactly the same size Level 1-4 render
+          it at, instead of shrinking/growing with the row-count
+          switchers. */}
+      <FitToScreen active={display === 'tv' || display === 'tv2'} fit={display === 'tv2' ? 'cover' : 'contain'}>
         <div
           className={`app${display === 'tv2' ? ' app-tv2' : ''}`}
           style={{ fontFamily: activeFont.stack }}
         >
-          <Header
-            station={currentLevelLabel}
-            detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
-            title={
-              level === 'level-4'
-                ? 'Specialized Weapon Trainer\nTraining Information Board'
-                : level === 'level-2'
-                  ? 'Company Tactical Mission Trainer\nTraining Information Board'
-                  : level === 'level-3'
-                    ? 'Command Team Trainer\nTraining Information Board'
-                    : level === 'level-1'
-                      ? 'Today Bookings'
-                      : isLeaderboardFloor
-                        ? 'Leaderboard'
-                        : 'Infoboard'
-            }
-          />
+          <div ref={headerRef}>
+            <Header
+              station={currentLevelLabel}
+              detailLabel={isLeaderboardFloor ? 'Rankings' : isTrainingLevel ? 'Detail 2' : 'Lobby'}
+              title={
+                level === 'level-4'
+                  ? 'Specialized Weapon Trainer\nTraining Information Board'
+                  : level === 'level-2'
+                    ? 'Company Tactical Mission Trainer\nTraining Information Board'
+                    : level === 'level-3'
+                      ? 'Command Team Trainer\nTraining Information Board'
+                      : level === 'level-1'
+                        ? 'Today Bookings'
+                        : isLeaderboardFloor
+                          ? 'Leaderboard'
+                          : 'Infoboard'
+              }
+            />
+          </div>
           {isTrainingLevel && layout === 'layout-5' && (
             <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
           )}
@@ -2397,16 +2456,19 @@ export default function App() {
               stationFontSize={stationFontSize}
             />
           ) : isLeaderboardFloor ? (
-            <LeaderboardFloorBoard
-              columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
-              showPodium={leaderboardPodium === 'visible'}
-              globalCount={Number(leaderboardGlobalCount)}
-              fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
-              globalRowCount={Number(leaderboardGlobalRows)}
-              localRowCount={Number(leaderboardLocalRows)}
-              slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
-              styleVariant={leaderboardStyle}
-            />
+            <FitToScreen active={display === 'laptop'} topOffsetPx={headerHeight}>
+              <LeaderboardFloorBoard
+                columnRatios={LEADERBOARD_PROPORTION_OPTIONS.find((o) => o.id === leaderboardProportion)?.ratios ?? [40, 15, 15, 15, 15]}
+                showPodium={leaderboardPodium === 'visible'}
+                globalCount={Number(leaderboardGlobalCount)}
+                fontScale={LEADERBOARD_FONT_SIZE_OPTIONS.find((o) => o.id === leaderboardFontSize)?.scale ?? 1}
+                rowScale={LEADERBOARD_ROW_HEIGHT_OPTIONS.find((o) => o.id === leaderboardRowHeight)?.scale ?? 1}
+                globalRowCount={Number(leaderboardGlobalRows)}
+                localRowCount={Number(leaderboardLocalRows)}
+                slidePairIndex={leaderboardGlobalCount === '2' && leaderboardSlide === 'on' ? leaderboardSlideTick : 0}
+                styleVariant={leaderboardStyle}
+              />
+            </FitToScreen>
           ) : (
             <>
               <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />

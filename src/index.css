@@ -816,6 +816,16 @@ body {
   font-size: calc(13px * var(--lb-font-scale, 1));
 }
 
+/* Row Height switcher — scales every table row's own vertical padding
+   independent of Font Size (which only scales text). Scoped the same
+   way as the font-scale rules above so it doesn't touch the Layouts
+   1-3 sidebar Leaderboard panel, which shares the same .leaderboard-
+   table class but isn't part of this floor. */
+.layout-leaderboard-floor .leaderboard-table td {
+  padding-top: calc(16px * var(--lb-row-scale, 1));
+  padding-bottom: calc(16px * var(--lb-row-scale, 1));
+}
+
 /* ---------- Leaderboard 2.0 (Leaderboard Style switcher) ----------
    Same markup as Classic, purely a CSS variant: elevated panel cards,
    gradient banners, circular rank badges (matching the medal badges'
