@@ -57,6 +57,21 @@ const DISPLAY_OPTIONS = [
   },
 ]
 
+// Levels 2-4 + Leaderboard floor only (not Level 1's lobby) — a High
+// Contrast palette for viewing a 65" screen from across a training bay.
+// Standard keeps the existing warm-light theme; High Contrast swaps to a
+// near-black background with off-white text and brightened status/rank
+// colors. Deliberately near-black/off-white rather than pure #000/#fff —
+// per WCAG and signage-readability guidance, pure black-on-white (or the
+// reverse) reads as harsher/glarier at large sizes and viewing distance,
+// and is harder to read for some viewers (e.g. dyslexia) than a slightly
+// softened version of the same contrast; colors below still clear WCAG
+// AAA's 7:1 ratio against their paired background.
+const CONTRAST_OPTIONS = [
+  { id: 'standard', label: 'Standard', description: 'Default warm-light theme' },
+  { id: 'high', label: 'High Contrast', description: 'Near-black background, off-white text, brightened status colors' },
+]
+
 const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 const DETAIL_GROUPS_PER_PAGE = 3
@@ -504,6 +519,7 @@ const LEADERBOARD_SCORE_MAX_STORAGE_KEY = 'infoboard-leaderboard-score-max'
 const LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY = 'infoboard-leaderboard-local-column-labels'
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
+const CONTRAST_STORAGE_KEY = 'infoboard-contrast'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -528,6 +544,15 @@ function DisplayIcon() {
     <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true" fill="none">
       <rect x="1.5" y="3" width="17" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
       <path d="M7 17h6M10 14v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ContrastIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+      <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor" />
     </svg>
   )
 }
@@ -1672,6 +1697,10 @@ export default function App() {
     const saved = localStorage.getItem(DISPLAY_STORAGE_KEY)
     return DISPLAY_OPTIONS.some((o) => o.id === saved) ? saved : 'laptop'
   })
+  const [contrast, setContrast] = useState(() => {
+    const saved = localStorage.getItem(CONTRAST_STORAGE_KEY)
+    return CONTRAST_OPTIONS.some((o) => o.id === saved) ? saved : 'standard'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1942,6 +1971,10 @@ export default function App() {
     localStorage.setItem(DISPLAY_STORAGE_KEY, display)
   }, [display])
 
+  useEffect(() => {
+    localStorage.setItem(CONTRAST_STORAGE_KEY, contrast)
+  }, [contrast])
+
   // Backstop for TV mode — FitToScreen's own scaling should already keep
   // everything inside the viewport, but this guarantees no page-level
   // scrollbar can appear regardless (e.g. before the first scale
@@ -2013,6 +2046,20 @@ export default function App() {
       active: display,
       onChange: setDisplay,
     },
+    // Levels 2-4 + Leaderboard floor only — Level 1's lobby keeps its
+    // one fixed light theme.
+    ...(isTrainingLevel || isLeaderboardFloor
+      ? [
+          {
+            id: 'contrast',
+            label: 'Contrast',
+            icon: <ContrastIcon />,
+            options: CONTRAST_OPTIONS,
+            active: contrast,
+            onChange: setContrast,
+          },
+        ]
+      : []),
     {
       id: 'font',
       label: 'Typography',
@@ -2438,7 +2485,7 @@ export default function App() {
           only one axis needed to shrink to avoid a scroll. */}
       <FitToScreen active={display === 'tv' || display === 'tv2'} fit={display === 'tv2' ? 'cover' : 'contain'}>
         <div
-          className={`app${display === 'tv2' ? ' app-tv2' : ''}`}
+          className={`app${display === 'tv2' ? ' app-tv2' : ''}${contrast === 'high' && (isTrainingLevel || isLeaderboardFloor) ? ' app-high-contrast' : ''}`}
           style={{ fontFamily: activeFont.stack }}
         >
           <Header

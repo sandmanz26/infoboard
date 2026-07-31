@@ -10,6 +10,7 @@
   --page-bg: #efece7;
   --panel-bg: #ffffff;
   --panel-tint: #f7f5f2;
+  --panel-muted: #f3f1ec;
   --table-head-bg: #fdf1ec;
   --table-head-text: #c0392b;
   --text-main: #1f2329;
@@ -96,6 +97,20 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Paints .app's own box (and re-declares text color here) instead of
+     relying on <body>'s background/color showing/inheriting through —
+     needed once a scoped theme (e.g. .app-high-contrast) redefines
+     --page-bg/--text-main only within .app: body is an *ancestor* of
+     .app, so it can never see that override. Its background would stay
+     the light theme's page color and show through as a mismatched light
+     gutter around a dark board; worse, any descendant that doesn't set
+     its own `color` (most of them) would inherit body's *already
+     resolved* light text color rather than re-reading the variable, so
+     text would stay dark-on-dark and nearly disappear. Setting both
+     again here, at the element that actually carries the theme class,
+     means every descendant's inherited starting point is correct. */
+  background: var(--page-bg);
+  color: var(--text-main);
 }
 
 /* TV display mode — see FitToScreen in App.jsx. Clips to exactly the
@@ -134,7 +149,7 @@ body {
    columns keep it centered relative to the whole header, not just the
    leftover space next to the logo. */
 .header {
-  background: #fff;
+  background: var(--panel-bg);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -384,7 +399,7 @@ body {
 .table td {
   padding: 12px;
   font-size: 13.5px;
-  border-bottom: 1px solid #f0f1f3;
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -1535,12 +1550,12 @@ body {
 }
 
 .station-column-unavailable-muted {
-  background: var(--panel-muted, #f3f1ec);
+  background: var(--panel-muted);
   opacity: 0.7;
 }
 
 .station-column-unavailable-white {
-  background: var(--panel-bg, #fff);
+  background: var(--panel-bg);
 }
 
 /* Wraps the hidden (visibility: hidden) height-matching table — its
@@ -2636,4 +2651,97 @@ body {
     flex-wrap: wrap;
     gap: 8px;
   }
+}
+
+/* ---------- High Contrast (Contrast switcher, Levels 2-4 + Leaderboard
+   floor) ----------
+   Near-black surfaces + off-white text rather than pure #000/#fff: per
+   WCAG/signage-readability guidance, true black-on-white (or the
+   reverse) reads harsher and glarier at large sizes/viewing distance and
+   is harder on some readers (e.g. dyslexia) than a slightly softened
+   version of the same contrast — every pairing below still clears WCAG
+   AAA's 7:1 ratio. Overriding these tokens on .app is enough for almost
+   every surface in the app, since components consistently read colors
+   through var(...) rather than hardcoding them; the handful of spots
+   below that instead mix a color directly with a literal `white` (for a
+   pastel row/badge tint) get their own override further down so those
+   still read as a dark tint instead of a bright patch on a dark page.
+   This block is placed last in the stylesheet (rather than beside :root)
+   so its overrides reliably beat same-specificity rules like the
+   Leaderboard 2.0 style's own .leaderboard-row-gold background, which
+   would otherwise win on source order. */
+.app-high-contrast {
+  --page-bg: #0c0d0f;
+  --panel-bg: #17181c;
+  --panel-tint: #1e2024;
+  --panel-muted: #202226;
+  --table-head-bg: #232527;
+  --table-head-text: #ff8a75;
+  --text-main: #f4f4f2;
+  --text-sub: #c3c8d1;
+  --border: #3a3d42;
+  --banner-bg: #16283c;
+
+  --accent: #ff6a5c;
+  --accent-hover: #ff8a7d;
+  --accent-glow: rgba(255, 106, 92, 0.35);
+
+  --ready-blue: #7ab8ff;
+  --ready-blue-bg: #10233a;
+  --queue-amber: #ffb454;
+  --queue-amber-bg: #3a2a10;
+  --done-green: #4ade80;
+  --done-green-bg: #0f2a1c;
+  --overdue-red: #ff6b60;
+  --overdue-red-bg: #3a1210;
+  --queue-grey: #b6bcc6;
+  --queue-grey-bg: #262931;
+
+  --gold: #f0c94a;
+  --gold-deep: #c79a24;
+  --gold-soft: #4a3d14;
+  --silver: #d6dbe1;
+  --silver-deep: #a7adb6;
+  --silver-soft: #33363b;
+  --bronze: #e0a468;
+  --bronze-deep: #b97c42;
+  --bronze-soft: #402c18;
+
+  --leaderboard-local-bg: #3a2020;
+  --leaderboard-local-text: #ff9d90;
+  --leaderboard-global-bg: #241c3a;
+  --leaderboard-global-text: #c3aef2;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --shadow-float: 0 6px 18px rgba(255, 106, 92, 0.35);
+}
+
+/* The "Not Available" card leans on opacity (not just --panel-muted) to
+   look disabled — fine at 0.7 against a light page, but on a near-black
+   page that same opacity fades its text below a comfortable reading
+   contrast, so High Contrast keeps it fully opaque instead. */
+.app-high-contrast .station-column-unavailable-muted {
+  opacity: 1;
+}
+
+/* These rows/badges tint a rank color by mixing it with a literal white
+   rather than reading a --*-soft token verbatim, so redefining the
+   tokens above doesn't reach them — mix toward black instead so a medal
+   row still reads as a dark tint of its rank color instead of a bright
+   patch dropped onto a dark panel. */
+.app-high-contrast .leaderboard-row-gold,
+.app-high-contrast .leaderboard-card-gold {
+  background: color-mix(in srgb, var(--gold-soft) 65%, black);
+}
+.app-high-contrast .leaderboard-row-silver,
+.app-high-contrast .leaderboard-card-silver {
+  background: color-mix(in srgb, var(--silver-soft) 65%, black);
+}
+.app-high-contrast .leaderboard-row-bronze,
+.app-high-contrast .leaderboard-card-bronze {
+  background: color-mix(in srgb, var(--bronze-soft) 65%, black);
+}
+.app-high-contrast .layout-leaderboard-floor-v2 .ranking-number {
+  background: color-mix(in srgb, var(--text-sub) 18%, black);
 }
