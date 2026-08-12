@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Wreath } from './TopThree.jsx'
 import {
   imtLeaderboardInfo,
@@ -5,6 +6,27 @@ import {
   imtLeaderboardGlobalPodium,
   imtLeaderboardGlobalRows,
 } from '../data.js'
+
+// "Takeover Effect" switcher (App.jsx, IMT_L only) — rank 11 (Farid Bin
+// Osman) leapfrogs into a joint-3rd, ahead of the existing bronze tier,
+// to demo a dramatic live-standings shake-up. The row is spliced out of
+// its old slot and back in right after 2nd, relabeled '3rd'/bronze — the
+// rest of the table's numbers are left alone (a real recompute would
+// renumber everyone between old and new position, but this is a display
+// effect, not a scoring engine, and the visual move already tells the
+// story on its own).
+const TAKEOVER_SOURCE_RANKING = '11'
+const TAKEOVER_MOVER_NAME = imtLeaderboardLocalRows.find((r) => r.ranking === TAKEOVER_SOURCE_RANKING)?.name
+
+function applyTakeoverRows(rows) {
+  const fromIndex = rows.findIndex((r) => r.ranking === TAKEOVER_SOURCE_RANKING)
+  if (fromIndex === -1) return rows
+  const mover = { ...rows[fromIndex], ranking: '3rd', medal: 'bronze' }
+  const rest = rows.filter((_, i) => i !== fromIndex)
+  const thirdIndex = rest.findIndex((r) => r.ranking === '3rd')
+  const insertAt = thirdIndex === -1 ? rest.length : thirdIndex
+  return [...rest.slice(0, insertAt), mover, ...rest.slice(insertAt)]
+}
 
 // IMT_L level — a fixed replica of a reference design: unlike the
 // Leaderboard floor above, the Local panel here is a plain table (no
@@ -95,7 +117,7 @@ function ImtRankingCell({ row }) {
   return <span className="ranking-number">{row.ranking}</span>
 }
 
-function ImtLeaderboardTable({ rows }) {
+function ImtLeaderboardTable({ rows, rowRef, moverName }) {
   return (
     <table className="table leaderboard-table imt-leaderboard-table">
       <thead>
@@ -109,22 +131,30 @@ function ImtLeaderboardTable({ rows }) {
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, index) => (
-          <tr key={`${row.name}-${index}`} className={row.medal ? `leaderboard-row-${row.medal}` : undefined}>
-            <td>
-              <ImtRankingCell row={row} />
-            </td>
-            <td>{row.rank}</td>
-            <td className="name-cell" title={row.name}>
-              {row.name}
-            </td>
-            <td>{row.unitName}</td>
-            <td>
-              {row.score} / {row.total}
-            </td>
-            <td>{row.mpi}</td>
-          </tr>
-        ))}
+        {rows.map((row, index) => {
+          const isMover = row.name === moverName
+          return (
+            <tr
+              key={row.name}
+              ref={rowRef ? (el) => rowRef(row.name, el) : undefined}
+              className={`${row.medal ? `leaderboard-row-${row.medal}` : ''}${isMover ? ' imt-row-mover' : ''}`.trim() || undefined}
+            >
+              <td>
+                <ImtRankingCell row={row} />
+              </td>
+              <td>{row.rank}</td>
+              <td className="name-cell" title={row.name}>
+                {row.name}
+                {isMover && <span className="imt-row-mover-badge">▲ Joint 3rd</span>}
+              </td>
+              <td>{row.unitName}</td>
+              <td>
+                {row.score} / {row.total}
+              </td>
+              <td>{row.mpi}</td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )
@@ -143,7 +173,58 @@ function ImtInfoRight() {
   )
 }
 
-function ImtLocalPanel() {
+function ImtLocalPanel({ takeoverActive }) {
+  const rows = useMemo(
+    () => (takeoverActive ? applyTakeoverRows(imtLeaderboardLocalRows) : imtLeaderboardLocalRows),
+    [takeoverActive]
+  )
+
+  // FLIP animation: every row (not just the mover) gets its position
+  // change animated, since splicing one row out of the middle and back
+  // in a few slots up shifts everyone between the two spots down by one
+  // — letting that whole block slide together, while the mover itself
+  // flies past them, is what actually reads as a "takeover" rather than
+  // a row just silently teleporting to a new spot.
+  const rowEls = useRef({})
+  const prevRects = useRef({})
+  const registerRow = (name, el) => {
+    if (el) rowEls.current[name] = el
+    else delete rowEls.current[name]
+  }
+  useLayoutEffect(() => {
+    const nextRects = {}
+    for (const [name, el] of Object.entries(rowEls.current)) {
+      const rect = el.getBoundingClientRect()
+      nextRects[name] = rect
+      const prev = prevRects.current[name]
+      const deltaY = prev ? prev.top - rect.top : 0
+      if (deltaY) {
+        el.style.transition = 'none'
+        el.style.transform = `translateY(${deltaY}px)`
+        el.getBoundingClientRect() // force reflow before releasing the transition
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 750ms cubic-bezier(0.22, 1, 0.36, 1)'
+          el.style.transform = ''
+        })
+      }
+    }
+    prevRects.current = nextRects
+  }, [rows])
+
+  // A brief announcement banner on the way *in* only (not on revert) —
+  // self-clears instead of lingering once the row has settled into place.
+  const [showBanner, setShowBanner] = useState(false)
+  const wasActive = useRef(takeoverActive)
+  useEffect(() => {
+    if (takeoverActive && !wasActive.current) {
+      setShowBanner(true)
+      const t = setTimeout(() => setShowBanner(false), 3200)
+      wasActive.current = takeoverActive
+      return () => clearTimeout(t)
+    }
+    wasActive.current = takeoverActive
+  }, [takeoverActive])
+
   return (
     <section className="panel leaderboard-floor-panel">
       <div className="leaderboard-floor-banner leaderboard-floor-banner-local">Local Leaderboard</div>
@@ -157,7 +238,12 @@ function ImtLocalPanel() {
           </div>
           <ImtInfoRight />
         </div>
-        <ImtLeaderboardTable rows={imtLeaderboardLocalRows} />
+        {showBanner && (
+          <div className="imt-takeover-banner">
+            🔥 <strong>{TAKEOVER_MOVER_NAME}</strong> surges from 11th to Joint 3rd!
+          </div>
+        )}
+        <ImtLeaderboardTable rows={rows} rowRef={registerRow} moverName={takeoverActive ? TAKEOVER_MOVER_NAME : null} />
       </div>
     </section>
   )
@@ -182,10 +268,10 @@ function ImtGlobalPanel() {
   )
 }
 
-export default function ImtLeaderboardBoard() {
+export default function ImtLeaderboardBoard({ takeoverActive = false }) {
   return (
     <main className="layout layout-imt-leaderboard">
-      <ImtLocalPanel />
+      <ImtLocalPanel takeoverActive={takeoverActive} />
       <ImtGlobalPanel />
     </main>
   )

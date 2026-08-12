@@ -73,6 +73,14 @@ const CONTRAST_OPTIONS = [
   { id: 'high', label: 'High Contrast', description: 'Near-black background, off-white text, brightened status colors' },
 ]
 
+// IMT_L level only — a one-shot demo effect: rank 11 (Local table)
+// leapfrogs into a joint-3rd, animated (see ImtLeaderboardBoard.jsx's
+// FLIP-based reorder) instead of just silently re-sorting.
+const IMT_TAKEOVER_OPTIONS = [
+  { id: 'off', label: 'Off', description: 'Local Leaderboard shows its normal standings' },
+  { id: 'on', label: 'On', description: 'Rank 11 animates into a joint-3rd takeover' },
+]
+
 const LEADERBOARD_PAGE_SIZE = 5
 const LEADERBOARD_PAGE_INTERVAL_MS = 6000
 const DETAIL_GROUPS_PER_PAGE = 3
@@ -521,6 +529,7 @@ const LEADERBOARD_LOCAL_COLUMN_LABELS_STORAGE_KEY = 'infoboard-leaderboard-local
 const LEADERBOARD_SLIDE_STORAGE_KEY = 'infoboard-leaderboard-slide'
 const DISPLAY_STORAGE_KEY = 'infoboard-display'
 const CONTRAST_STORAGE_KEY = 'infoboard-contrast'
+const IMT_TAKEOVER_STORAGE_KEY = 'infoboard-imt-takeover'
 const PANEL_RATIO_STORAGE_KEY = 'infoboard-panel-ratio'
 const FONT_STORAGE_KEY = 'infoboard-font'
 const DETAIL_COUNT_STORAGE_KEY = 'infoboard-detail-count'
@@ -1702,6 +1711,10 @@ export default function App() {
     const saved = localStorage.getItem(CONTRAST_STORAGE_KEY)
     return CONTRAST_OPTIONS.some((o) => o.id === saved) ? saved : 'standard'
   })
+  const [imtTakeover, setImtTakeover] = useState(() => {
+    const saved = localStorage.getItem(IMT_TAKEOVER_STORAGE_KEY)
+    return IMT_TAKEOVER_OPTIONS.some((o) => o.id === saved) ? saved : 'off'
+  })
   const [panelRatio, setPanelRatio] = useState(() => {
     const saved = localStorage.getItem(PANEL_RATIO_STORAGE_KEY)
     return PANEL_RATIOS.some((r) => r.id === saved) ? saved : '60-40'
@@ -1976,6 +1989,10 @@ export default function App() {
     localStorage.setItem(CONTRAST_STORAGE_KEY, contrast)
   }, [contrast])
 
+  useEffect(() => {
+    localStorage.setItem(IMT_TAKEOVER_STORAGE_KEY, imtTakeover)
+  }, [imtTakeover])
+
   // Backstop for TV mode — FitToScreen's own scaling should already keep
   // everything inside the viewport, but this guarantees no page-level
   // scrollbar can appear regardless (e.g. before the first scale
@@ -2062,6 +2079,19 @@ export default function App() {
             options: CONTRAST_OPTIONS,
             active: contrast,
             onChange: setContrast,
+          },
+        ]
+      : []),
+    // IMT_L only — the takeover demo effect, see IMT_TAKEOVER_OPTIONS.
+    ...(isImtLevel
+      ? [
+          {
+            id: 'imt-takeover',
+            label: 'Takeover Effect',
+            icon: <LeaderboardIcon />,
+            options: IMT_TAKEOVER_OPTIONS,
+            active: imtTakeover,
+            onChange: setImtTakeover,
           },
         ]
       : []),
@@ -2558,7 +2588,7 @@ export default function App() {
               scoreMax={Number(leaderboardScoreMax)}
             />
           ) : isImtLevel ? (
-            <ImtLeaderboardBoard />
+            <ImtLeaderboardBoard takeoverActive={imtTakeover === 'on'} />
           ) : (
             <>
               <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />
