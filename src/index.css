@@ -1126,7 +1126,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1.1fr 1fr;
   align-items: end;
-  gap: 10px;
+  gap: 16px;
   margin: 8px 4px 20px;
 }
 
@@ -1137,51 +1137,90 @@ body {
   text-align: center;
 }
 
-.imt-trophy {
-  margin-bottom: 2px;
+/* The trophy+wreath group sits on top of the block and overlaps its top
+   edge by design (negative margin-bottom) — matching the reference,
+   where the wreath's bottom rim is buried a little into the block
+   instead of floating clear above it. */
+.imt-podium-topgroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: -64px;
+  z-index: 1;
 }
-.imt-podium-gold .imt-trophy {
+
+.imt-podium-trophy-wrap {
+  position: absolute;
+  left: -32px;
+  bottom: 60px;
+  z-index: 2;
+}
+
+.imt-trophy-gold {
   color: var(--gold);
 }
-.imt-podium-silver .imt-trophy {
+.imt-trophy-silver {
   color: var(--silver);
 }
-.imt-podium-bronze .imt-trophy {
+.imt-trophy-bronze {
+  color: var(--bronze);
+}
+
+.imt-wreath {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imt-wreath-label {
+  position: absolute;
+  font-weight: 800;
+  font-size: 26px;
+}
+
+.imt-wreath-gold {
+  color: var(--gold);
+}
+.imt-wreath-silver {
+  color: var(--silver);
+}
+.imt-wreath-bronze {
   color: var(--bronze);
 }
 
 .imt-podium-block {
   position: relative;
   width: 100%;
-  height: 86px;
-  border-radius: 10px 10px 0 0;
-  margin-top: 18px;
+  height: 230px;
+  border-radius: 4px 4px 0 0;
+  padding-top: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .imt-podium-tall .imt-podium-block {
-  height: 126px;
+  height: 300px;
 }
 
 .imt-podium-gold .imt-podium-block {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 55%, white), var(--gold));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 30%, white) 0%, var(--gold) 22%, var(--gold-deep) 100%);
 }
 .imt-podium-silver .imt-podium-block {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--silver) 55%, white), var(--silver));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--silver) 30%, white) 0%, var(--silver) 22%, var(--silver-deep) 100%);
 }
 .imt-podium-bronze .imt-podium-block {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bronze) 55%, white), var(--bronze));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bronze) 30%, white) 0%, var(--bronze) 22%, var(--bronze-deep) 100%);
 }
 
 .imt-podium-score-pill {
-  position: absolute;
-  top: -16px;
-  left: 50%;
-  transform: translateX(-50%);
   background: var(--panel-bg);
   color: var(--text-main);
   font-weight: 800;
-  font-size: 14px;
-  padding: 7px 16px;
+  font-size: 16px;
+  padding: 8px 18px;
   border-radius: 999px;
   box-shadow: var(--shadow-2);
   white-space: nowrap;
@@ -1190,7 +1229,20 @@ body {
 .imt-podium-score-total {
   font-weight: 600;
   color: var(--text-sub);
-  font-size: 0.85em;
+  font-size: 0.8em;
+}
+
+.imt-podium-names {
+  margin-top: auto;
+  padding-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #fff;
+}
+
+.imt-podium-mpi {
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.28);
 }
 
 /* ---------- Directory ---------- */
