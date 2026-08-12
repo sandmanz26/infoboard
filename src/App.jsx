@@ -29,6 +29,7 @@ import CombinedDetailList from './components/CombinedDetailList.jsx'
 import StationsOverview from './components/StationsOverview.jsx'
 import LobbyBoard from './components/LobbyBoard.jsx'
 import LeaderboardFloorBoard, { LOCAL_COLUMN_LABEL_DEFAULTS } from './components/LeaderboardFloorBoard.jsx'
+import ImtLeaderboardBoard from './components/ImtLeaderboardBoard.jsx'
 import LayoutSwitcher from './components/LayoutSwitcher.jsx'
 import PageDots from './components/PageDots.jsx'
 import usePagedRows from './hooks/usePagedRows.js'
@@ -2014,8 +2015,12 @@ export default function App() {
     return () => clearInterval(id)
   }, [slideInterval])
 
-  const isTrainingLevel = level !== 'level-1' && level !== 'leaderboard'
+  const isTrainingLevel = level !== 'level-1' && level !== 'leaderboard' && level !== 'imt-l'
   const isLeaderboardFloor = level === 'leaderboard'
+  // A fixed replica of a reference design — no switchers of its own (see
+  // ImtLeaderboardBoard), so it deliberately doesn't join isLeaderboardFloor
+  // above (that flag gates the OTHER Leaderboard floor's whole switcher list).
+  const isImtLevel = level === 'imt-l'
 
   // Toggles one component in/out of the right column. Unchecking all
   // three is allowed on purpose — the table then takes the full row
@@ -2500,12 +2505,13 @@ export default function App() {
                     ? 'Command Team Trainer\nTraining Information Board'
                     : level === 'level-1'
                       ? 'Today Bookings'
-                      : isLeaderboardFloor
+                      : isLeaderboardFloor || isImtLevel
                         ? 'Leaderboard'
                         : 'Infoboard'
             }
-            showBadge={!isLeaderboardFloor}
+            showBadge={!isLeaderboardFloor && !isImtLevel}
             emphasizeTitle={isLeaderboardFloor}
+            paginationDots={isImtLevel ? { pageIndex: 1, pageCount: 5 } : null}
           />
           {isTrainingLevel && layout === 'layout-5' && (
             <FlipProgressBar tick={flipTick} intervalMs={LAYOUT_FIVE_STEP_INTERVAL_MS} />
@@ -2551,6 +2557,8 @@ export default function App() {
               fillScreen={leaderboardColumnHeight === 'fill'}
               scoreMax={Number(leaderboardScoreMax)}
             />
+          ) : isImtLevel ? (
+            <ImtLeaderboardBoard />
           ) : (
             <>
               <InfoBanner lead="Level 1 Lobby" message="Today's bookings and facility announcements are shown below." />

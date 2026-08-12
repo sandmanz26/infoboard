@@ -16,10 +16,18 @@ const WREATH_LEAVES = [
   { angle: 164, rx: 1.6, ry: 4.2 },
 ]
 
-function Wreath({ label, tone }) {
+// Label font-size scales with the SVG at non-default sizes (~22% of
+// size) — callers below use this at several sizes (58 in the shared
+// podium, 44/30 in IMT_L's podium/table), and a fixed px size that only
+// fit the default 58 would overflow/clip the wreath's open gap at the
+// smaller ones. Left unset (no inline style) at the default size so the
+// Leaderboard floor's own Font Size switcher — which scales this same
+// label via a CSS variable (.layout-leaderboard-floor .wreath-label) —
+// keeps working; an inline style here would always beat that class rule.
+export function Wreath({ label, tone, size = 58 }) {
   return (
     <div className={`wreath wreath-${tone}`}>
-      <svg viewBox="0 0 64 64" width="58" height="58" aria-hidden="true">
+      <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
         <g fill="currentColor">
           <g transform="translate(32,36)">
             {WREATH_LEAVES.map(({ angle, rx, ry }) => (
@@ -36,7 +44,9 @@ function Wreath({ label, tone }) {
           <circle cx="32" cy="54" r="2.4" />
         </g>
       </svg>
-      <span className="wreath-label">{label}</span>
+      <span className="wreath-label" style={size !== 58 ? { fontSize: `${size * 0.22}px` } : undefined}>
+        {label}
+      </span>
     </div>
   )
 }

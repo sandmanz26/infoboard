@@ -39,6 +39,13 @@ export const LEVELS = [
     context: 'LEADERBOARD',
     description: 'Local + Global weapon training leaderboards',
   },
+  {
+    id: 'imt-l',
+    label: 'IMT_L',
+    shortCode: null,
+    context: 'IMT_L',
+    description: 'Fixed replica of the IMT_L leaderboard reference design',
+  },
 ]
 
 export const LEVEL_ORDER = LEVELS.map((level) => level.id)

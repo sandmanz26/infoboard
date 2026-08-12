@@ -200,6 +200,57 @@ export const leaderboardFloorGlobalCoursewares = [
   },
 ]
 
+// IMT_L level — a distinct Leaderboard layout (no podium on the Local
+// side, a podium + continuation table on the Global side) replicating a
+// reference screenshot exactly, so it keeps its own dataset rather than
+// reusing leaderboardFloor*'s /20-scored rows above.
+export const imtLeaderboardInfo = {
+  title: 'IMT Training For Unit 1SIR',
+  bookingId: '260722-PLC001',
+  unitName: '1SIR',
+  category: 'BTP',
+  weaponType: 'SAR21',
+}
+
+export const imtLeaderboardLocalRows = [
+  { ranking: '1st', medal: 'gold', rank: '3SG', name: 'Danyial Lizam Bin Mustafa', unitName: '1SIR', score: '59', total: '60', mpi: '1.00' },
+  { ranking: '2nd', medal: 'silver', rank: '3SG', name: 'Mohamad Anuar Bin Kassim', unitName: '1SIR', score: '58', total: '60', mpi: '2.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Huang Cheng Hao', unitName: '1SIR', score: '57', total: '60', mpi: '1.00' },
+  { ranking: '3rd', medal: 'bronze', rank: '3SG', name: 'Yang Zheng Min', unitName: '1SIR', score: '55', total: '60', mpi: '2.00' },
+  { ranking: '3rd', medal: 'bronze', rank: 'REC', name: 'Guo Guo Qiang', unitName: '1SIR', score: '54', total: '60', mpi: '3.00' },
+  { ranking: '4', medal: null, rank: 'REC', name: 'Khairul Azmi Bin Izhar', unitName: '1SIR', score: '48', total: '60', mpi: '1.00' },
+  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', unitName: '1SIR', score: '46', total: '60', mpi: '1.00' },
+  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel G. Sarangapani', unitName: '1SIR', score: '39', total: '60', mpi: '1.00' },
+  { ranking: '7', medal: null, rank: '3SG', name: 'Kishan Kumar s/o P.', unitName: '1SIR', score: '38', total: '60', mpi: '1.00' },
+  { ranking: '8', medal: null, rank: '3SG', name: 'Choong Yi Min', unitName: '1SIR', score: '34', total: '60', mpi: '1.00' },
+  { ranking: '9', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', unitName: '1SIR', score: '33', total: '60', mpi: '1.00' },
+  { ranking: '10', medal: null, rank: 'REC', name: 'Rajesh Gunalan a/l', unitName: '1SIR', score: '32', total: '60', mpi: '1.00' },
+  { ranking: '11', medal: null, rank: '3SG', name: 'Farid Bin Osman', unitName: '1SIR', score: '31', total: '60', mpi: '1.00' },
+  { ranking: '12', medal: null, rank: 'REC', name: 'Vellaisamy Muthu', unitName: '1SIR', score: '26', total: '60', mpi: '1.00' },
+  { ranking: '13', medal: null, rank: '3SG', name: 'Teo Wei Jian', unitName: '1SIR', score: '25', total: '60', mpi: '1.00' },
+]
+
+export const imtLeaderboardGlobalPodium = {
+  second: { names: ['REC Daniel Casear'], score: '74', total: '75', mpi: 'MPI: 19mm' },
+  first: { names: ['REC Corey Dorwart'], score: '75', total: '75', mpi: 'MPI: 21mm' },
+  third: { names: ['REC Tan Wei Liang', 'REC Ismail Abdula', 'REC Lee Kheng'], score: '73', total: '75', mpi: 'MPI: 23mm' },
+}
+
+export const imtLeaderboardGlobalRows = [
+  { ranking: '4', medal: null, rank: 'REC', name: 'Guo Guo Qiang', unitName: '1SIR', score: '38', total: '60', mpi: '3.50' },
+  { ranking: '5', medal: null, rank: '3SG', name: 'Law Yong Rui', unitName: '1SIR', score: '28', total: '60', mpi: '4.00' },
+  { ranking: '6', medal: null, rank: 'REC', name: 'Thamizhavel', unitName: '1SIR', score: '19', total: '60', mpi: '4.50' },
+  { ranking: '7', medal: null, rank: '3SG', name: 'Choong Yi Min', unitName: '1SIR', score: '18', total: '60', mpi: '5.00' },
+  { ranking: '8', medal: null, rank: '3SG', name: 'Kwa Xuan Ming', unitName: '1SIR', score: '18', total: '60', mpi: '5.50' },
+  { ranking: '9', medal: null, rank: 'REC', name: 'Tan Wei Ling', unitName: '1SIR', score: '17', total: '60', mpi: '3.50' },
+  { ranking: '10', medal: null, rank: '3SG', name: 'Lim Jia Hao', unitName: '1SIR', score: '16', total: '60', mpi: '4.00' },
+  { ranking: '11', medal: null, rank: 'REC', name: 'Siti Nurhaliza', unitName: '1SIR', score: '15', total: '20', mpi: '4.50' },
+  { ranking: '12', medal: null, rank: '3SG', name: 'Raj Kumar', unitName: '1SIR', score: '13', total: '20', mpi: '5.00' },
+  { ranking: '13', medal: null, rank: '3SG', name: 'Chen Mei Xuan', unitName: '1SIR', score: '12', total: '20', mpi: '5.50' },
+  { ranking: '14', medal: null, rank: 'REC', name: 'Ahmad Iskandar', unitName: '1SIR', score: '8', total: '60', mpi: '3.50' },
+  { ranking: '15', medal: null, rank: '3SG', name: 'Priya Devi', unitName: '1SIR', score: '3', total: '60', mpi: '4.00' },
+]
+
 // The four physical base stations this infoboard can be deployed to,
 // matching the bays drawn on the Directory map.
 export const stations = [

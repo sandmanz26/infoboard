@@ -1045,6 +1045,154 @@ body {
   font-size: 18px;
 }
 
+/* ---------- IMT_L Leaderboard (Level switcher) ----------
+   A fixed replica of a reference design — visually distinct enough from
+   the Leaderboard floor above (no podium on the Local side; a podium
+   *and* a continuation table together on the Global side; a white
+   score-pill overlapping the podium block instead of text printed on
+   it) that it gets its own classes rather than reusing/branching the
+   Leaderboard floor's. Reuses .leaderboard-floor-panel/-banner/-body/
+   -info and .podium-names/.mpi-pill/.ranking-number as-is, since those
+   already look right unmodified. */
+
+.header-imt-l {
+  grid-template-columns: auto 1fr;
+}
+
+.header-imt-l .header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.header-tab-inline {
+  justify-self: start;
+  text-align: left;
+  font-size: 16px;
+}
+
+.layout-imt-leaderboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 24px 24px;
+  align-items: stretch;
+}
+
+.imt-leaderboard-info-global {
+  justify-content: flex-end;
+}
+
+.imt-leaderboard-table {
+  table-layout: fixed;
+}
+
+.imt-leaderboard-table th,
+.imt-leaderboard-table td {
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imt-leaderboard-table th:nth-child(1),
+.imt-leaderboard-table td:nth-child(1) {
+  width: 10%;
+}
+.imt-leaderboard-table th:nth-child(2),
+.imt-leaderboard-table td:nth-child(2) {
+  width: 8%;
+}
+.imt-leaderboard-table th:nth-child(3),
+.imt-leaderboard-table td:nth-child(3) {
+  width: 32%;
+}
+.imt-leaderboard-table th:nth-child(4),
+.imt-leaderboard-table td:nth-child(4) {
+  width: 16%;
+}
+.imt-leaderboard-table th:nth-child(5),
+.imt-leaderboard-table td:nth-child(5) {
+  width: 17%;
+}
+.imt-leaderboard-table th:nth-child(6),
+.imt-leaderboard-table td:nth-child(6) {
+  width: 17%;
+}
+
+.imt-podium {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1fr;
+  align-items: end;
+  gap: 10px;
+  margin: 8px 4px 20px;
+}
+
+.imt-podium-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.imt-trophy {
+  margin-bottom: 2px;
+}
+.imt-podium-gold .imt-trophy {
+  color: var(--gold);
+}
+.imt-podium-silver .imt-trophy {
+  color: var(--silver);
+}
+.imt-podium-bronze .imt-trophy {
+  color: var(--bronze);
+}
+
+.imt-podium-block {
+  position: relative;
+  width: 100%;
+  height: 86px;
+  border-radius: 10px 10px 0 0;
+  margin-top: 18px;
+}
+
+.imt-podium-tall .imt-podium-block {
+  height: 126px;
+}
+
+.imt-podium-gold .imt-podium-block {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 55%, white), var(--gold));
+}
+.imt-podium-silver .imt-podium-block {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--silver) 55%, white), var(--silver));
+}
+.imt-podium-bronze .imt-podium-block {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bronze) 55%, white), var(--bronze));
+}
+
+.imt-podium-score-pill {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-2);
+  white-space: nowrap;
+}
+
+.imt-podium-score-total {
+  font-weight: 600;
+  color: var(--text-sub);
+  font-size: 0.85em;
+}
+
 /* ---------- Directory ---------- */
 
 .directory-desc {
