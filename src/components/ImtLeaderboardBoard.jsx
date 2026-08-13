@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Wreath } from './TopThree.jsx'
 import {
   imtLeaderboardInfo,
@@ -26,6 +27,52 @@ function applyTakeoverRows(rows) {
   const thirdIndex = rest.findIndex((r) => r.ranking === '3rd')
   const insertAt = thirdIndex === -1 ? rest.length : thirdIndex
   return [...rest.slice(0, insertAt), mover, ...rest.slice(insertAt)]
+}
+
+// Global Leaderboard's own rank 11 → joint-3rd takeover — unlike Local
+// (a single flat table where "3rd" is already a table row), Global
+// splits 1st-3rd into the podium and 4th+ into this table, so its rank
+// 11 has nowhere to slide *to* within the table — it has to leave the
+// table entirely and land in the bronze podium block's name list.
+const GLOBAL_TAKEOVER_SOURCE_RANKING = '11'
+const GLOBAL_TAKEOVER_MOVER_ROW = imtLeaderboardGlobalRows.find((r) => r.ranking === GLOBAL_TAKEOVER_SOURCE_RANKING)
+const GLOBAL_TAKEOVER_MOVER_FULLNAME = GLOBAL_TAKEOVER_MOVER_ROW
+  ? `${GLOBAL_TAKEOVER_MOVER_ROW.rank} ${GLOBAL_TAKEOVER_MOVER_ROW.name}`
+  : ''
+const FLIGHT_DURATION_MS = 850
+
+// Shared by both panels — every row's own position change is animated
+// (FLIP: measure before, let React re-render, measure after, animate the
+// delta away) whenever `rows` changes identity, whether that's Local's
+// splice-and-reinsert or Global's plain removal. Returns a ref-callback
+// to attach to each row so this can measure it.
+function useRowFlip(rows) {
+  const rowEls = useRef({})
+  const prevRects = useRef({})
+  const registerRow = (name, el) => {
+    if (el) rowEls.current[name] = el
+    else delete rowEls.current[name]
+  }
+  useLayoutEffect(() => {
+    const nextRects = {}
+    for (const [name, el] of Object.entries(rowEls.current)) {
+      const rect = el.getBoundingClientRect()
+      nextRects[name] = rect
+      const prev = prevRects.current[name]
+      const deltaY = prev ? prev.top - rect.top : 0
+      if (deltaY) {
+        el.style.transition = 'none'
+        el.style.transform = `translateY(${deltaY}px)`
+        el.getBoundingClientRect() // force reflow before releasing the transition
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 750ms cubic-bezier(0.22, 1, 0.36, 1)'
+          el.style.transform = ''
+        })
+      }
+    }
+    prevRects.current = nextRects
+  }, [rows])
+  return registerRow
 }
 
 // IMT_L level — a fixed replica of a reference design: unlike the
@@ -82,7 +129,7 @@ function TrophyIcon({ tone }) {
   )
 }
 
-function ImtPodiumColumn({ place, tone, entry, tall }) {
+function ImtPodiumColumn({ place, tone, entry, tall, blockRef, justLandedName }) {
   return (
     <div className={`imt-podium-col imt-podium-${tone}${tall ? ' imt-podium-tall' : ''}`}>
       <div className="imt-podium-topgroup">
@@ -91,7 +138,7 @@ function ImtPodiumColumn({ place, tone, entry, tall }) {
         </div>
         <ImtWreath label={place} tone={tone} />
       </div>
-      <div className="imt-podium-block">
+      <div className="imt-podium-block" ref={blockRef}>
         <span className="imt-podium-score-pill">
           {entry.score}
           <span className="imt-podium-score-total">/{entry.total}</span>
@@ -100,7 +147,7 @@ function ImtPodiumColumn({ place, tone, entry, tall }) {
           {entry.names.map((n) => {
             const [rank, ...rest] = n.split(' ')
             return (
-              <div key={n}>
+              <div key={n} className={n === justLandedName ? 'imt-podium-name-landed' : undefined}>
                 {rank} <strong>{rest.join(' ')}</strong>
               </div>
             )
@@ -178,38 +225,12 @@ function ImtLocalPanel({ takeoverActive }) {
     () => (takeoverActive ? applyTakeoverRows(imtLeaderboardLocalRows) : imtLeaderboardLocalRows),
     [takeoverActive]
   )
-
-  // FLIP animation: every row (not just the mover) gets its position
-  // change animated, since splicing one row out of the middle and back
-  // in a few slots up shifts everyone between the two spots down by one
-  // — letting that whole block slide together, while the mover itself
-  // flies past them, is what actually reads as a "takeover" rather than
-  // a row just silently teleporting to a new spot.
-  const rowEls = useRef({})
-  const prevRects = useRef({})
-  const registerRow = (name, el) => {
-    if (el) rowEls.current[name] = el
-    else delete rowEls.current[name]
-  }
-  useLayoutEffect(() => {
-    const nextRects = {}
-    for (const [name, el] of Object.entries(rowEls.current)) {
-      const rect = el.getBoundingClientRect()
-      nextRects[name] = rect
-      const prev = prevRects.current[name]
-      const deltaY = prev ? prev.top - rect.top : 0
-      if (deltaY) {
-        el.style.transition = 'none'
-        el.style.transform = `translateY(${deltaY}px)`
-        el.getBoundingClientRect() // force reflow before releasing the transition
-        requestAnimationFrame(() => {
-          el.style.transition = 'transform 750ms cubic-bezier(0.22, 1, 0.36, 1)'
-          el.style.transform = ''
-        })
-      }
-    }
-    prevRects.current = nextRects
-  }, [rows])
+  // Splicing one row out of the middle and back in a few slots up shifts
+  // everyone between the two spots down by one — letting that whole
+  // block slide together, while the mover itself flies past them, is
+  // what actually reads as a "takeover" rather than a row just silently
+  // teleporting to a new spot.
+  const registerRow = useRowFlip(rows)
 
   // A brief announcement banner on the way *in* only (not on revert) —
   // self-clears instead of lingering once the row has settled into place.
@@ -249,7 +270,64 @@ function ImtLocalPanel({ takeoverActive }) {
   )
 }
 
-function ImtGlobalPanel() {
+function ImtGlobalPanel({ takeoverActive }) {
+  // Global's takeover has 3 phases instead of Local's simple splice: the
+  // row is still sitting in the table ('idle'), a flying clone is mid-
+  // flight from the row's old spot to the bronze block ('flying', at
+  // which point it's already gone from `rows` so the table below it can
+  // close the gap), then it's merged into the podium's name list
+  // ('landed'). Reverting drops straight back to 'idle' — the row just
+  // reappears in the table (still FLIP-animated back into place) rather
+  // than replaying the flight backwards.
+  const [phase, setPhase] = useState('idle')
+  const [flight, setFlight] = useState(null) // { from, to } DOMRects
+  const [showBanner, setShowBanner] = useState(false)
+  const moverRowEl = useRef(null)
+  const bronzeBlockEl = useRef(null)
+  const wasActive = useRef(takeoverActive)
+
+  useEffect(() => {
+    if (takeoverActive && !wasActive.current) {
+      const fromEl = moverRowEl.current
+      const toEl = bronzeBlockEl.current
+      if (fromEl && toEl) {
+        setFlight({ from: fromEl.getBoundingClientRect(), to: toEl.getBoundingClientRect() })
+        setPhase('flying')
+        setShowBanner(true)
+        const landTimer = setTimeout(() => {
+          setPhase('landed')
+          setFlight(null)
+        }, FLIGHT_DURATION_MS)
+        const bannerTimer = setTimeout(() => setShowBanner(false), 3200)
+        wasActive.current = takeoverActive
+        return () => {
+          clearTimeout(landTimer)
+          clearTimeout(bannerTimer)
+        }
+      }
+    }
+    if (!takeoverActive) {
+      setPhase('idle')
+      setFlight(null)
+    }
+    wasActive.current = takeoverActive
+  }, [takeoverActive])
+
+  const rows = useMemo(
+    () => (phase === 'idle' ? imtLeaderboardGlobalRows : imtLeaderboardGlobalRows.filter((r) => r !== GLOBAL_TAKEOVER_MOVER_ROW)),
+    [phase]
+  )
+  const registerRow = useRowFlip(rows)
+  const registerMoverRow = (name, el) => {
+    registerRow(name, el)
+    if (name === GLOBAL_TAKEOVER_MOVER_ROW?.name) moverRowEl.current = el
+  }
+
+  const thirdEntry =
+    phase === 'landed'
+      ? { ...imtLeaderboardGlobalPodium.third, names: [...imtLeaderboardGlobalPodium.third.names, GLOBAL_TAKEOVER_MOVER_FULLNAME] }
+      : imtLeaderboardGlobalPodium.third
+
   return (
     <section className="panel leaderboard-floor-panel">
       <div className="leaderboard-floor-banner leaderboard-floor-banner-global">Global Leaderboard</div>
@@ -257,14 +335,62 @@ function ImtGlobalPanel() {
         <div className="leaderboard-floor-info imt-leaderboard-info-global">
           <ImtInfoRight />
         </div>
+        {showBanner && (
+          <div className="imt-takeover-banner">
+            🔥 <strong>{GLOBAL_TAKEOVER_MOVER_FULLNAME}</strong> surges from 11th to Joint 3rd!
+          </div>
+        )}
         <div className="imt-podium">
           <ImtPodiumColumn place="2nd" tone="silver" entry={imtLeaderboardGlobalPodium.second} />
           <ImtPodiumColumn place="1st" tone="gold" entry={imtLeaderboardGlobalPodium.first} tall />
-          <ImtPodiumColumn place="3rd" tone="bronze" entry={imtLeaderboardGlobalPodium.third} />
+          <ImtPodiumColumn
+            place="3rd"
+            tone="bronze"
+            entry={thirdEntry}
+            blockRef={bronzeBlockEl}
+            justLandedName={phase === 'landed' ? GLOBAL_TAKEOVER_MOVER_FULLNAME : null}
+          />
         </div>
-        <ImtLeaderboardTable rows={imtLeaderboardGlobalRows} />
+        <ImtLeaderboardTable rows={rows} rowRef={registerMoverRow} />
       </div>
+      {flight && <ImtFlyingBadge flight={flight} name={GLOBAL_TAKEOVER_MOVER_FULLNAME} />}
     </section>
+  )
+}
+
+// A cloned pill that travels from the row's last on-screen position to
+// the bronze block's. Pinned via top/left at the *target* rect for its
+// entire life and animated purely through `transform` (starting offset
+// by the inverse delta back to the source, then transitioned to
+// identity) — animating top/left directly is what causes janky,
+// non-composited motion, so the actual travel is done as a transform
+// instead. Portaled straight to <body> (not rendered in place in the
+// component tree) so its fixed positioning is always relative to the
+// real viewport — a transformed ancestor (e.g. the TV/TV2 display modes'
+// whole-screen scale) would otherwise become its containing block
+// instead, and the getBoundingClientRect() coordinates it's built from
+// would end up applied twice.
+function ImtFlyingBadge({ flight, name }) {
+  const [phase, setPhase] = useState('start') // start -> flying -> fading
+  useLayoutEffect(() => {
+    const raf = requestAnimationFrame(() => setPhase('flying'))
+    const fadeTimer = setTimeout(() => setPhase('fading'), FLIGHT_DURATION_MS - 200)
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(fadeTimer)
+    }
+  }, [])
+  const dx = flight.from.left - flight.to.left
+  const dy = flight.from.top - flight.to.top
+  const transform = phase === 'start' ? `translate(${dx}px, ${dy}px) scale(1.1)` : 'translate(0, 0) scale(1)'
+  return createPortal(
+    <div
+      className={`imt-flying-badge${phase === 'fading' ? ' imt-flying-badge-arrived' : ''}`}
+      style={{ top: flight.to.top, left: flight.to.left, transform, transformOrigin: 'top left' }}
+    >
+      🚀 {name}
+    </div>,
+    document.body
   )
 }
 
@@ -272,7 +398,7 @@ export default function ImtLeaderboardBoard({ takeoverActive = false }) {
   return (
     <main className="layout layout-imt-leaderboard">
       <ImtLocalPanel takeoverActive={takeoverActive} />
-      <ImtGlobalPanel />
+      <ImtGlobalPanel takeoverActive={takeoverActive} />
     </main>
   )
 }

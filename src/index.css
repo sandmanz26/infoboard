@@ -1315,6 +1315,46 @@ body {
   }
 }
 
+/* Global Leaderboard's takeover — the clone that flies from the table
+   row's old spot up into the bronze podium block (see ImtFlyingBadge in
+   ImtLeaderboardBoard.jsx). Fixed positioning + top/left driven entirely
+   from inline style (real getBoundingClientRect() values, viewport
+   coordinates) so it can travel over the table/podium boundary instead
+   of being clipped by either panel's own overflow. transform (scale) is
+   the only thing transitioned — top/left jump straight to the target
+   instantly and scale+opacity do the rest of the visual travel, since
+   animating top/left directly is what causes janky, non-composited
+   animation; this way the browser only ever animates a transform. */
+.imt-flying-badge {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--gold-deep);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-2);
+  pointer-events: none;
+  transition: transform 850ms cubic-bezier(0.3, 0.1, 0.2, 1), opacity 850ms ease-in;
+}
+
+.imt-flying-badge-arrived {
+  opacity: 0;
+}
+
+/* The new name's resting highlight inside the podium block once it
+   lands — same green-pulse-to-tint treatment as a table row's own
+   .imt-row-mover, just scoped to one name line instead of a full row. */
+.imt-podium-name-landed {
+  border-radius: var(--radius-sm);
+  animation: imt-takeover-pulse 1.1s ease-out 1;
+}
+
 /* ---------- Directory ---------- */
 
 .directory-desc {
